@@ -1,13 +1,15 @@
 
 import express from 'express';
-import { kayitOl,girisYap,cikisYap } from '../controllers/auth.controller.js';
+import { kayitOl,girisYap,cikisYap, hesabim } from '../controllers/auth.controller.js';
+import { JWTKontrol } from '../middlewire/JWTKontrol.js';
 
 
 const router = express.Router();
 
-router.get('/kayitol', kayitOl);
-router.get('/girisyap', girisYap);
-router.get('/cikisyap', cikisYap);
+router.post('/kayitol', kayitOl);
+router.post('/girisyap', girisYap);
+router.post('/cikisyap', cikisYap);
+router.get("/hesabim",JWTKontrol ,hesabim);
 
 
 
