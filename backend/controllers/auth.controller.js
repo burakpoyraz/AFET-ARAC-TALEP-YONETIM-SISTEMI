@@ -4,7 +4,7 @@ import bcrypt from "bcryptjs";
 
 export const kayitOl = async (req, res) => {
   try {
-    const { adSoyad, email, sifre, telefon, kurumFirmaAdi,kurumFirmaTuru } =
+    const { ad,soyad, email, sifre, telefon, kurumFirmaAdi,kurumFirmaTuru } =
       req.body;
 
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -41,7 +41,8 @@ export const kayitOl = async (req, res) => {
 
 
     const yeniKullanici = new Kullanici({
-      adSoyad,
+      ad,
+      soyad,
       email,
       sifre: sifreHash,
       telefon,
@@ -58,7 +59,8 @@ export const kayitOl = async (req, res) => {
 
         res.status(201).json({ yeniKullanici: {
             _id: yeniKullanici._id,
-            adSoyad: yeniKullanici.adSoyad,
+            ad: yeniKullanici.ad,
+            soyad: yeniKullanici.soyad,
             email: yeniKullanici.email,
             telefon: yeniKullanici.telefon,
             rol: yeniKullanici.rol,
@@ -101,7 +103,8 @@ export const girisYap = async (req, res) => {
 
         res.status(200).json({ kullanici: {
             _id: kullanici._id,
-            adSoyad: kullanici.adSoyad,
+            ad: kullanici.ad,
+            soyad: kullanici.soyad,
             email: kullanici.email,
             telefon: kullanici.telefon,
             rol: kullanici.rol,
@@ -141,7 +144,8 @@ export const hesabim = async (req, res) => {
         const kullanici = req.kullanici;
         res.status(200).json({ kullanici: {
             _id: kullanici._id,
-            adSoyad: kullanici.adSoyad,
+            ad: kullanici.ad,
+            soyad: kullanici.soyad,
             email: kullanici.email,
             telefon: kullanici.telefon,
             rol: kullanici.rol,

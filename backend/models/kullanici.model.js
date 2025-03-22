@@ -3,7 +3,11 @@ import { Schema } from "mongoose";
 
 const KullaniciSchema = mongoose.Schema(
   {
-    adSoyad: {
+    ad: {
+      type: String,
+      required: true,
+    },
+    soyad: {
       type: String,
       required: true,
     },

@@ -7,7 +7,7 @@ export const JWTKontrol = async (req, res, next) => {
         const token = req.cookies.jwt;
         
         if (!token) {
-            return res.status(401).json({ error: "Yetkisiz erişim" });
+            return res.status(401).json({ error: "Bu işlem için giriş yapmanız gerekiyor." });
         }
         const decoded = jwt.verify(token, process.env.JWT_SECRET);
 
@@ -20,6 +20,6 @@ export const JWTKontrol = async (req, res, next) => {
     
         next();
     } catch (error) {
-        return res.status(401).json({ error: "Yetkisiz erişim" });
+        return res.status(401).json({ error: "Bu işlem için giriş yapmanız gerekiyor." });
     }
 }
