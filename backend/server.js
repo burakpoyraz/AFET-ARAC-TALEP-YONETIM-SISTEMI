@@ -3,6 +3,7 @@ import authRoutes from './routes/auth.route.js';
 import kullaniciRoutes from './routes/kullanici.route.js';
 import kurumFirmaRoutes from './routes/kurumFirma.route.js';
 import aracRoutes from './routes/arac.route.js';
+import talepRoutes from './routes/talep.route.js';
 import connectMongoDB from './db/connectMongoDB.js';
 import dotenv from 'dotenv';
 import cookieParser from 'cookie-parser';
@@ -22,6 +23,7 @@ app.use("/api/auth",authRoutes);
 app.use("/api/kullanicilar",kullaniciRoutes);
 app.use("/api/kurumlar",kurumFirmaRoutes);
 app.use("/api/araclar",aracRoutes);
+app.use("/api/talepler",talepRoutes);
 
 
 

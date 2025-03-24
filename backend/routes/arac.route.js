@@ -1,5 +1,5 @@
 import express from 'express';
-import { aracEkle, aracGetir, aracGuncelle, araclariGetir } from '../controllers/arac.controller.js';
+import { aracEkle, aracGetir, aracGuncelle, araclariGetir, aracSil } from '../controllers/arac.controller.js';
 import { JWTKontrol } from '../middlewire/JWTKontrol.js';
 
 
@@ -10,7 +10,7 @@ router.post("/",JWTKontrol,aracEkle);
 router.get("/",JWTKontrol,araclariGetir);
 router.get("/:plaka",JWTKontrol,aracGetir);
 router.put("/:plaka",JWTKontrol,aracGuncelle);
-// router.delete("/:plaka",JWTKontrol,aracSil);
+router.delete("/:plaka",JWTKontrol,aracSil);
 
 
 

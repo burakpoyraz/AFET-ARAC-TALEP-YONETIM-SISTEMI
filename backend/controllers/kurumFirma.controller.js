@@ -54,6 +54,9 @@ export const kurumFirmaOlustur = async (req, res) => {
       },
     });
 
+    if(!yeniFirma) {
+      return res.status(400).json({ error: "Kurum/Firma oluşturulamadı" });
+    }
     await yeniFirma.save();
     res.status(201).json({ yeniFirma });
   } catch (error) {

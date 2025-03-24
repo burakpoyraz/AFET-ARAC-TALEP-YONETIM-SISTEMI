@@ -195,3 +195,18 @@ export const aracGuncelle = async (req, res) => {
     res.status(500).json({ error: error.message });
   }
 };
+
+export const aracSil = async (req, res) => {
+  const { plaka } = req.params;
+  try {
+    const arac = await Arac.findOneAndDelete({ plaka });
+    if (!arac) {
+      return res.status(404).json({ error: "Araç bulunamadı" });
+    }
+    res.status(200).json({ arac });
+  }
+  catch (error) {
+    console.log(`Araç silinirken hata oluştu: ${error.message}`);
+    res.status(500).json({ error: error.message });
+  }
+}
