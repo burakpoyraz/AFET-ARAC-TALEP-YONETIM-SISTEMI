@@ -27,7 +27,7 @@ const AracSchema = mongoose.Schema(
 
     kullanimAmaci: {
       type: String,
-      required: true,
+    //  required: true,
       enum: ["yolcu", "yuk"],
     },
     kapasite: {

@@ -38,11 +38,10 @@ const KullaniciSchema = mongoose.Schema(
     kullaniciBeyanBilgileri: {
       kurumFirmaAdi: {
         type: String,
-        required: true,
       },
       kurumFirmaTuru: {
         type: String,
-        enum: ["kamu", "tüzel", "şahıs"],
+        enum: ["kurulus_adina", "kendi_adima"],
       },
       pozisyon: {
         type: String,
