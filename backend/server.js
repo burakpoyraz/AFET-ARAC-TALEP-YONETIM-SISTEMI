@@ -8,12 +8,19 @@ import gorevRoutes from './routes/gorev.route.js';
 import connectMongoDB from './db/connectMongoDB.js';
 import dotenv from 'dotenv';
 import cookieParser from 'cookie-parser';
+import cors from 'cors';
 
 dotenv.config();
 
 const PORT = process.env.PORT || 5000;
 
 const app = express();
+
+app.use(cors({
+  origin: process.env.CLIENT_URL,
+  methods: ['GET', 'POST', 'PUT', 'DELETE'],
+  credentials: true, // Cookie'leri paylaşmak için
+}));
 
 app.use(express.json()); // req.body'yi kullanabilmek için
 app.use(express.urlencoded({ extended: true })); // Formdan gelen verileri kullanabilmek için

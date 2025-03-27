@@ -1,6 +1,9 @@
 import React, { useState } from "react";
 
 import { CiUser, CiMail, CiLock, CiPhone, CiHome } from "react-icons/ci";
+import { useMutation } from "@tanstack/react-query";
+import axios from "axios";
+import {toast} from "react-hot-toast";
 
 const KayıtOl = () => {
   const [formData, setFormData] = useState({
@@ -19,17 +22,49 @@ const KayıtOl = () => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
+  const {mutate,isError,isPending,isSuccess,error} = useMutation({
+
+    mutationFn: async (formData) => {
+      try{
+        const res = await axios.post("/api/auth/kayitol", formData);
+
+        if(res.data.error){
+          throw new Error(res.data.error);
+        }
+        // Başarılı bir yanıt döndürülürse, bu yanıtı döndürün
+          console.log(res.data);
+        return res.data;
+      }
+     
+      catch(error){
+        throw new Error(error.response.data.error);
+      }
+
+    },
+    onSuccess: (data) => {
+      
+      toast.success("Kayıt başarılı!");
+      console.log("Kayıt başarılı:", data);
+    },
+    onError: (error) => {
+
+      toast.error("Kayıt hatası: " + error.message);
+      
+      console.error("Kayıt hatası:", error.message);
+    },
+
+    
+  });
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (formData.sifre !== formData.sifreTekrar) {
       alert("Şifreler eşleşmiyor!");
       return;
     }
-    try {
-      console.log(formData);
-    } catch (error) {
-      alert(error.response.data.error);
-    }
+    console.log("Gönderilen veriler:", formData);
+    mutate(formData);
+    
   };
 
   return (
@@ -38,7 +73,7 @@ const KayıtOl = () => {
       <div
         className="hidden lg:block lg:w-1/2 bg-cover bg-center"
         style={{
-          backgroundImage: 'url("/api/placeholder/800/1200")',
+        //  backgroundImage: 'url("/api/placeholder/800/1200")',
           backgroundPosition: "center",
           backgroundSize: "cover",
         }}
@@ -149,7 +184,6 @@ const KayıtOl = () => {
                 name="kurumFirmaTuru"
                 className="select mb-4 w-full"
                 onChange={handleInputChanges}
-                value={formData.kurumFirmaTuru}
               >
                 <option value="kendi_adima">Kendi Adıma</option>
                 <option value="kurulus_adina">Kuruluş Adına</option>
@@ -194,7 +228,7 @@ const KayıtOl = () => {
             <div className="text-center mt-4">
               <p className="text-sm">
                 Zaten hesabınız var mı?
-                <a href="/login" className="link link-primary ml-1">
+                <a href="/girisyap" className="link link-primary ml-1">
                   Giriş Yap
                 </a>
               </p>
