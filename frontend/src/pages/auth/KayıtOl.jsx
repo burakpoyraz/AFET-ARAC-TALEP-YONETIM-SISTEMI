@@ -1,11 +1,15 @@
 import React, { useState } from "react";
 
 import { CiUser, CiMail, CiLock, CiPhone, CiHome } from "react-icons/ci";
-import { useMutation } from "@tanstack/react-query";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 import axios from "axios";
 import {toast} from "react-hot-toast";
+import { Link } from "react-router-dom";
 
 const KayıtOl = () => {
+
+
+  const queryClient = useQueryClient();
   const [formData, setFormData] = useState({
     ad: "",
     soyad: "",
@@ -26,7 +30,7 @@ const KayıtOl = () => {
 
     mutationFn: async (formData) => {
       try{
-        const res = await axios.post("/api/auth/kayitol", formData);
+        const res = await axios.post("/api/auth/kayitol", formData,{withCredentials: true});
 
         if(res.data.error){
           throw new Error(res.data.error);
@@ -44,7 +48,8 @@ const KayıtOl = () => {
     onSuccess: (data) => {
       
       toast.success("Kayıt başarılı!");
-      console.log("Kayıt başarılı:", data);
+     
+      queryClient.invalidateQueries(["girisYapanKullanici"]);
     },
     onError: (error) => {
 
@@ -228,9 +233,9 @@ const KayıtOl = () => {
             <div className="text-center mt-4">
               <p className="text-sm">
                 Zaten hesabınız var mı?
-                <a href="/girisyap" className="link link-primary ml-1">
+                <Link to="/girisyap" className="link link-primary ml-1">
                   Giriş Yap
-                </a>
+                </Link>
               </p>
             </div>
           </div>

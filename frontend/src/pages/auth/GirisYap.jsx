@@ -4,6 +4,7 @@ import { CiMail, CiLock } from "react-icons/ci";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import axios from "axios";
 import { toast } from "react-hot-toast";
+import { Link } from "react-router-dom";
 
 
 const GirisYap = () => {
@@ -26,7 +27,7 @@ const GirisYap = () => {
   const { mutate, isError, isPending, isSuccess, error } = useMutation({
     mutationFn: async (formData) => {
       try {
-        const res = await axios.post("/api/auth/girisyap", formData);
+        const res = await axios.post("/api/auth/girisyap", formData , {withCredentials: true});
 
         if (res.data.error) {
           throw new Error(res.data.error);
@@ -145,9 +146,9 @@ const GirisYap = () => {
             <div className="text-center mt-4">
               <p className="text-sm">
                 Hesabınız yok mu?
-                <a href="/kayitol" className="link link-primary ml-1">
+                <Link to="/kayitol" className="link link-primary ml-1">
                   Kayıt Ol
-                </a>
+                </Link>
               </p>
             </div>
           </div>

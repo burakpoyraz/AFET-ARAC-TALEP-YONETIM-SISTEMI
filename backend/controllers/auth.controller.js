@@ -141,7 +141,16 @@ export const cikisYap = async (req, res) => {
 
 export const hesabim = async (req, res) => {
     try{
+    
         const kullanici = req.kullanici;
+       
+
+        if (!kullanici) {
+            return res.status(401).json({ error: "Kullanıcı bulunamadı" });
+        }
+
+
+        
         res.status(200).json({ kullanici: {
             _id: kullanici._id,
             ad: kullanici.ad,

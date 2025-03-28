@@ -17,9 +17,8 @@ const PORT = process.env.PORT || 5000;
 const app = express();
 
 app.use(cors({
-  origin: process.env.CLIENT_URL,
-  methods: ['GET', 'POST', 'PUT', 'DELETE'],
-  credentials: true, // Cookie'leri paylaşmak için
+  origin: process.env.CLIENT_URL, // İzin verilen istemci URL'si
+  credentials: true, // Cookie'leri paylaşmak için gerekli
 }));
 
 app.use(express.json()); // req.body'yi kullanabilmek için
