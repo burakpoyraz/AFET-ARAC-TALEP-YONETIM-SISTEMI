@@ -1,7 +1,8 @@
 import KurumFirma from "../models/kurumFirma.model.js";
 
 export const kurumFirmaOlustur = async (req, res) => {
-  const { kurumAdi, kurumTuru, telefon, email, adres } = req.body;
+  const { kurumAdi, kurumTuru, iletisim } = req.body;
+  const { telefon, email, adres } = iletisim;
 
   try {
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -54,7 +55,7 @@ export const kurumFirmaOlustur = async (req, res) => {
       },
     });
 
-    if(!yeniFirma) {
+    if (!yeniFirma) {
       return res.status(400).json({ error: "Kurum/Firma oluşturulamadı" });
     }
     await yeniFirma.save();
@@ -101,12 +102,22 @@ export const kurumFirmaGetir = async (req, res) => {
 
 export const kurumFirmaGuncelle = async (req, res) => {
   const { id } = req.params;
-  const { kurumAdi, kurumTuru, telefon, email, adres } = req.body;
+  const { kurumAdi, kurumTuru, iletisim } = req.body;
+  const { telefon, email, adres } = iletisim || {};
+
+  if (!kurumAdi || !kurumTuru || !telefon || !email || !adres) {
+    return res.status(400).json({ error: "Tüm alanlar zorunludur." });
+  }
+
+  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+  if (!emailRegex.test(email.trim())) {
+    return res.status(400).json({ error: "Geçerli bir email adresi giriniz" });
+  }
 
   try {
     const kurumFirmaVarMi = await KurumFirma.findOne({
       $and: [
-        { _id: { $ne: id } }, // kendisi hariç
+        { _id: { $ne: id } },
         {
           $or: [
             { kurumAdi },
@@ -119,27 +130,23 @@ export const kurumFirmaGuncelle = async (req, res) => {
 
     if (kurumFirmaVarMi) {
       if (kurumFirmaVarMi.kurumAdi === kurumAdi) {
-        return res
-          .status(400)
-          .json({ error: "Bu isimde bir kurum/firma zaten var" });
+        return res.status(400).json({ error: "Bu isimde bir kurum/firma zaten var" });
       }
       if (kurumFirmaVarMi.iletisim.telefon === telefon) {
-        return res
-          .status(400)
-          .json({
-            error: "Bu telefon numarasına ait bir kurum/firma zaten var",
-          });
+        return res.status(400).json({ error: "Bu telefon numarasına ait bir kurum/firma zaten var" });
       }
       if (kurumFirmaVarMi.iletisim.email === email) {
-        return res
-          .status(400)
-          .json({ error: "Bu email adresine ait bir kurum/firma zaten var" });
+        return res.status(400).json({ error: "Bu email adresine ait bir kurum/firma zaten var" });
       }
     }
 
     const kurumFirma = await KurumFirma.findByIdAndUpdate(
       id,
-      { kurumAdi, kurumTuru, iletisim: { telefon, email, adres } },
+      {
+        kurumAdi,
+        kurumTuru,
+        iletisim: { telefon, email, adres },
+      },
       { new: true }
     );
 

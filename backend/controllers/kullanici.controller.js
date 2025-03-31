@@ -3,7 +3,8 @@ import Kullanici from "../models/kullanici.model.js";
 
 export const kullanicilariGetir = async (req, res) => {
     try {
-        const kullanicilar = await Kullanici.find().select("-sifre");
+        const kullanicilar = await Kullanici.find().select("-sifre").populate("kurumFirmaId","kurumAdi")
+        .sort({createdAt:-1});
        
 
         if (!kullanicilar) {
@@ -37,7 +38,7 @@ export const kullaniciGetir = async (req, res) => {
 
 export const kullaniciGuncelle = async (req, res) => {
     const { id } = req.params;
-    const { ad,soyad, email,telefon,kurumFirmaId } = req.body;
+    const { ad,soyad, email,telefon,kurumFirmaId,rol } = req.body;
 
     try {
 
@@ -53,7 +54,7 @@ export const kullaniciGuncelle = async (req, res) => {
             }
 
 
-        const kullanici = await Kullanici.findByIdAndUpdate(id, { ad,soyad, email,telefon,kurumFirmaId}, { new: true }).select("-sifre");
+        const kullanici = await Kullanici.findByIdAndUpdate(id, { ad,soyad, email,telefon,kurumFirmaId,rol}, { new: true }).select("-sifre");
 
         if (!kullanici) {
             return res.status(404).json({ error: "Kullanıcı bulunamadı" });
