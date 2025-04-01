@@ -9,7 +9,6 @@ export const aracEkle = async (req, res) => {
     musaitlikDurumu,
     aracDurumu,
     konum,
-    sofor,
   } = req.body;
 
   try {
@@ -37,24 +36,6 @@ export const aracEkle = async (req, res) => {
       yeniKonum = { lat, lng };
     }
 
-    let yeniSofor = null;
-
-    if (sofor) {
-      const { ad, soyad, telefon } = sofor;
-      if (!ad) {
-        return res.status(400).json({ error: "Şoför adı zorunludur" });
-      }
-      if (!soyad) {
-        return res.status(400).json({ error: "Şoför soyadı zorunludur" });
-      }
-      if (!telefon) {
-        return res
-          .status(400)
-          .json({ error: "Şoför telefon numarası zorunludur" });
-      }
-      yeniSofor = { ad, soyad, telefon };
-    }
-
     const aracVarMi = await Arac.findOne({ plaka });
 
     if (aracVarMi) {
@@ -74,7 +55,6 @@ export const aracEkle = async (req, res) => {
         musaitlikDurumu,
         aracDurumu,
         konum: yeniKonum,
-        sofor: yeniSofor,
         kurumFirmaId: null,
         kullaniciId: req.kullanici._id,
       });
@@ -87,7 +67,6 @@ export const aracEkle = async (req, res) => {
         musaitlikDurumu,
         aracDurumu,
         konum: yeniKonum,
-        sofor: yeniSofor,
         kurumFirmaId: kurumFirmaId,
         kullaniciId: null,
       });
@@ -101,9 +80,9 @@ export const aracEkle = async (req, res) => {
   }
 };
 
-export const araclariGetir = async (req, res) => {
+export const tumAraclariGetir = async (req, res) => {
   try {
-    const araclar = await Arac.find({});
+    const araclar = await Arac.find({}).populate("kurumFirmaId", "kurumAdi").populate("kullaniciId", "ad soyad");
     if (!araclar) {
       return res.status(404).json({ error: "Araç bulunamadı" });
     }
@@ -113,6 +92,31 @@ export const araclariGetir = async (req, res) => {
     res.status(500).json({ error: error.message });
   }
 };
+
+export const kullaniciyaKurumaAitAraclariGetir = async (req, res) => {
+
+  const kullaniciId = req.kullanici._id;
+  const kurumFirmaId = req.kullanici.kurumFirmaId;
+
+  try {
+    let araclar;
+    if (kurumFirmaId) {
+      araclar = await Arac.find({ kurumFirmaId }).populate("kurumFirmaId", "kurumAdi").populate("kullaniciId", "ad soyad");
+    } else {
+      araclar = await Arac.find({ kullaniciId }).populate("kurumFirmaId", "kurumAdi").populate("kullaniciId", "ad soyad");
+    }
+
+    if (!araclar) {
+      return res.status(404).json({ error: "Araç bulunamadı" });
+    }
+    res.status(200).json({ araclar });
+  }
+  catch (error) {
+    console.log(`Kullanıcıya / Kuruluşa ait araçları getirirken hata oluştu: ${error.message}`);
+    res.status(500).json({ error: error.message });
+  }
+};
+
 
 export const aracGetir = async (req, res) => {
   const { plaka } = req.params;
@@ -138,9 +142,25 @@ export const aracGuncelle = async (req, res) => {
     musaitlikDurumu,
     aracDurumu,
     konum,
-    sofor,
   } = req.body;
   try {
+
+    const mevcutArac= await Arac.findOne({ plaka });
+    if (!mevcutArac) {
+      return res.status(404).json({ error: "Araç bulunamadı" });
+    }
+
+    if(yeniPlaka !== plaka){
+      const plakaVarMi = await Arac.findOne({ plaka: yeniPlaka,
+        _id: { $ne: mevcutArac._id },
+       });
+      if (plakaVarMi) {
+        return res.status(400).json({ error: "Bu plakaya sahip bir araç zaten var" });
+      }
+      
+    }
+
+
     const guncellenecekArac = {
       plaka: yeniPlaka,
       aracTuru,
@@ -152,11 +172,7 @@ export const aracGuncelle = async (req, res) => {
 
 
 
-    const aracVarMi =await Arac.findOne
-    ({ plaka: yeniPlaka });
-    if (aracVarMi) {
-      return res.status(400).json({ error: "Bu plakaya sahip bir araç zaten var" });
-    }
+    
 
     if (konum) {
       const { lat, lng } = konum;
@@ -164,22 +180,6 @@ export const aracGuncelle = async (req, res) => {
         return res.status(400).json({ error: "Konum bilgisi eksik" });
       }
       guncellenecekArac.konum = { lat, lng };
-    }
-
-    if (sofor) {
-      const { ad, soyad, telefon } = sofor;
-      if (!ad) {
-        return res.status(400).json({ error: "Şoför adı zorunludur" });
-      }
-      if (!soyad) {
-        return res.status(400).json({ error: "Şoför soyadı zorunludur" });
-      }
-      if (!telefon) {
-        return res
-          .status(400)
-          .json({ error: "Şoför telefon numarası zorunludur" });
-      }
-      guncellenecekArac.sofor = { ad, soyad, telefon };
     }
 
     const arac = await Arac.findOneAndUpdate({ plaka }, guncellenecekArac, {

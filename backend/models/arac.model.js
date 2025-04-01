@@ -13,13 +13,13 @@ const AracSchema = mongoose.Schema(
       enum: [
         "otomobil",
         "kamyonet",
-        "minibus",
-        "otobus",
+        "minibüs",
+        "otobüs",
         "kamyon",
-        "cekici",
-        "pickUp",
+        "çekici(Tır)",
+        "pick-Up",
         "tanker",
-        "yRomork",
+        "y.Römork",
         "lowbed",
         "motosiklet",
       ],
@@ -51,20 +51,6 @@ const AracSchema = mongoose.Schema(
       lng: {
         type: Number,
         
-      },
-    },
-    sofor: {
-      ad: {
-        type: String,
-     
-      },
-      soyad: {
-        type: String,
-        
-      },
-      telefon: {
-        type: String,
-       
       },
     },
     kurumFirmaId: {

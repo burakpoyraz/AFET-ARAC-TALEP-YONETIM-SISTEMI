@@ -9,24 +9,23 @@ const Navbar = () => {
   const navigate = useNavigate();
   const kullanici = queryClient.getQueryData(["girisYapanKullanici"]);
 
-  const {mutate:logout}=useMutation({
-          mutationFn: async () => {
-              try{
-                  const res = await api.post("/auth/cikisyap",{});
-                  return res.data;
-              }
-              catch(err){
-                  throw err;
-              }
-          },
-          onSuccess: (data) => {
-              queryClient.setQueryData(["girisYapanKullanici"],null);
-              navigate("/girisyap");
-          },
-          onError: (error) => {
-              console.error("Çıkış hatası:", error.message);
-          },
-      });
+  const { mutate: logout } = useMutation({
+    mutationFn: async () => {
+      try {
+        const res = await api.post("/auth/cikisyap", {});
+        return res.data;
+      } catch (err) {
+        throw err;
+      }
+    },
+    onSuccess: (data) => {
+      queryClient.setQueryData(["girisYapanKullanici"], null);
+      navigate("/girisyap");
+    },
+    onError: (error) => {
+      console.error("Çıkış hatası:", error.message);
+    },
+  });
 
   const cikisYap = (e) => {
     e.preventDefault();
@@ -38,20 +37,23 @@ const Navbar = () => {
       {/* Sol: Logo */}
       <div className="flex-1">
         <Link to="/" className="text-2xl font-bold text-primary">
-          AFET-ARAÇ YÖNETİM SİSTEMİ
+          AFET NAKLİYE YÖNETİM SİSTEMİ
         </Link>
       </div>
 
       {/* Sağ: Kullanıcı bilgisi ve çıkış */}
       <div className="flex-none flex items-center gap-4">
         <div className="flex items-center gap-2">
-          <FaUserCircle className="w-6 h-6 text-primary" />
+          <FaUserCircle className="w-8 h-8 text-primary" />
           <div className="hidden sm:block text-sm text-gray-700">
-            <p className="font-medium">
-              {kullanici.ad} {kullanici.soyad}
-            </p>
-            <p className="text-xs text-gray-500">{kullanici.rol}</p>
-          </div>
+  <p className="font-medium">
+    {kullanici.ad} {kullanici.soyad}
+  </p>
+  <p className="text-xs text-gray-500">{kullanici.rol}</p>
+  <p className="text-xs italic text-gray-400">
+    {kullanici.kurumFirmaId?.kurumAdi}
+  </p>
+</div>
         </div>
 
         <button

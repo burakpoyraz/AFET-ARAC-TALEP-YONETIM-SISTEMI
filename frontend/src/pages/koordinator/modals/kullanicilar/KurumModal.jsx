@@ -1,8 +1,8 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useEffect, useState } from "react";
-import api from "../../../lib/axios";
+import api from "../../../../lib/axios";
 
-const KurumModal = ({ kullanici, kurumlar, modal,setModal }) => {
+const KurumModal = ({ kullanici, kurumlar, modal, setModal }) => {
   if (!kurumlar) return null;
 
   const queryClient = useQueryClient();
@@ -84,7 +84,9 @@ const KurumModal = ({ kullanici, kurumlar, modal,setModal }) => {
 
         <div className="modal-action">
           <form method="dialog">
-            <button className="btn" onClick={() => setModal(null)}>İptal</button>
+            <button className="btn" onClick={() => setModal(null)}>
+              İptal
+            </button>
           </form>
           <button className="btn btn-primary" onClick={handleKurumKaydet}>
             Kaydet

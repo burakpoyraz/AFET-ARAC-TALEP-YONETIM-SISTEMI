@@ -1,8 +1,8 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import React, { useEffect } from "react";
-import api from "../../../lib/axios";
+import api from "../../../../lib/axios";
 
-const RolAtamaModal = ({ kullanici, modal,setModal }) => {
+const RolAtamaModal = ({ kullanici, modal, setModal }) => {
   const [yeniRol, setYeniRol] = React.useState("");
   const queryClient = useQueryClient();
 

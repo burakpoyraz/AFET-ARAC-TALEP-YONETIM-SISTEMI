@@ -3,11 +3,11 @@ import React from "react";
 import api from "../../lib/axios";
 import { useState } from "react";
 import { useMutation } from "@tanstack/react-query";
-import RolAtamaModal from "../../components/modals/kullanici/RolAtamaModal";
-import KurumModal from "../../components/modals/kullanici/KurumModal";
+import RolAtamaModal from "./modals/kullanicilar/RolAtamaModal";
+import KurumModal from "./modals/kullanicilar/KurumModal";
 import { set } from "mongoose";
-import SilOnayModal from "../../components/modals/kullanici/SilOnayModal";
-import DetayModal from "../../components/modals/kullanici/DetayModal";
+import SilOnayModal from "./modals/kullanicilar/SilOnayModal";
+import DetayModal from "./modals/kullanicilar/DetayModal";
 
 const Kullanicilar = () => {
   const [seciliKullanici, setSeciliKullanici] = useState(null);
@@ -180,16 +180,28 @@ const Kullanicilar = () => {
         </table>
       </div>
 
-      <DetayModal kullanici={seciliKullanici} modal={acikModal} setModal={setAcikModal}/>
+      <DetayModal
+        kullanici={seciliKullanici}
+        modal={acikModal}
+        setModal={setAcikModal}
+      />
 
-      <RolAtamaModal kullanici={seciliKullanici} modal={acikModal} setModal={setAcikModal} />
+      <RolAtamaModal
+        kullanici={seciliKullanici}
+        modal={acikModal}
+        setModal={setAcikModal}
+      />
       <KurumModal
         kullanici={seciliKullanici}
         kurumlar={kurumlar}
         modal={acikModal}
         setModal={setAcikModal}
       />
-      <SilOnayModal kullanici={seciliKullanici} modal={acikModal} setModal={setAcikModal} />
+      <SilOnayModal
+        kullanici={seciliKullanici}
+        modal={acikModal}
+        setModal={setAcikModal}
+      />
     </div>
   );
 };

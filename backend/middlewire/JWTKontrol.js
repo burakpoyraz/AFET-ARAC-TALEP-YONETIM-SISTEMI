@@ -12,7 +12,7 @@ export const JWTKontrol = async (req, res, next) => {
         const decoded = jwt.verify(token, process.env.JWT_SECRET);
 
         
-        const kullanici = await Kullanici.findById(decoded.userId).select("-sifre");
+        const kullanici = await Kullanici.findById(decoded.userId).select("-sifre").populate("kurumFirmaId", "kurumAdi")
 
      
 

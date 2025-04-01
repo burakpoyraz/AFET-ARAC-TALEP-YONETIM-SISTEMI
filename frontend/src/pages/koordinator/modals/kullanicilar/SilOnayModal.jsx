@@ -1,8 +1,8 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import React, { useEffect } from "react";
-import api from "../../../lib/axios";
+import api from "../../../../lib/axios";
 
-const SilOnayModal = ({ kullanici, modal,setModal }) => {
+const SilOnayModal = ({ kullanici, modal, setModal }) => {
   const queryClient = useQueryClient();
 
   const { mutate: kullaniciSil } = useMutation({
@@ -36,11 +36,13 @@ const SilOnayModal = ({ kullanici, modal,setModal }) => {
         </p>
         <div className="modal-action">
           <form method="dialog">
-            <button className="btn mr-2" onClick={(e) => {
-              e.preventDefault();
-              setModal(null);
-              
-            }}>
+            <button
+              className="btn mr-2"
+              onClick={(e) => {
+                e.preventDefault();
+                setModal(null);
+              }}
+            >
               İptal
             </button>
           </form>

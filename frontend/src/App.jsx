@@ -10,8 +10,10 @@ import Panel from "./pages/panel/Panel";
 import api from "./lib/axios";
 import { use, useEffect, useState } from "react";
 import AppLayout from "./components/layout/AppLayout";
-import Kullanicilar from "./pages/kullanicilar/Kullanicilar";
-import Kurumlar from "./pages/kurumlar/Kurumlar";
+import Kullanicilar from "./pages/koordinator/Kullanicilar";
+import Kurumlar from "./pages/koordinator/Kurumlar";
+import Araclar from "./pages/koordinator/Araclar";
+import Araclarim from "./pages/arac_sahibi/Araclarim";
 
 function App() {
   const [yetkisiz, setYetkisiz] = useState(false);
@@ -69,8 +71,17 @@ function App() {
     }
   >
     <Route index element={<Panel />} />
+    {/* KOORDİNATOR */}
     <Route path="/kullanicilar" element={<Kullanicilar />} />
     <Route path="/kurumlar" element={<Kurumlar />} />
+    <Route path="/araclar" element={<Araclar/>} />
+
+
+
+    {/* ARAÇ SAHİBİ*/}
+    <Route path="/araclarim" element={<Araclarim />} />
+
+
   </Route>
 </Routes>
       <Toaster />
