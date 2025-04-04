@@ -58,14 +58,29 @@ export const talepEkle = async (req, res) => {
   }
 };
 
-export const talepleriGetir = async (req, res) => {
+export const tumTalepleriGetir = async (req, res) => {
   try {
     const talepler = await Talep.find()
       .populate("talepEdenKullaniciId", "ad soyad")
-      .populate(
-        "talepEdenKurumFirmaId",
-        "kurumAdi"
-      );
+      .populate("talepEdenKurumFirmaId", "kurumAdi");
+
+    if (!talepler) {
+      return res.status(404).json({ error: "Kayıtlı talep bulunamadı" });
+    }
+
+    res.status(200).json(talepler);
+  } catch (error) {
+    return res.status(500).json({ error: "Sunucu hatası" });
+  }
+};
+
+export const kurumaAitTalepleriGetir = async (req, res) => {
+  const kurumFirmaId = req.kullanici.kurumFirmaId;
+
+  try {
+    const talepler = await Talep.find({
+      talepEdenKurumFirmaId: kurumFirmaId,
+    }).populate("talepEdenKullaniciId", "ad soyad");
 
     if (!talepler) {
       return res.status(404).json({ error: "Kayıtlı talep bulunamadı" });

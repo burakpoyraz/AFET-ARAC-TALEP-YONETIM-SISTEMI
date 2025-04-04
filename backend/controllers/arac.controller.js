@@ -29,11 +29,11 @@ export const aracEkle = async (req, res) => {
     let yeniKonum = null;
 
     if (konum) {
-      const { lat, lng } = konum;
-      if (lat === undefined || lng === undefined) {
+      const { lat, lng,adres } = konum;
+      if (lat === undefined || lng === undefined || !adres) {
         return res.status(400).json({ error: "Konum bilgisi eksik" });
       }
-      yeniKonum = { lat, lng };
+      yeniKonum = { lat, lng,adres };
     }
 
     const aracVarMi = await Arac.findOne({ plaka });
@@ -175,11 +175,11 @@ export const aracGuncelle = async (req, res) => {
     
 
     if (konum) {
-      const { lat, lng } = konum;
-      if (lat === undefined || lng === undefined) {
+      const { lat, lng,adres } = konum;
+      if (lat === undefined || lng === undefined || !adres) {
         return res.status(400).json({ error: "Konum bilgisi eksik" });
       }
-      guncellenecekArac.konum = { lat, lng };
+      guncellenecekArac.konum = { lat, lng, adres };
     }
 
     const arac = await Arac.findOneAndUpdate({ plaka }, guncellenecekArac, {

@@ -44,6 +44,11 @@ const AracSchema = mongoose.Schema(
       default: "aktif",
     },
     konum: {
+      adres: {
+        type: String,
+        
+      },
+      
       lat: {
         type: Number,
        

@@ -44,7 +44,6 @@ const Sidebar = () => {
         {kullanici.rol === "talep_eden" && (
           <>
             <h2 className="text-sm text-gray-500 uppercase">Talep Yönetimi</h2>
-            <Link to="/talep-olustur" className="link link-hover">➕ Talep Oluştur</Link>
             <Link to="/taleplerim" className="link link-hover">📥 Taleplerim</Link>
             <Link to="/gorev-takip" className="link link-hover">📍 Görev Takibi</Link>
           </>

@@ -1,6 +1,6 @@
 import reactLogo from "./assets/react.svg";
 import viteLogo from "/vite.svg";
-import { Navigate, Route, Routes, useNavigate } from "react-router-dom";
+import { Navigate, Route, Routes, useLocation, useNavigate } from "react-router-dom";
 import GirisYap from "./pages/auth/GirisYap";
 import KayıtOl from "./pages/auth/KayıtOl";
 import { Toaster } from "react-hot-toast";
@@ -14,6 +14,8 @@ import Kullanicilar from "./pages/koordinator/Kullanicilar";
 import Kurumlar from "./pages/koordinator/Kurumlar";
 import Araclar from "./pages/koordinator/Araclar";
 import Araclarim from "./pages/arac_sahibi/Araclarim";
+import Taleplerim from "./pages/talep_eden/Taleplerim";
+
 
 function App() {
   const [yetkisiz, setYetkisiz] = useState(false);
@@ -38,11 +40,16 @@ function App() {
       }
     },
   });
-  useEffect(() => {
-    if (yetkisiz) {
-      navigate("/girisyap");
-    }
-  }, [yetkisiz, navigate]);
+  
+
+const location = useLocation();
+
+useEffect(() => {
+  const publicPaths = ["/girisyap", "/kayitol"];
+  if (yetkisiz && !publicPaths.includes(location.pathname)) {
+    navigate("/girisyap");
+  }
+}, [yetkisiz, navigate, location.pathname]);
 
   if (isLoading) {
     return (
@@ -80,6 +87,9 @@ function App() {
 
     {/* ARAÇ SAHİBİ*/}
     <Route path="/araclarim" element={<Araclarim />} />
+
+    {/* TALEP EDEN */}
+    <Route path="/taleplerim" element={<Taleplerim />} />
 
 
   </Route>

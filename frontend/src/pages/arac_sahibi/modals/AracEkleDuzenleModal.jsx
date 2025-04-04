@@ -2,7 +2,7 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 import React, { useEffect, useState } from "react";
 import api from "../../../lib/axios";
 import toast from "react-hot-toast";
-import AracKonumSecici from "../../../components/maps/AracKonumSecici"; // Harita bileşenini ekledik
+import HaritaKonumSecici from "../../../components/maps/HaritaKonumSecici";
 
 const AracEkleDuzenleModal = ({ modal, setModal, duzenlenecekArac }) => {
   const queryClient = useQueryClient();
@@ -37,15 +37,16 @@ const AracEkleDuzenleModal = ({ modal, setModal, duzenlenecekArac }) => {
           aracTuru: duzenlenecekArac.aracTuru,
           kullanimAmaci: duzenlenecekArac.kullanimAmaci,
           kapasite: duzenlenecekArac.kapasite,
+        
           aracDurumu: duzenlenecekArac.aracDurumu,
           musaitlikDurumu: duzenlenecekArac.musaitlikDurumu,
         });
 
-        if (duzenlenecekArac.konum) {
-          setKonum(duzenlenecekArac.konum);
-        } else {
-          setKonum(null);
-        }
+        setKonum({
+          adres: duzenlenecekArac.konum.adres,
+          lat: duzenlenecekArac.konum.lat,
+          lng: duzenlenecekArac.konum.lng,
+        });
       } else {
         setFormData({
           plaka: "",
@@ -67,6 +68,20 @@ const AracEkleDuzenleModal = ({ modal, setModal, duzenlenecekArac }) => {
     }
   }, [modal]);
 
+  useEffect(() => {
+    if (konum?.adres) {
+      setFormData((prev) => ({
+        ...prev,
+        konum: {
+          lat: konum.lat,
+          lng: konum.lng,
+          adres: konum.adres,
+        },
+        adres: konum.adres, // input'u da güncellemek için
+      }));
+    }
+  }, [konum]);
+
   const handleInputChange = (e) => {
     const { name, value } = e.target;
     setFormData((prev) => ({ ...prev, [name]: value }));
@@ -82,7 +97,7 @@ const AracEkleDuzenleModal = ({ modal, setModal, duzenlenecekArac }) => {
           kapasite: Number(data.kapasite),
           aracDurumu: data.aracDurumu,
           musaitlikDurumu: data.musaitlikDurumu,
-          konum: konum ? { lat: konum.lat, lng: konum.lng } : undefined,
+          konum: data.konum,
         };
 
         if (duzenlenecekArac) {
@@ -97,6 +112,7 @@ const AracEkleDuzenleModal = ({ modal, setModal, duzenlenecekArac }) => {
         }
       } catch (error) {
         console.error("Araç ekleme/düzenleme hatası:", error.message);
+        console.error("Hata detayları:", error.response?.data);
 
         throw error;
       }
@@ -113,11 +129,14 @@ const AracEkleDuzenleModal = ({ modal, setModal, duzenlenecekArac }) => {
   });
 
   const handleSubmit = () => {
-    if (!konum || konum.lat === undefined || konum.lng === undefined) {
+    if (!konum || konum.lat === undefined || konum.lng === undefined || !formData.adres) {
       toast.error("Lütfen harita üzerinden bir konum seçin.");
       return;
     }
+
+    console.log("Gönderilen veri:", formData);
     aracEkleDuzenle(formData);
+  
   };
 
   return (
@@ -197,6 +216,10 @@ const AracEkleDuzenleModal = ({ modal, setModal, duzenlenecekArac }) => {
               value={formData.kapasite}
               onChange={handleInputChange}
             />
+
+<label className="label"><span className="label-text font-semibold">Adres</span></label>
+<input name="adres" className="input input-bordered w-full mb-2" value={formData.adres || ""} onChange={handleInputChange} />
+
             <label className="label">
               <span className="label-text font-semibold">Araç Durumu</span>
             </label>
@@ -224,8 +247,9 @@ const AracEkleDuzenleModal = ({ modal, setModal, duzenlenecekArac }) => {
           </div>
 
           {/* 🗺️ Sağ taraf: Harita */}
-          <div>
-            <AracKonumSecici konum={konum} setKonum={setKonum} />
+          <div className="mb-4">
+                <p className="text-sm text-gray-600 mb-2">Harita üzerinden araç konumunu belirleyin:</p>
+            <HaritaKonumSecici konum={konum} setKonum={setKonum} />
       
           </div>
         </div>

@@ -2,6 +2,7 @@ import { useQuery } from "@tanstack/react-query";
 import React, { useState } from "react";
 import api from "../../lib/axios";
 import AracEkleDuzenleModal from "./modals/AracEkleDuzenleModal";
+import AracSilOnayModal from "./modals/AracSilOnayModal";
 
 const Araclarim = () => {
     const [acikModal, setAcikModal] = useState(null);
@@ -122,6 +123,7 @@ const Araclarim = () => {
         )}
 
         <AracEkleDuzenleModal modal={acikModal} setModal={setAcikModal} duzenlenecekArac={seciliArac} />
+        <AracSilOnayModal modal={acikModal} setModal={setAcikModal} arac={seciliArac} />
   
       
       </div>
