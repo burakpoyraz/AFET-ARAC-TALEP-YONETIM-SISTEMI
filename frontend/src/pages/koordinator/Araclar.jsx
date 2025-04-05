@@ -1,7 +1,7 @@
 import { useQuery } from "@tanstack/react-query";
 import React, { useState } from "react";
 import api from "../../lib/axios";
-
+import AracDetay from "./modals/araclar/AracDetay";
 
 const Araclar = () => {
   const [acikModal, setAcikModal] = useState(null);
@@ -13,22 +13,26 @@ const Araclar = () => {
     queryFn: async () => {
       const res = await api.get("/araclar");
 
-    
       return res.data.araclar;
     },
   });
 
- console.log(araclar);
+  console.log(araclar);
   const filtrelenmisAraclar = araclar.filter((arac) => {
     const plaka = arac.plaka.toLowerCase();
-    const soforAd = arac.sofor?.ad?.toLowerCase() || "";
-    const soforSoyad = arac.sofor?.soyad?.toLowerCase() || "";
+    const tur= arac.aracTuru.toLowerCase();
+    const adres= arac.konum?.adres.toLowerCase() || "";
+    const kurumAdi = arac.kurumFirmaId?.kurumAdi?.toLowerCase() || "";
+    const kullaniciAdSoyad = `${arac.kullaniciId?.ad || ""} ${arac.kullaniciId?.soyad || ""}`.toLowerCase();
+
     const searchTerm = arama.toLowerCase();
 
     return (
       plaka.includes(searchTerm) ||
-      soforAd.includes(searchTerm) ||
-      soforSoyad.includes(searchTerm)
+      tur.includes(searchTerm) ||
+      adres.includes(searchTerm) ||
+      kurumAdi.includes(searchTerm) ||
+      kullaniciAdSoyad.includes(searchTerm)
     );
   });
 
@@ -43,15 +47,6 @@ const Araclar = () => {
           value={arama}
           onChange={(e) => setArama(e.target.value)}
         />
-        <button
-          className="btn btn-primary flex-shrink-0"
-          onClick={() => {
-            setSeciliArac(null);
-            setAcikModal("aracEkleDuzenle");
-          }}
-        >
-          ➕ Yeni Araç Ekle
-        </button>
       </div>
 
       {isLoading ? (
@@ -66,8 +61,9 @@ const Araclar = () => {
                 <th>Tür</th>
                 <th>Kapasite</th>
                 <th>Kullanım Amacı</th>
-                <th>Şoför</th>
                 <th>Durum</th>
+                <th>Müsaitlik</th>
+                <th>Sahiplik</th>
                 <th>İşlemler</th>
               </tr>
             </thead>
@@ -79,8 +75,38 @@ const Araclar = () => {
                   <td>{arac.aracTuru}</td>
                   <td>{arac.kapasite}</td>
                   <td>{arac.kullanimAmaci}</td>
-                  <td>{arac.sofor?.ad} {arac.sofor?.soyad}</td>
-                  <td>{arac.aracDurumu}</td>
+                  <td>
+                    {arac.aracDurumu === "aktif" ? (
+                      <span className="badge badge-success">Aktif</span>
+                    ) : (
+                      <span className="badge badge-error">Pasif</span>
+                    )}
+                  </td>
+
+                  <td>
+                    {arac.musaitlikDurumu ? (
+                      <span className="badge badge-success">Müsait</span>
+                    ) : (
+                      <span className="badge badge-error">Müsait Değil</span>
+                    )}
+                  </td>
+
+                  <td>
+                    {" "}
+                    {arac.kurumFirmaId ? (
+                      <span className="badge badge-info">
+                        {arac.kurumFirmaId.kurumAdi}
+                      </span>
+                    ) : arac.kullaniciId ? (
+                      <span className="badge badge-warning">
+                        {arac.kullaniciId.ad} {arac.kullaniciId.soyad}
+                      </span>
+                    ) : (
+                      <span className="badge badge-error">Tanımsız</span>
+                    )}
+                    
+                  </td>
+
                   <td>
                     <div className="dropdown dropdown-end">
                       <button tabIndex={0} className="btn btn-xs btn-outline">
@@ -94,10 +120,10 @@ const Araclar = () => {
                           <button
                             onClick={() => {
                               setSeciliArac(arac);
-                              setAcikModal("aracEkleDuzenle");
+                              setAcikModal("aracDetay");
                             }}
                           >
-                            Düzenle
+                            Detay
                           </button>
                         </li>
                         <li>
@@ -120,7 +146,7 @@ const Araclar = () => {
         </div>
       )}
 
-    
+      <AracDetay arac={seciliArac} modal={acikModal} setModal={setAcikModal} />
     </div>
   );
 };

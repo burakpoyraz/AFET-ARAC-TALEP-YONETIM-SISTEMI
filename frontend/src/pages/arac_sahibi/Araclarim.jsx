@@ -68,7 +68,7 @@ const Araclarim = () => {
                   <th>Kapasite</th>
                   <th>Kullanım Amacı</th>
                   <th>Durum</th>
-                  <th>Kurum / Firma</th>
+                  <th>Müsaitlik</th>
                   <th>İşlemler</th>
                  
                 </tr>
@@ -81,8 +81,21 @@ const Araclarim = () => {
                     <td>{arac.aracTuru}</td>
                     <td>{arac.kapasite}</td>
                     <td>{arac.kullanimAmaci}</td>
-                    <td>{arac.aracDurumu}</td>
-                    <td>{arac.kurumFirmaId?.kurumAdi}</td>
+                    <td>
+                    {arac.aracDurumu === "aktif" ? (
+                      <span className="badge badge-success">Aktif</span>
+                    ) : (
+                      <span className="badge badge-error">Pasif</span>
+                    )}
+                  </td>
+
+                  <td>
+                    {arac.musaitlikDurumu ? (
+                      <span className="badge badge-success">Müsait</span>
+                    ) : (
+                      <span className="badge badge-error">Müsait Değil</span>
+                    )}
+                  </td>
                     <td>
                       <div className="dropdown dropdown-end">
                         <button tabIndex={0} className="btn btn-xs btn-outline">
