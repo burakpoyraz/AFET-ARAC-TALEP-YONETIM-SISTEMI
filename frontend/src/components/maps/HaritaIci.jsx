@@ -52,7 +52,7 @@ const HaritaIci = ({ konum, setKonum, readonly,height}) => {
       style={containerStyle}
       defaultCenter={konum || defaultCenter}
       defaultZoom={konum ? 15 : 10}
-      gestureHandling={readonly ? "none" : "greedy"}
+      gestureHandling="greedy"
       disableDefaultUI={readonly}
       zoomControl={!readonly}
       streetViewControl={false}

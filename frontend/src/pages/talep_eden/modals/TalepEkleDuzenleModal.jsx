@@ -138,13 +138,6 @@ const TalepEkleDuzenleModal = ({ modal, setModal, duzenlenecekTalep }) => {
             <label className="label"><span className="label-text">Adres</span></label>
             <input name="adres" className="input input-bordered w-full mb-2" value={formData.adres} onChange={handleInputChange} />
             
-            
-            <label className="label"><span className="label-text">Durum</span></label>
-            <select name="durum" className="select select-bordered w-full mb-2" value={formData.durum} onChange={handleInputChange}>
-              {["beklemede", "onaylandı","reddedildi", "görevlendirme yapıldı", "iptal edildi"].map((tur) => (
-                <option key={tur} value={tur}>{tur}</option>
-              ))}
-            </select>
           </div>
 
           

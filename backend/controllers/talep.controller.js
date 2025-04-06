@@ -61,8 +61,8 @@ export const talepEkle = async (req, res) => {
 export const tumTalepleriGetir = async (req, res) => {
   try {
     const talepler = await Talep.find()
-      .populate("talepEdenKullaniciId", "ad soyad")
-      .populate("talepEdenKurumFirmaId", "kurumAdi");
+      .populate("talepEdenKullaniciId", "ad soyad telefon")
+      .populate("talepEdenKurumFirmaId", "kurumAdi iletisim.telefon");
 
     if (!talepler) {
       return res.status(404).json({ error: "Kayıtlı talep bulunamadı" });
