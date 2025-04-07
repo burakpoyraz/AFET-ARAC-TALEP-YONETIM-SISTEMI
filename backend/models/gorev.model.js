@@ -7,11 +7,13 @@ const GorevSchema = mongoose.Schema(
       ref: "Talep", // talepler koleksiyonuna referans
       required: true,
     },
-    aracId: {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: "Arac", // araclar koleksiyonuna referans
-      required: true,
-    },
+    gorevlendirilenAraclar: [
+      {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "Arac", // araclar koleksiyonuna referans
+        required: true,
+      },
+    ],
 
     koordinatorId: {
       type: mongoose.Schema.Types.ObjectId,

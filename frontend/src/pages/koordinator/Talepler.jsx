@@ -193,6 +193,7 @@ const Talepler = () => {
         talep={seciliTalep}
         araclar={tumAraclar}
       />
+      
     </div>
   );
 };

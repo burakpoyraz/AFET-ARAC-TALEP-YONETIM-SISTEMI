@@ -3,7 +3,7 @@ import React, { useEffect } from "react";
 import api from "../../../../lib/axios";
 
 const TalepIptalModal = ({ talep, modal, setModal }) => {
-  console.log("object");
+
 
   const queryClient = useQueryClient();
   const { mutate: talepIptal } = useMutation({
