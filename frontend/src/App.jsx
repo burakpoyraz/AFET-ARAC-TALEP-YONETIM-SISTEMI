@@ -27,18 +27,15 @@ function App() {
   const {
     data: girisYapanKullanici,
     isLoading,
-    error,
   } = useQuery({
     queryKey: ["girisYapanKullanici"],
     queryFn: async () => {
-      try {
-        const res = await api.get("/auth/hesabim");
-        return res.data.kullanici;
-      } catch (err) {
-        queryClient.setQueryData(["girisYapanKullanici"], null);
-        setYetkisiz(true);
-        throw err;
-      }
+      const res = await api.get("/auth/hesabim");
+      return res.data.kullanici;
+    },
+    onError: () => {
+      queryClient.setQueryData(["girisYapanKullanici"], null);
+      setYetkisiz(true);
     },
   });
   

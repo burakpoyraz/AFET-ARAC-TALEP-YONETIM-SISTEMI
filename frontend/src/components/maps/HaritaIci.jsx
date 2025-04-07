@@ -3,7 +3,7 @@ import { Map, Marker, useMap } from "@vis.gl/react-google-maps";
 
 
 
-const HaritaIci = ({ konum, setKonum, readonly,height}) => {
+const HaritaIci = ({ konum, setKonum, readonly,height,icon}) => {
 
     const containerStyle = {
         width: "100%",
@@ -29,6 +29,7 @@ const HaritaIci = ({ konum, setKonum, readonly,height}) => {
     // Haritaya tıklanırsa konum bilgilerini al
     const lat = event.detail.latLng.lat;
     const lng = event.detail.latLng.lng;
+
 
     try {
       const response = await fetch(
@@ -60,7 +61,14 @@ const HaritaIci = ({ konum, setKonum, readonly,height}) => {
       fullscreenControl={false}
       onClick={readonly ? undefined : handleMapClick}
     >
-      {konum && <Marker position={{ lat: konum.lat, lng: konum.lng }} />}
+      {konum && <Marker position={{ lat: konum.lat, lng: konum.lng }}  
+      
+      icon={{
+        url : icon,
+        scaledSize:  { width: 40, height: 40 },
+      }}
+
+      />}
     </Map>
   );
 };

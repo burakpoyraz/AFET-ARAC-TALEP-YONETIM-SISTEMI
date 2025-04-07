@@ -2,14 +2,17 @@ import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import api from "../../lib/axios";
 
-
-import React from 'react'
+import React from "react";
 import TalepDetayModal from "./modals/talepler/TalepDetayModal";
+import TalepIptalModal from "./modals/talepler/TalepIptalModal";
+import TalepGorevlendirModal from "./modals/talepler/TalepGorevlendirModal";
 
 const Talepler = () => {
-    const [arama, setArama] = useState("");
+  const [arama, setArama] = useState("");
   const [seciliTalep, setSeciliTalep] = useState(null);
   const [acikModal, setAcikModal] = useState(null);
+
+  const apiKey = import.meta.env.VITE_GOOGLE_MAPS_API_KEY;
 
   const { data: talepler = [], isLoading } = useQuery({
     queryKey: ["talepler"],
@@ -19,30 +22,44 @@ const Talepler = () => {
     },
   });
 
-  const filtrelenmisTalepler = talepler.filter((talep) => {
-    const baslik = talep.baslik?.toLowerCase() || "";
-    const aciklama = talep.aciklama?.toLowerCase() || "";
-    const adres = talep.lokasyon?.adres?.toLowerCase() || "";
-    const kurum = talep.talepEdenKurumFirmaId?.kurumAdi?.toLowerCase() || "";
-    const kullaniciAdSoyad = `${talep.talepEdenKullaniciId?.ad || ""} ${talep.talepEdenKullaniciId?.soyad || ""}`.toLowerCase();
+  const { data: tumAraclar = [], isLoadingTumAraclar } = useQuery({
+    queryKey: ["araclar"],
+    queryFn: async () => {
+      const res = await api.get("/araclar");
 
-    const aranan = arama.toLowerCase();
-    return (
-      baslik.includes(aranan) ||
-      aciklama.includes(aranan) ||
-      adres.includes(aranan) ||
-      kurum.includes(aranan) ||
-      kullaniciAdSoyad.includes(aranan)
-    );
-  }).sort((a, b) => {
-    const oncelik = {
-      beklemede: 0,
-      gorevlendirme_yapildi: 1,
-      tamamlandi: 2,
-      iptal_edildi: 3,
-    };
-    return (oncelik[a.durum] ?? 99) - (oncelik[b.durum] ?? 99);
+      return res.data.araclar;
+    },
   });
+
+
+  const filtrelenmisTalepler = talepler
+    .filter((talep) => {
+      const baslik = talep.baslik?.toLowerCase() || "";
+      const aciklama = talep.aciklama?.toLowerCase() || "";
+      const adres = talep.lokasyon?.adres?.toLowerCase() || "";
+      const kurum = talep.talepEdenKurumFirmaId?.kurumAdi?.toLowerCase() || "";
+      const kullaniciAdSoyad = `${talep.talepEdenKullaniciId?.ad || ""} ${
+        talep.talepEdenKullaniciId?.soyad || ""
+      }`.toLowerCase();
+
+      const aranan = arama.toLowerCase();
+      return (
+        baslik.includes(aranan) ||
+        aciklama.includes(aranan) ||
+        adres.includes(aranan) ||
+        kurum.includes(aranan) ||
+        kullaniciAdSoyad.includes(aranan)
+      );
+    })
+    .sort((a, b) => {
+      const oncelik = {
+        beklemede: 0,
+        gorevlendirme_yapildi: 1,
+        tamamlandi: 2,
+        iptal_edildi: 3,
+      };
+      return (oncelik[a.durum] ?? 99) - (oncelik[b.durum] ?? 99);
+    });
 
   return (
     <div className="p-6">
@@ -85,25 +102,29 @@ const Talepler = () => {
                   <td>{talep.aracSayisi}</td>
                   <td>{talep.lokasyon?.adres}</td>
                   <td>
-                    <span className={`badge ${
-                      talep.durum === "beklemede"
-                        ? "badge-error"
-                        : talep.durum === "tamamlandi"
-                        ? "badge-success"
-                        : talep.durum === "gorevlendirme_yapildi"
-                        ? "badge-warning"
-                        : "badge-info"
-                    }`}>
+                    <span
+                      className={`badge ${
+                        talep.durum === "beklemede"
+                          ? "badge-error"
+                          : talep.durum === "tamamlandi"
+                          ? "badge-success"
+                          : talep.durum === "gorevlendirme_yapildi"
+                          ? "badge-warning"
+                          : "badge-info"
+                      }`}
+                    >
                       {talep.durum}
                     </span>
                   </td>
                   <td>
                     {talep.talepEdenKurumFirmaId
                       ? talep.talepEdenKurumFirmaId.kurumAdi
-                      : `${talep.talepEdenKullaniciId?.ad || ""} ${talep.talepEdenKullaniciId?.soyad || ""}`}
+                      : `${talep.talepEdenKullaniciId?.ad || ""} ${
+                          talep.talepEdenKullaniciId?.soyad || ""
+                        }`}
                   </td>
                   <td>
-                  <div className="dropdown dropdown-end">
+                    <div className="dropdown dropdown-end">
                       <button tabIndex={0} className="btn btn-xs btn-outline">
                         İşlemler
                       </button>
@@ -121,14 +142,29 @@ const Talepler = () => {
                             Detay
                           </button>
                         </li>
+                        {talep.durum === "beklemede" && (
+                          <li>
+                            <button
+                              onClick={() => {
+                                setSeciliTalep(talep);
+                                setAcikModal("talepGorevlendirModal");
+                              }}
+                            >
+                              Araç Görevlendir
+                            </button>
+                          </li>
+                        )}
+
                         <li>
                           <button
                             onClick={() => {
                               setSeciliTalep(talep);
-                              setAcikModal("talepDetayModal");
+                              setAcikModal("talepIptalModal");
                             }}
                           >
-                            İptal Et
+                            {talep.durum === "iptal edildi"
+                              ? "Aktifleştir"
+                              : "İptal Et"}
                           </button>
                         </li>
                       </ul>
@@ -141,9 +177,24 @@ const Talepler = () => {
         </div>
       )}
 
-<TalepDetayModal talep={seciliTalep} modal={acikModal} setModal={setAcikModal} />
+      <TalepDetayModal
+        talep={seciliTalep}
+        modal={acikModal}
+        setModal={setAcikModal}
+      />
+      <TalepIptalModal
+        talep={seciliTalep}
+        modal={acikModal}
+        setModal={setAcikModal}
+      />
+      <TalepGorevlendirModal
+        modal={acikModal}
+        setModal={setAcikModal}
+        talep={seciliTalep}
+        araclar={tumAraclar}
+      />
     </div>
   );
-}
+};
 
-export default Talepler
+export default Talepler;

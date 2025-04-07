@@ -5,6 +5,7 @@ import api from "../../../lib/axios";
 import HaritaKonumSecici from "../../../components/maps/HaritaKonumSecici";
 
 const TalepEkleDuzenleModal = ({ modal, setModal, duzenlenecekTalep }) => {
+    const icon="/icons/hedef.png"
   const queryClient = useQueryClient();
 
   const girisYapanKullanici = queryClient.getQueryData(["girisYapanKullanici"]);
@@ -145,7 +146,7 @@ const TalepEkleDuzenleModal = ({ modal, setModal, duzenlenecekTalep }) => {
           {/* Sağ: Harita */}
           <div>
             <p className="text-sm text-gray-600 mb-2">📍 Harita üzerinden lokasyon seçin:</p>
-            <HaritaKonumSecici konum={lokasyon} setKonum={setLokasyon} />
+            <HaritaKonumSecici konum={lokasyon} setKonum={setLokasyon} icon={icon} />
           </div>
         </div>
 

@@ -6,6 +6,8 @@ import HaritaKonumSecici from "../../../components/maps/HaritaKonumSecici";
 
 const AracEkleDuzenleModal = ({ modal, setModal, duzenlenecekArac }) => {
   const queryClient = useQueryClient();
+  
+ const icon="/icons/arac.png"
 
   const [formData, setFormData] = useState({
     plaka: "",
@@ -249,7 +251,7 @@ const AracEkleDuzenleModal = ({ modal, setModal, duzenlenecekArac }) => {
           {/* 🗺️ Sağ taraf: Harita */}
           <div className="mb-4">
                 <p className="text-sm text-gray-600 mb-2">Harita üzerinden araç konumunu belirleyin:</p>
-            <HaritaKonumSecici konum={konum} setKonum={setKonum} />
+            <HaritaKonumSecici konum={konum} setKonum={setKonum} icon={icon} />
       
           </div>
         </div>

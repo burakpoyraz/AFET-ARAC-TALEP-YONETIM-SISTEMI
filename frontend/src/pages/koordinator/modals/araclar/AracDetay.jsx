@@ -3,6 +3,8 @@ import HaritaKonumSecici from "../../../../components/maps/HaritaKonumSecici";
 
 const AracDetay = ({ arac, modal, setModal }) => {
 
+    const icon="/icons/arac.png"
+
 
   useEffect(() => {
     const modalEl = document.getElementById("aracDetay");
@@ -64,7 +66,7 @@ const AracDetay = ({ arac, modal, setModal }) => {
       {/* Harita */}
       <div className="mt-6">
         <h4 className="text-md font-bold text-gray-800 mb-2 border-b pb-1">Konum</h4>
-        <HaritaKonumSecici konum={arac.konum} readonly height="230px" />
+        <HaritaKonumSecici konum={arac.konum} readonly height="230px" icon={icon} />
       </div>
 
       {/* Alt: Kapat butonu */}
