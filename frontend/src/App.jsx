@@ -1,14 +1,12 @@
-import reactLogo from "./assets/react.svg";
-import viteLogo from "/vite.svg";
+
 import { Navigate, Route, Routes, useLocation, useNavigate } from "react-router-dom";
 import GirisYap from "./pages/auth/GirisYap";
 import KayıtOl from "./pages/auth/KayıtOl";
 import { Toaster } from "react-hot-toast";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import axios from "axios";
 import Panel from "./pages/panel/Panel";
 import api from "./lib/axios";
-import { use, useEffect, useState } from "react";
+import {useEffect, useState } from "react";
 import AppLayout from "./components/layout/AppLayout";
 import Kullanicilar from "./pages/koordinator/Kullanicilar";
 import Kurumlar from "./pages/koordinator/Kurumlar";
@@ -16,6 +14,7 @@ import Araclar from "./pages/koordinator/Araclar";
 import Araclarim from "./pages/arac_sahibi/Araclarim";
 import Taleplerim from "./pages/talep_eden/Taleplerim";
 import Talepler from "./pages/koordinator/Talepler";
+import Gorevler from "./pages/koordinator/Gorevler";
 
 
 function App() {
@@ -81,6 +80,8 @@ useEffect(() => {
     <Route path="/kurumlar" element={<Kurumlar />} />
     <Route path="/araclar" element={<Araclar/>} />
     <Route path="/talepler" element={<Talepler />} />
+    <Route path="/gorevler" element={<Gorevler />} />
+
 
 
 

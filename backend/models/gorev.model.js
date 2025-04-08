@@ -4,20 +4,31 @@ const GorevSchema = mongoose.Schema(
   {
     talepId: {
       type: mongoose.Schema.Types.ObjectId,
-      ref: "Talep", // talepler koleksiyonuna referans
+      ref: "Talep",
       required: true,
     },
     gorevlendirilenAraclar: [
       {
-        type: mongoose.Schema.Types.ObjectId,
-        ref: "Arac", // araclar koleksiyonuna referans
-        required: true,
+        aracId: {
+          type: mongoose.Schema.Types.ObjectId,
+          ref: "Arac",
+          required: true,
+        },
+        sofor: {
+          ad: { type: String, required: true },
+          soyad: { type: String, required: true },
+          telefon: { type: String, required: true },
+        },
+        baslangicKonumu: {
+          lat: { type: Number, required: true },
+          lng: { type: Number, required: true },
+        },
       },
     ],
 
     koordinatorId: {
       type: mongoose.Schema.Types.ObjectId,
-      ref: "Kullanici", // kullanicilar koleksiyonuna referans
+      ref: "Kullanici",
       required: true,
     },
     gorevDurumu: {
@@ -34,17 +45,6 @@ const GorevSchema = mongoose.Schema(
     bitisZamani: {
       type: Date,
     },
-
-    sofor: {
-      ad: { type: String, required: true },
-      soyad: { type: String, required: true },
-      telefon: { type: String, required: true },
-    },
-
-    baslangicKonumu: {
-      lat: { type: Number, required: true },
-      lng: { type: Number, required: true },
-    },
     hedefKonumu: {
       lat: { type: Number, required: true },
       lng: { type: Number, required: true },
@@ -54,5 +54,4 @@ const GorevSchema = mongoose.Schema(
 );
 
 const Gorev = mongoose.model("Gorev", GorevSchema);
-
 export default Gorev;

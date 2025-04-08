@@ -25,7 +25,7 @@ const Sidebar = () => {
             <Link to="/kurumlar" className="link link-hover">🏢 Kurumlar</Link>
             <Link to="/araclar" className="link link-hover">🚐 Araçlar</Link>
             <Link to="/talepler" className="link link-hover">📥 Talepler</Link>
-            <Link to="/gorev-atama" className="link link-hover">📌 Görev Atama</Link>
+            <Link to="/gorevler" className="link link-hover">📌 Görevler</Link>
             <Link to="/raporlar" className="link link-hover">📊 Raporlar</Link>
           </>
         )}
