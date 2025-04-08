@@ -63,7 +63,7 @@ const Talepler = () => {
 
   return (
     <div className="p-6">
-      <h1 className="text-2xl font-bold mb-4">📄 Talepler</h1>
+      <h1 className="text-2xl font-bold mb-4">Talepler</h1>
       <div className="flex justify-between items-center mb-4">
         <input
           type="text"

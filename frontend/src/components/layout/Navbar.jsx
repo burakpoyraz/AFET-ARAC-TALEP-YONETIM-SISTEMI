@@ -33,7 +33,7 @@ const Navbar = () => {
   };
 
   return (
-    <div className="navbar bg-base-100 shadow-sm px-6">
+    <div className="navbar bg-base-200 shadow-sm px-6">
       {/* Sol: Logo */}
       <div className="flex-1">
         <Link to="/" className="text-2xl font-bold text-primary">

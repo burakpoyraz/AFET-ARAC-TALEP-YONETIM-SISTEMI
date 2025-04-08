@@ -52,7 +52,7 @@ const Kullanicilar = () => {
 
   return (
     <div className="p-6">
-      <h1 className="text-2xl font-bold mb-4">👥 Tüm Kullanıcılar</h1>
+      <h1 className="text-2xl font-bold mb-4">Tüm Kullanıcılar</h1>
 
       <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4 mb-4">
         <input

@@ -38,7 +38,7 @@ const Araclar = () => {
 
   return (
     <div className="p-6">
-      <h1 className="text-2xl font-bold mb-4">🚐 Araçlar</h1>
+      <h1 className="text-2xl font-bold mb-4">Araçlar</h1>
       <div className="flex items-center justify-between gap-4 mb-4">
         <input
           type="text"

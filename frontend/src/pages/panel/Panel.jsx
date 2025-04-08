@@ -20,9 +20,17 @@ const Panel = () => {
 
 
   return (
-    <>panel
-    
-    </>
+    <>
+    <div className="flex  justify-center  ">
+      <div className="bg-white p-6 rounded-lg shadow-md w-full max-w-md text-center">
+        <h2 className="text-xl font-semibold mb-2">Ana Panel Sayfası</h2>
+        <p className="text-gray-600">
+          Bu sayfa, kullanıcı rolünüze göre sistemdeki güncel durumu özetleyen istatistikleri içerecektir.
+          Ana panelde, görevler, talepler veya araçlarla ilgili genel bilgiler yer alacaktır.
+        </p>
+      </div>
+    </div>
+  </>
     
   );
 };
