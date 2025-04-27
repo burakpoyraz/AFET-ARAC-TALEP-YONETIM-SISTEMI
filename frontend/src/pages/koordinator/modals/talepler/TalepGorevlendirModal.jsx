@@ -1,6 +1,6 @@
 import React from "react";
 import { useEffect, useState } from "react";
-import { useMutation } from "@tanstack/react-query";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 import api from "../../../../lib/axios";
 import TalepAracListesiModal from "./TalepAracListesiModal";
 import toast from "react-hot-toast";
@@ -11,6 +11,8 @@ const TalepGorevlendirModal = ({ talep, araclar, modal, setModal }) => {
   const [seciliAraclar, setSeciliAraclar] = useState([]);
   const [gorevNotu, setGorevNotu] = useState("");
 
+  const queryClient = useQueryClient();
+
   const {mutate:gorevOlustur} = useMutation({
     mutationFn: (veri) => api.post("/gorevler", veri),
     onSuccess: () => {
@@ -19,6 +21,8 @@ const TalepGorevlendirModal = ({ talep, araclar, modal, setModal }) => {
       setSeciliAraclar([]);
       setModal2(null);
       toast.success("Görev başarıyla oluşturuldu.");
+
+      queryClient.invalidateQueries(["talepler"]);
     },
     onError: (err) => {
       toast.error("Görev oluşturulurken hata oluştu: " + err.response.data.message);

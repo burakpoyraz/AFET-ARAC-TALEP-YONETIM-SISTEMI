@@ -1,9 +1,13 @@
 import React, { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import api from "../../lib/axios";
+import GorevDurumGuncelleModal from "./modals/gorevler/gorevDurumGuncelleModal";
 
 const Gorevler = () => {
   const [arama, setArama] = useState("");
+  const [seciliGorev, setSeciliGorev] = useState(null);
+  const [acikModal, setAcikModal] = useState(null);
+
 
   const { data: gorevler = [], isLoading } = useQuery({
     queryKey: ["gorevler"],
@@ -112,18 +116,29 @@ const Gorevler = () => {
                         <li>
                           <button
                             onClick={() => {
-                              setSeciliArac(arac);
-                              setAcikModal("aracDetay");
+                              setSeciliGorev(gorev);
+                              setAcikModal("gorevDetay");
                             }}
                           >
                             Detay
                           </button>
                         </li>
+
                         <li>
                           <button
                             onClick={() => {
-                              setSeciliArac(arac);
-                              setAcikModal("aracSilOnayModal");
+                              setSeciliGorev(gorev);
+                              setAcikModal("gorevDurumGuncelleModal");
+                            }}
+                          >
+                            Durum Güncelle
+                          </button>
+                        </li>
+                        <li>
+                          <button
+                            onClick={() => {
+                              setSeciliGorev(gorev);
+                              setAcikModal("gorevSilOnayModal");
                             }}
                           >
                             Sil
@@ -138,6 +153,15 @@ const Gorevler = () => {
           </table>
         </div>
       )}
+
+      <GorevDurumGuncelleModal
+      
+        gorev={seciliGorev}
+        modal={acikModal}
+        setModal={setAcikModal}
+      />
+
+     
     </div>
   );
 };

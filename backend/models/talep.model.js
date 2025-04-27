@@ -60,7 +60,7 @@ const TalepSchema = mongoose.Schema({
     type: String,
     enum: [
       "beklemede",
-      "gorevlendirme yapıldı",
+      "gorevlendirildi",
       "tamamlandı",
       "iptal edildi",
     ],

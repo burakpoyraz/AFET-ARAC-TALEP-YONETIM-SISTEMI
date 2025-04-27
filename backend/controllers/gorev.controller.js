@@ -65,6 +65,10 @@ export const gorevOlustur = async (req, res) => {
     }
     await yeniGorev.save();
 
+    // talep durumunu güncelle
+    talep.durum = "gorevlendirildi";
+    await talep.save();
+
 
     return res.status(201).json({
       message: "Görev başarıyla oluşturuldu",
@@ -99,6 +103,30 @@ export const tumGorevleriGetir = async (req, res) => {
     res.status(200).json(gorevler);
   } catch (error) {
     console.log("Görevleri getirirken hata:", error.message);
+    return res.status(500).json({ error: error.message });
+  }
+};
+
+
+export const gorevDurumGuncelle = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { gorevDurumu } = req.body;
+
+    const guncellenenGorev = await Gorev.findById(id);
+    if (!guncellenenGorev) {
+      return res.status(404).json({ message: "Görev bulunamadı" });
+    }
+    guncellenenGorev.gorevDurumu = gorevDurumu;
+    await guncellenenGorev.save();
+
+    res.status(200).json({
+      message: "Görev durumu başarıyla güncellendi",
+      gorev: guncellenenGorev,
+    });
+  }
+  catch (error) {
+    console.log("Görev durumu güncellenirken hata:", error.message);
     return res.status(500).json({ error: error.message });
   }
 };

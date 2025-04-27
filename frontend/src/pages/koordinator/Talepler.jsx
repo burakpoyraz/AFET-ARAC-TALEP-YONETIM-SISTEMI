@@ -22,12 +22,11 @@ const Talepler = () => {
     },
   });
 
-  const { data: tumAraclar = [], isLoadingTumAraclar } = useQuery({
-    queryKey: ["araclar"],
+  const { data: musaitAraclar = [], isLoadingMusaitAraclar } = useQuery({
+    queryKey: ["musaitAraclar"],
     queryFn: async () => {
-      const res = await api.get("/araclar");
-
-      return res.data.araclar;
+      const res = await api.get("/araclar/musaitaraclar", );
+      return res.data.musaitAraclar;
     },
   });
 
@@ -108,7 +107,7 @@ const Talepler = () => {
                           ? "badge-error"
                           : talep.durum === "tamamlandi"
                           ? "badge-success"
-                          : talep.durum === "gorevlendirme_yapildi"
+                          : talep.durum === "gorevlendirildi"
                           ? "badge-warning"
                           : "badge-info"
                       }`}
@@ -191,7 +190,7 @@ const Talepler = () => {
         modal={acikModal}
         setModal={setAcikModal}
         talep={seciliTalep}
-        araclar={tumAraclar}
+        araclar={musaitAraclar}
       />
       
     </div>
