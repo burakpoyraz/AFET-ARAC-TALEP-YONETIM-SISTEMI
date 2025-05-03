@@ -2,6 +2,8 @@ import React, { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import api from "../../lib/axios";
 import GorevDurumGuncelleModal from "./modals/gorevler/gorevDurumGuncelleModal";
+import GorevDetayModal from "./modals/gorevler/GorevDetayModal";
+import HaritadaGorModal from "./modals/gorevler/HaritadaGorModal";
 
 const Gorevler = () => {
   const [arama, setArama] = useState("");
@@ -57,8 +59,8 @@ const Gorevler = () => {
                 <th>Talep Başlığı</th>
                 <th>Talep Eden Kurum</th>
                 <th>Görevlendirilen Plaka</th>
-                <th>Şoför</th>
-                <th>Hedef</th>
+               
+                <th>Konumlar</th>
                 <th>Durum</th>
                 <th>Not</th>
               </tr>
@@ -77,18 +79,26 @@ const Gorevler = () => {
                    
                     ))}
                   </td>
-                  <td>
-                    {gorev.gorevlendirilenAraclar.map((g) => (
-                      <div key={g._id}>
-                        {g.sofor.ad} {g.sofor.soyad}
-                      </div>
-                    ))}
-                  </td>
-                  <td title={gorev.talepId?.lokasyon?.adres}>
-                    {gorev.talepId?.lokasyon?.adres?.length > 40
-                      ? `${gorev.talepId.lokasyon.adres.slice(0, 40)}...`
-                      : gorev.talepId?.lokasyon?.adres}
-                  </td>
+                  
+                  <td className="whitespace-nowrap">
+  <div className="flex flex-col">
+    <span
+      title={gorev.talepId?.lokasyon?.adres}
+      className="truncate max-w-[180px]"
+    >
+      {gorev.talepId?.lokasyon?.adres || "-"}
+    </span>
+    <button
+      className="btn btn-xs btn-outline btn-info mt-1"
+      onClick={() => {
+        setSeciliGorev(gorev);
+        setAcikModal("haritadaGorModal");
+      }}
+    >
+      Haritada Gör
+    </button>
+  </div>
+</td>
                   <td>
                     <span
                       className={`badge badge-${
@@ -117,10 +127,10 @@ const Gorevler = () => {
                           <button
                             onClick={() => {
                               setSeciliGorev(gorev);
-                              setAcikModal("gorevDetay");
+                              setAcikModal("gorevDetayModal");
                             }}
                           >
-                            Detay
+                            Görev Detayı
                           </button>
                         </li>
 
@@ -156,6 +166,17 @@ const Gorevler = () => {
 
       <GorevDurumGuncelleModal
       
+        gorev={seciliGorev}
+        modal={acikModal}
+        setModal={setAcikModal}
+      />
+      <GorevDetayModal
+        gorev={seciliGorev}
+        modal={acikModal}
+        setModal={setAcikModal}
+      />
+
+      <HaritadaGorModal
         gorev={seciliGorev}
         modal={acikModal}
         setModal={setAcikModal}

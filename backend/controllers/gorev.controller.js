@@ -1,7 +1,9 @@
 import Arac from "../models/arac.model.js";
 import Talep from "../models/talep.model.js";
 import Gorev from "../models/gorev.model.js";
-import { populate } from "dotenv";
+import axios from "axios";
+
+
 
 export const gorevOlustur = async (req, res) => {
   try {
@@ -15,13 +17,16 @@ export const gorevOlustur = async (req, res) => {
       bitisZamani,
     } = req.body;
 
-
     for (let arac of gorevlendirilenAraclar) {
-
-      if (!arac.sofor|| !arac.sofor.ad || !arac.sofor.soyad || !arac.sofor.telefon) {
+      if (
+        !arac.sofor ||
+        !arac.sofor.ad ||
+        !arac.sofor.soyad ||
+        !arac.sofor.telefon
+      ) {
         return res.status(400).json({ message: "Sofor bilgileri eksik" });
       }
-    
+
       if (!arac.aracId) {
         return res.status(400).json({ message: "Araç ID eksik" });
       }
@@ -34,16 +39,17 @@ export const gorevOlustur = async (req, res) => {
         .json({ message: "Talep bulunamadı veya talep durumu uygun değil" });
     }
 
- 
-    const secilenAracIdler= gorevlendirilenAraclar.map((arac) => arac.aracId);
+    const secilenAracIdler = gorevlendirilenAraclar.map((arac) => arac.aracId);
     const bulunanAraclar = await Arac.find({
       _id: { $in: secilenAracIdler },
-      musaitlikDurumu:true,
+      musaitlikDurumu: true,
       aracDurumu: "aktif",
     });
 
     if (bulunanAraclar.length !== secilenAracIdler.length) {
-      return res.status(404).json({ message: "Bazı araçlar uygun değil veya bulunamadı" });
+      return res
+        .status(404)
+        .json({ message: "Bazı araçlar uygun değil veya bulunamadı" });
     }
 
     const yeniGorev = new Gorev({
@@ -69,32 +75,55 @@ export const gorevOlustur = async (req, res) => {
     talep.durum = "gorevlendirildi";
     await talep.save();
 
-
     return res.status(201).json({
       message: "Görev başarıyla oluşturuldu",
       gorev: yeniGorev,
     });
-
   } catch (error) {
     console.log("Gorev oluşturulurken hata:", error.message);
     return res.status(500).json({ error: error.message });
   }
 };
 
+export const gorevDetayGetir = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const gorev = await Gorev.findById(id)
+      .populate({
+        path: "talepId",
+        populate: {
+          path: "talepEdenKurumFirmaId",
+          select: "kurumAdi iletisim.telefon iletisim.adres",
+        },
+      })
+      .populate("koordinatorId", "ad soyad telefon")
+      .populate("gorevlendirilenAraclar.aracId", "plaka aracTuru marka model");
+
+    if (!gorev) {
+      return res.status(404).json({ message: "Görev bulunamadı" });
+    }
+
+    res.status(200).json(gorev);
+  } catch (error) {
+    console.log("Görev detayını getirirken hata:", error.message);
+    return res.status(500).json({ error: error.message });
+  }
+};
 
 export const tumGorevleriGetir = async (req, res) => {
   try {
     const gorevler = await Gorev.find()
       .populate({
         path: "talepId",
-        select: "baslik aracTuru aracSayisi lokasyon durum talepEdenKurumFirmaId",
-        populate:{
+        select:
+          "baslik aracTuru aracSayisi lokasyon durum talepEdenKurumFirmaId",
+        populate: {
           path: "talepEdenKurumFirmaId",
           select: "kurumAdi iletisim.telefon iletisim.adres",
-        }
+        },
       })
       .populate("koordinatorId", "ad soyad telefon")
-      .populate("gorevlendirilenAraclar.aracId", "plaka aracTuru marka model");
+      .populate("gorevlendirilenAraclar.aracId");
 
     if (!gorevler) {
       return res.status(404).json({ message: "Görev bulunamadı" });
@@ -106,7 +135,6 @@ export const tumGorevleriGetir = async (req, res) => {
     return res.status(500).json({ error: error.message });
   }
 };
-
 
 export const gorevDurumGuncelle = async (req, res) => {
   try {
@@ -124,9 +152,42 @@ export const gorevDurumGuncelle = async (req, res) => {
       message: "Görev durumu başarıyla güncellendi",
       gorev: guncellenenGorev,
     });
-  }
-  catch (error) {
+  } catch (error) {
     console.log("Görev durumu güncellenirken hata:", error.message);
     return res.status(500).json({ error: error.message });
   }
+};
+export const tahminiSureleriGetir = async (req, res) => {
+  try {
+    const { aracKonumlari, hedefKonum } = req.body;
+
+    if (!Array.isArray(aracKonumlari) || !hedefKonum) {
+      return res.status(400).json({ message: "Geçersiz giriş verisi" });
+    }
+
+    const originsParam = aracKonumlari.map(k => `${k.lat},${k.lng}`).join("|");
+    const destination = `${hedefKonum.lat},${hedefKonum.lng}`;
+    const apiKey = process.env.GOOGLE_MAPS_API_KEY;
+
+    console.log("API Key:", apiKey);
+
+    const url = `https://maps.googleapis.com/maps/api/distancematrix/json?origins=${originsParam}&destinations=${destination}&key=${apiKey}&language=tr`;
+
+    const response = await axios.get(url);
+
+    const bilgiler = response.data.rows.map((row, i) => ({
+      aracIndex: i,
+      sureText: row.elements[0].duration?.text || "-",
+      sureValue: row.elements[0].duration?.value || null, // saniye cinsinden
+      mesafeText: row.elements[0].distance?.text || "-",
+    }));
+
+    console.log("API Responsed:", response.data);
+
+    return res.status(200).json(bilgiler);
+  } catch (error) {
+    console.error("Tahmini süre hatası:", error.message);
+    res.status(500).json({ error: "Süre bilgisi alınamadı" });
+  }
+  
 };
