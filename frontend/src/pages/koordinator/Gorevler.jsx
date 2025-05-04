@@ -9,7 +9,7 @@ const Gorevler = () => {
   const [arama, setArama] = useState("");
   const [seciliGorev, setSeciliGorev] = useState(null);
   const [acikModal, setAcikModal] = useState(null);
-
+  const [durumFiltre, setDurumFiltre] = useState("hepsi");
 
   const { data: gorevler = [], isLoading } = useQuery({
     queryKey: ["gorevler"],
@@ -19,34 +19,61 @@ const Gorevler = () => {
     },
   });
 
-  const filtrelenmisGorevler = gorevler.filter((gorev) => {
-    const talepAdi = gorev.talepId?.baslik?.toLowerCase() || "";
-    const kurumAdi =
-      gorev?.talepId?.talepEdenKurumFirmaId?.kurumAdi?.toLowerCase() || "";
-    const plakaListesi = gorev.gorevlendirilenAraclar
-      .map((g) => g.aracId?.plaka?.toLowerCase())
-      .join(" ");
-    const koordinatAdres = gorev.talepId?.lokasyon?.adres?.toLowerCase() || "";
+  const filtrelenmisGorevler = gorevler
+    .filter((gorev) => {
+      const talepAdi = gorev.talepId?.baslik?.toLowerCase() || "";
+      const kurumAdi =
+        gorev?.talepId?.talepEdenKurumFirmaId?.kurumAdi?.toLowerCase() || "";
+      const plakaListesi = gorev.gorevlendirilenAraclar
+        .map((g) => g.aracId?.plaka?.toLowerCase())
+        .join(" ");
+      const koordinatAdres =
+        gorev.talepId?.lokasyon?.adres?.toLowerCase() || "";
 
-    const aranan = arama.toLowerCase();
-    return (
-      talepAdi.includes(aranan) ||
-      kurumAdi.includes(aranan) ||
-      plakaListesi.includes(aranan) ||
-      koordinatAdres.includes(aranan)
-    );
-  });
+      const aranan = arama.toLowerCase();
+      const durumUygunMu =
+        durumFiltre === "hepsi" || gorev.gorevDurumu === durumFiltre;
+      return (
+        durumUygunMu &&
+        (talepAdi.includes(aranan) ||
+          kurumAdi.includes(aranan) ||
+          plakaListesi.includes(aranan) ||
+          koordinatAdres.includes(aranan))
+      );
+    })
+    .sort((a, b) => {
+      const durumSirasi = {
+        beklemede: 0,
+        başladı: 1,
+        tamamlandı: 2,
+        "iptal edildi": 3,
+      };
+      return durumSirasi[a.gorevDurumu] - durumSirasi[b.gorevDurumu];
+    });
 
   return (
     <div className="p-6">
       <h1 className="text-2xl font-bold mb-4">Görevler</h1>
-      <input
-        type="text"
-        placeholder="Görev ara..."
-        className="input input-bordered mb-4"
-        value={arama}
-        onChange={(e) => setArama(e.target.value)}
-      />
+      <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-4">
+        <input
+          type="text"
+          placeholder="Görev ara..."
+          className="input input-bordered"
+          value={arama}
+          onChange={(e) => setArama(e.target.value)}
+        />
+        <select
+          className="select select-bordered"
+          value={durumFiltre}
+          onChange={(e) => setDurumFiltre(e.target.value)}
+        >
+          <option value="hepsi">Tüm Durumlar</option>
+          <option value="beklemede">Beklemede</option>
+          <option value="başladı">Başladı</option>
+          <option value="tamamlandı">Tamamlandı</option>
+          <option value="iptal edildi">İptal Edildi</option>
+        </select>
+      </div>
 
       {isLoading ? (
         <div>Yükleniyor...</div>
@@ -59,10 +86,10 @@ const Gorevler = () => {
                 <th>Talep Başlığı</th>
                 <th>Talep Eden Kurum</th>
                 <th>Görevlendirilen Plaka</th>
-               
+
                 <th>Konumlar</th>
                 <th>Durum</th>
-                <th>Not</th>
+              
               </tr>
             </thead>
             <tbody>
@@ -75,45 +102,55 @@ const Gorevler = () => {
                   </td>
                   <td>
                     {gorev.gorevlendirilenAraclar.map((g) => (
-                      <div key={g._id}>{g.aracId?.plaka} {g.aracId?.aracTuru}</div>
-                   
+                      <div key={g._id}>
+                        {g.aracId?.plaka} {g.aracId?.aracTuru}
+                      </div>
                     ))}
                   </td>
-                  
+
                   <td className="whitespace-nowrap">
-  <div className="flex flex-col">
-    <span
-      title={gorev.talepId?.lokasyon?.adres}
-      className="truncate max-w-[180px]"
-    >
-      {gorev.talepId?.lokasyon?.adres || "-"}
-    </span>
-    <button
-      className="btn btn-xs btn-outline btn-info mt-1"
-      onClick={() => {
-        setSeciliGorev(gorev);
-        setAcikModal("haritadaGorModal");
-      }}
-    >
-      Haritada Gör
-    </button>
-  </div>
-</td>
+                    <div className="flex flex-col">
+                      <span
+                        title={gorev.talepId?.lokasyon?.adres}
+                        className="truncate max-w-[180px]"
+                      >
+                        {gorev.talepId?.lokasyon?.adres || "-"}
+                      </span>
+                      <button
+                        className="btn btn-xs btn-outline btn-info mt-1"
+                        onClick={() => {
+                          setSeciliGorev(gorev);
+                          setAcikModal("haritadaGorModal");
+                        }}
+                      >
+                        Haritada Gör
+                      </button>
+                    </div>
+                  </td>
                   <td>
-                    <span
-                      className={`badge badge-${
-                        gorev.gorevDurumu === "tamamlandi"
-                          ? "success"
-                          : gorev.gorevDurumu === "başladı"
-                          ? "warning"
-                          : "info"
-                      }`}
-                    >
-                      {gorev.gorevDurumu}
-                    </span>
+                    {gorev.gorevDurumu === "tamamlandı" && (
+                      <span className="badge badge-success gap-2">
+                        Tamamlandı
+                      </span>
+                    )}
+                    {gorev.gorevDurumu === "başladı" && (
+                      <span className="badge badge-warning gap-2 text-white">
+                        Başladı
+                      </span>
+                    )}
+                    {gorev.gorevDurumu === "beklemede" && (
+                      <span className="badge badge-info gap-2 text-white">
+                        Beklemede
+                      </span>
+                    )}
+                    {gorev.gorevDurumu === "iptal edildi" && (
+                      <span className="badge badge-error gap-2 text-white">
+                        İptal Edildi
+                      </span>
+                    )}
                   </td>
 
-                  <td>{gorev.gorevNotu}</td>
+            
                   <td>
                     <div className="dropdown dropdown-end">
                       <button tabIndex={0} className="btn btn-xs btn-outline">
@@ -165,7 +202,6 @@ const Gorevler = () => {
       )}
 
       <GorevDurumGuncelleModal
-      
         gorev={seciliGorev}
         modal={acikModal}
         setModal={setAcikModal}
@@ -181,8 +217,6 @@ const Gorevler = () => {
         modal={acikModal}
         setModal={setAcikModal}
       />
-
-     
     </div>
   );
 };

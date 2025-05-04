@@ -3,8 +3,6 @@ import Talep from "../models/talep.model.js";
 import Gorev from "../models/gorev.model.js";
 import axios from "axios";
 
-
-
 export const gorevOlustur = async (req, res) => {
   try {
     const koordinatorId = req.kullanici._id;
@@ -145,6 +143,25 @@ export const gorevDurumGuncelle = async (req, res) => {
     if (!guncellenenGorev) {
       return res.status(404).json({ message: "Görev bulunamadı" });
     }
+
+    if (
+      guncellenenGorev.gorevDurumu === "tamamlandı" &&
+      gorevDurumu !== "tamamlandı"
+    ) {
+      return res.status(400).json({
+        message: "Tamamlanmış bir görev başka bir duruma geçirilemez.",
+      });
+    }
+
+    if (gorevDurumu === "başladı" && !guncellenenGorev.baslangicZamani) {
+      guncellenenGorev.baslangicZamani = new Date();
+    }
+
+    // Bitiş zamanı ataması
+    if (gorevDurumu === "tamamlandı" && !guncellenenGorev.bitisZamani) {
+      guncellenenGorev.bitisZamani = new Date();
+    }
+
     guncellenenGorev.gorevDurumu = gorevDurumu;
     await guncellenenGorev.save();
 
@@ -165,7 +182,9 @@ export const tahminiSureleriGetir = async (req, res) => {
       return res.status(400).json({ message: "Geçersiz giriş verisi" });
     }
 
-    const originsParam = aracKonumlari.map(k => `${k.lat},${k.lng}`).join("|");
+    const originsParam = aracKonumlari
+      .map((k) => `${k.lat},${k.lng}`)
+      .join("|");
     const destination = `${hedefKonum.lat},${hedefKonum.lng}`;
     const apiKey = process.env.GOOGLE_MAPS_API_KEY;
 
@@ -189,5 +208,4 @@ export const tahminiSureleriGetir = async (req, res) => {
     console.error("Tahmini süre hatası:", error.message);
     res.status(500).json({ error: "Süre bilgisi alınamadı" });
   }
-  
 };

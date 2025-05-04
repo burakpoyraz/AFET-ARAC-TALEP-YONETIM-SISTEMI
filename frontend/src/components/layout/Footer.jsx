@@ -21,7 +21,7 @@ const Footer = () => {
         <div>
           <span className="footer-title">İletişim</span>
           <p>Email: burak.poyraz32@gmail.com</p>
-          <p>GitHub: <a href="https://github.com/https://github.com/burakpoyraz/AFET-ARAC-TALEP-YONETIM-SISTEMI" className="link link-hover">AFET ARAC TALEP YONETIM SISTEMI</a></p>
+          <p>GitHub: <a href="https://github.com/burakpoyraz/AFET-ARAC-TALEP-YONETIM-SISTEMI" className="link link-hover">AFET ARAC TALEP YONETIM SISTEMI</a></p>
         </div>
       </div>
 

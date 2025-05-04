@@ -1,6 +1,7 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import React, { useEffect, useState } from "react";
 import api from "../../../../lib/axios";
+import { toast } from "react-hot-toast";
 
 const GorevDurumGuncelleModal = ({ gorev, modal, setModal }) => {
   const [gorevDurum, setGorevDurum] = useState();
@@ -20,6 +21,13 @@ const GorevDurumGuncelleModal = ({ gorev, modal, setModal }) => {
     onSuccess: () => {
       queryClient.invalidateQueries(["gorevler"]);
       document.getElementById("gorevDurumGuncelleModal")?.close();
+      toast.success("Görev durumu güncellendi.");
+      
+    },
+    onError: (err) => {
+      console.log("HATA:", err);
+      const message = err?.response?.data?.message || "Bir hata oluştu";
+      toast.error(message); 
     },
   });
 
