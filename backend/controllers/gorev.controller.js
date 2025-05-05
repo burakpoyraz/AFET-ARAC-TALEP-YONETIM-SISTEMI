@@ -6,70 +6,47 @@ import axios from "axios";
 export const gorevOlustur = async (req, res) => {
   try {
     const koordinatorId = req.kullanici._id;
-    const {
-      talepId,
-      gorevlendirilenAraclar,
-      gorevDurumu,
-      gorevNotu,
-      baslangicZamani,
-      bitisZamani,
-    } = req.body;
+    const { talepId, aracId, sofor, gorevNotu, gorevDurumu } = req.body;
 
-    for (let arac of gorevlendirilenAraclar) {
-      if (
-        !arac.sofor ||
-        !arac.sofor.ad ||
-        !arac.sofor.soyad ||
-        !arac.sofor.telefon
-      ) {
-        return res.status(400).json({ message: "Sofor bilgileri eksik" });
-      }
-
-      if (!arac.aracId) {
-        return res.status(400).json({ message: "Araç ID eksik" });
-      }
+    if (!talepId || !aracId || !sofor?.ad || !sofor?.soyad || !sofor?.telefon) {
+      return res.status(400).json({ message: "Eksik bilgi gönderildi" });
     }
 
     const talep = await Talep.findById(talepId);
     if (!talep || talep.durum !== "beklemede") {
       return res
         .status(404)
-        .json({ message: "Talep bulunamadı veya talep durumu uygun değil" });
+        .json({ message: "Talep bulunamadı veya uygun değil" });
     }
 
-    const secilenAracIdler = gorevlendirilenAraclar.map((arac) => arac.aracId);
-    const bulunanAraclar = await Arac.find({
-      _id: { $in: secilenAracIdler },
+    const arac = await Arac.findOne({
+      _id: aracId,
       musaitlikDurumu: true,
       aracDurumu: "aktif",
     });
 
-    if (bulunanAraclar.length !== secilenAracIdler.length) {
+    if (!arac) {
       return res
         .status(404)
-        .json({ message: "Bazı araçlar uygun değil veya bulunamadı" });
+        .json({ message: "Araç uygun değil veya bulunamadı" });
     }
 
     const yeniGorev = new Gorev({
       talepId,
-      gorevlendirilenAraclar,
+      aracId,
+      sofor,
       koordinatorId,
       gorevDurumu: gorevDurumu || "beklemede",
       gorevNotu,
-      baslangicZamani,
-      bitisZamani,
       hedefKonumu: {
         lat: talep.lokasyon.lat,
         lng: talep.lokasyon.lng,
       },
     });
 
-    if (!yeniGorev) {
-      return res.status(400).json({ message: "Görev oluşturulamadı" });
-    }
     await yeniGorev.save();
 
-    // talep durumunu güncelle
+    // Talep durumu "görevlendirildi" olarak güncelleniyor
     talep.durum = "gorevlendirildi";
     await talep.save();
 
@@ -78,10 +55,11 @@ export const gorevOlustur = async (req, res) => {
       gorev: yeniGorev,
     });
   } catch (error) {
-    console.log("Gorev oluşturulurken hata:", error.message);
-    return res.status(500).json({ error: error.message });
+    console.error("Görev oluşturulurken hata:", error);
+    return res.status(500).json({ message: "Sunucu hatası", error: error.message });
   }
 };
+
 
 export const gorevDetayGetir = async (req, res) => {
   try {
@@ -121,9 +99,9 @@ export const tumGorevleriGetir = async (req, res) => {
         },
       })
       .populate("koordinatorId", "ad soyad telefon")
-      .populate("gorevlendirilenAraclar.aracId");
+      .populate("aracId"); // ✅ Doğru olan bu
 
-    if (!gorevler) {
+    if (!gorevler || gorevler.length === 0) {
       return res.status(404).json({ message: "Görev bulunamadı" });
     }
 
@@ -133,6 +111,7 @@ export const tumGorevleriGetir = async (req, res) => {
     return res.status(500).json({ error: error.message });
   }
 };
+
 
 export const gorevDurumGuncelle = async (req, res) => {
   try {
@@ -207,5 +186,67 @@ export const tahminiSureleriGetir = async (req, res) => {
   } catch (error) {
     console.error("Tahmini süre hatası:", error.message);
     res.status(500).json({ error: "Süre bilgisi alınamadı" });
+  }
+};
+
+export const aracSahibiGorevleriGetir = async (req, res) => {
+  try {
+    const araclar = await Arac.find({
+      $or: [
+        { kullaniciId: req.kullanici._id },
+        { kurumFirmaId: req.kullanici.kurumFirmaId },
+      ],
+    }).select("_id");
+
+    const aracIdListesi = araclar.map((a) => a._id);
+
+    const gorevler = await Gorev.find({
+      "gorevlendirilenAraclar.aracId": { $in: aracIdListesi },
+    })
+      .populate({
+        path: "talepId",
+        select:
+          "baslik aracTuru aracSayisi lokasyon durum talepEdenKurumFirmaId",
+        populate: {
+          path: "talepEdenKurumFirmaId",
+          select: "kurumAdi iletisim.telefon iletisim.adres",
+        },
+      })
+      .populate("koordinatorId", "ad soyad telefon")
+      .populate("gorevlendirilenAraclar.aracId");
+
+    if (!gorevler) {
+      return res.status(404).json({ message: "Görev bulunamadı" });
+    }
+
+    res.status(200).json(gorevler);
+  } catch (error) {
+    console.log("Görevleri getirirken hata:", error.message);
+    return res.status(500).json({ error: error.message });
+  }
+};
+
+export const aracDurumGuncelle = async (req, res) => {
+  try {
+    const { aracId, gorevDurumu } = req.body;
+
+    const gorev = await Gorev.findById(req.params.id);
+    if (!gorev) return res.status(404).json({ message: "Görev bulunamadı." });
+
+    const aracIndex = gorev.gorevlendirilenAraclar.findIndex(
+      (a) => a.aracId.toString() === aracId
+    );
+
+    if (aracIndex === -1) {
+      return res.status(403).json({ message: "Bu araç bu göreve ait değil." });
+    }
+
+    gorev.gorevlendirilenAraclar[aracIndex].aracDurumu = gorevDurumu;
+    await gorev.save();
+
+    res.status(200).json({ message: "Araç durumu güncellendi", gorev });
+  } catch (err) {
+    console.error("Araç durumu güncelleme hatası:", err.message);
+    res.status(500).json({ error: "Bir hata oluştu" });
   }
 };

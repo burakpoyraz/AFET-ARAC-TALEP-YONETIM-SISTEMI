@@ -7,8 +7,7 @@ const GorevDurumGuncelleModal = ({ gorev, modal, setModal }) => {
   const [gorevDurum, setGorevDurum] = useState();
 
   const queryClient = useQueryClient();
-
-
+  
 
   const { mutate: gorevDurumGuncelle } = useMutation({
     mutationFn: async (gorevId) => {

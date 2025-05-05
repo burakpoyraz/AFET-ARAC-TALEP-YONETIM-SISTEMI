@@ -36,7 +36,7 @@ const Sidebar = () => {
           <>
             <h2 className="text-sm text-gray-500 uppercase">ARAÇ SAHİBİ</h2>
             <Link to="/araclarim" className="link link-hover">🚐 Araçlarım</Link>
-            <Link to="/gorevlerim" className="link link-hover">📌 Görevlerim</Link>
+            <Link to="/arac-sahibi/gorevler" className="link link-hover">📌 Görevlerim</Link>
             <Link to="/bildirimler" className="link link-hover">🔔 Bildirimler </Link>
 
           </>

@@ -7,24 +7,17 @@ const GorevSchema = mongoose.Schema(
       ref: "Talep",
       required: true,
     },
-    gorevlendirilenAraclar: [
-      {
-        aracId: {
-          type: mongoose.Schema.Types.ObjectId,
-          ref: "Arac",
-          required: true,
-        },
-        sofor: {
-          ad: { type: String, required: true },
-          soyad: { type: String, required: true },
-          telefon: { type: String, required: true },
-        },
-        baslangicKonumu: {
-          lat: { type: Number, required: true },
-          lng: { type: Number, required: true },
-        },
-      },
-    ],
+    aracId: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Arac",
+      required: true,
+    },
+
+    sofor: {
+      ad: { type: String, required: true },
+      soyad: { type: String, required: true },
+      telefon: { type: String, required: true },
+    },
 
     koordinatorId: {
       type: mongoose.Schema.Types.ObjectId,

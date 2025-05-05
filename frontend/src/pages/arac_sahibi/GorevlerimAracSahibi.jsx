@@ -1,11 +1,11 @@
 import React, { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import api from "../../lib/axios";
-import GorevDurumGuncelleModal from "./modals/gorevler/gorevDurumGuncelleModal";
-import GorevDetayModal from "./modals/gorevler/GorevDetayModal";
-import HaritadaGorModal from "./modals/gorevler/HaritadaGorModal";
+import GorevDurumGuncelleModal from "../koordinator/modals/gorevler/gorevDurumGuncelleModal";
+import GorevDetayModal from "../koordinator/modals/gorevler/GorevDetayModal";
+import HaritadaGorModal from "../koordinator/modals/gorevler/HaritadaGorModal";
 
-const Gorevler = () => {
+const GorevlerimAracSahibi = () => {
   const [arama, setArama] = useState("");
   const [seciliGorev, setSeciliGorev] = useState(null);
   const [acikModal, setAcikModal] = useState(null);
@@ -14,7 +14,7 @@ const Gorevler = () => {
   const { data: gorevler = [], isLoading } = useQuery({
     queryKey: ["gorevler"],
     queryFn: async () => {
-      const res = await api.get("/gorevler");
+      const res = await api.get("/gorevler/arac-sahibi");
       return res.data;
     },
   });
@@ -24,7 +24,9 @@ const Gorevler = () => {
       const talepAdi = gorev.talepId?.baslik?.toLowerCase() || "";
       const kurumAdi =
         gorev?.talepId?.talepEdenKurumFirmaId?.kurumAdi?.toLowerCase() || "";
-        const plakaListesi = gorev.aracId?.plaka?.toLowerCase() || "";
+      const plakaListesi = gorev.gorevlendirilenAraclar
+        .map((g) => g.aracId?.plaka?.toLowerCase())
+        .join(" ");
       const koordinatAdres =
         gorev.talepId?.lokasyon?.adres?.toLowerCase() || "";
 
@@ -51,7 +53,7 @@ const Gorevler = () => {
 
   return (
     <div className="p-6">
-      <h1 className="text-2xl font-bold mb-4">Görevler</h1>
+      <h1 className="text-2xl font-bold mb-4">Görevlerim</h1>
       <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-4">
         <input
           type="text"
@@ -99,8 +101,12 @@ const Gorevler = () => {
                     {gorev.talepId?.talepEdenKurumFirmaId?.kurumAdi || "-"}
                   </td>
                   <td>
-  {gorev.aracId ? `${gorev.aracId.plaka} (${gorev.aracId.aracTuru})` : "-"}
-</td>
+                    {gorev.gorevlendirilenAraclar.map((g) => (
+                      <div key={g._id}>
+                        {g.aracId?.plaka} {g.aracId?.aracTuru}
+                      </div>
+                    ))}
+                  </td>
 
                   <td className="whitespace-nowrap">
                     <div className="flex flex-col">
@@ -175,16 +181,7 @@ const Gorevler = () => {
                             Durum Güncelle
                           </button>
                         </li>
-                        <li>
-                          <button
-                            onClick={() => {
-                              setSeciliGorev(gorev);
-                              setAcikModal("gorevSilOnayModal");
-                            }}
-                          >
-                            Sil
-                          </button>
-                        </li>
+                       
                       </ul>
                     </div>
                   </td>
@@ -215,4 +212,4 @@ const Gorevler = () => {
   );
 };
 
-export default Gorevler;
+export default GorevlerimAracSahibi;

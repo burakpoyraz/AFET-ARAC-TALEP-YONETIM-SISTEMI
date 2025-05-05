@@ -5,8 +5,8 @@ const TalepAracListesiModal = ({
   modal,
   setModal,
   talep,
-  seciliAraclar,
-  setSeciliAraclar,
+  seciliArac,
+  setSeciliArac,
 }) => {
   const [arama, setArama] = useState("");
   const [aracTuru, setAracTuru] = useState("");
@@ -14,10 +14,10 @@ const TalepAracListesiModal = ({
   useEffect(() => {
     const modalEl = document.getElementById("talepAracListesiModal");
     const handleClose = () => setModal(null);
-    modalEl?.addEventListener("close", handleClose);
 
     if (modal === "talepAracListesiModal" && modalEl) {
       modalEl.showModal();
+      modalEl.addEventListener("close", handleClose);
       return () => {
         modalEl.removeEventListener("close", handleClose);
       };
@@ -46,7 +46,7 @@ const TalepAracListesiModal = ({
   return (
     <dialog id="talepAracListesiModal" className="modal">
       <div className="modal-box max-w-5xl">
-        <h3 className="font-bold text-lg border-b pb-2 mb-4">🚐 Araç Bul</h3>
+        <h3 className="font-bold text-lg border-b pb-2 mb-4">🚐 Araç Seç</h3>
 
         <div className="flex flex-col md:flex-row gap-3 mb-4">
           <input
@@ -78,83 +78,46 @@ const TalepAracListesiModal = ({
 
         <div className="space-y-3 max-h-[50vh] overflow-y-auto">
           {filtrelenmisAraclar.map((arac) => (
-            <div
+            <label
               key={arac._id}
-              className="border p-4 rounded-lg shadow-md bg-white flex justify-between items-start gap-6"
+              className="border p-4 rounded-lg shadow-md bg-white flex justify-between items-start gap-6 cursor-pointer"
             >
-              {/* Sol taraf - Checkbox ve Plaka */}
-              <div className="flex flex-col gap-2 w-1/3">
-                <label className="flex items-center gap-3">
-                  <input
-                    type="checkbox"
-                    className="checkbox"
-                    checked={seciliAraclar.some((a) => a._id === arac._id)}
-                    onChange={(e) => {
-                      if (e.target.checked) {
-                        setSeciliAraclar([...seciliAraclar, arac]);
-                      } else {
-                        setSeciliAraclar(
-                          seciliAraclar.filter((a) => a._id !== arac._id)
-                        );
-                      }
-                    }}
-                  />
-                  <span className="font-bold text-md">{arac.plaka}</span>
-                </label>
-                <span className="text-sm text-gray-600">
-                  🚗 {arac.aracTuru}
-                </span>
-                <span className="text-sm text-gray-600">
-                  🧭 Kullanım:{" "}
-                  {arac.kullanimAmaci === "yolcu"
-                    ? "Yolcu Taşıma"
-                    : "Yük Taşıma"}
-                </span>
-                <span className="text-sm text-gray-600">
-                  🧮 Kapasite: {arac.kapasite}
-                  {arac.kullanimAmaci === "yuk" ? " Ton" : " Kişi"}
-                </span>
-              </div>
-
-              {/* Orta - Adres ve Kurum */}
-              <div className="flex flex-col gap-1 w-1/3">
+              <input
+                type="radio"
+                name="seciliArac"
+                className="radio mt-1"
+                checked={seciliArac?._id === arac._id}
+                onChange={() => setSeciliArac(arac)}
+              />
+              <div className="flex flex-col gap-1 w-full">
+                <div className="flex justify-between items-center">
+                  <div>
+                    <span className="font-bold">{arac.plaka}</span> - {arac.aracTuru}
+                  </div>
+                  <div className="text-right">
+                    <p className="text-sm">📏 {arac.mesafe}</p>
+                    <p className="text-sm">🕒 {arac.sure}</p>
+                  </div>
+                </div>
+                <p className="text-sm text-gray-600">🏢 {arac.kurumFirmaId?.kurumAdi || `${arac.kullaniciId?.ad || ""} ${arac.kullaniciId?.soyad || ""}`}</p>
                 {arac.konum?.adres && (
-                  <p className="text-sm text-gray-700">📍 {arac.konum.adres}</p>
+                  <p className="text-sm text-gray-600">📍 {arac.konum.adres}</p>
                 )}
-                <p className="text-sm text-gray-700">
-                  🏢 Firma:{" "}
-                  {arac.kurumFirmaId?.kurumAdi ||
-                    `${arac.kullaniciId?.ad || ""} ${
-                      arac.kullaniciId?.soyad || ""
-                    }` ||
-                    "Tanımsız"}
-                </p>
               </div>
-
-              {/* Sağ - Mesafe ve Süre */}
-              <div className="text-right w-1/3">
-                <p className="text-sm">📏 Mesafe: {arac.mesafe}</p>
-                <p className="text-sm">🕒 Süre: {arac.sure}</p>
-              </div>
-            </div>
+            </label>
           ))}
         </div>
 
-        {/* Alt Butonlar */}
-        <div className="modal-action flex justify-between items-center mt-4">
-          {/* Seçilen araç sayısı */}
-          <p className="text-md font-bold text-gray-600 ml-2">
-            {seciliAraclar.length} adet araç seçildi
-          </p>
+        <div className="modal-action flex justify-end items-center mt-4">
+          
           <button
             className="btn btn-primary"
             onClick={() => {
-              // modalı kapat, araçları yukarı aktar
               document.getElementById("talepAracListesiModal")?.close();
               setModal(null);
             }}
           >
-            Araçları Ekle
+            Aracı Ekle
           </button>
         </div>
       </div>
