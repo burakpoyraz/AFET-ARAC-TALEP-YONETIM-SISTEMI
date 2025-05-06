@@ -201,7 +201,7 @@ export const aracSahibiGorevleriGetir = async (req, res) => {
     const aracIdListesi = araclar.map((a) => a._id);
 
     const gorevler = await Gorev.find({
-      "gorevlendirilenAraclar.aracId": { $in: aracIdListesi },
+      aracId: { $in: aracIdListesi },
     })
       .populate({
         path: "talepId",
@@ -213,40 +213,15 @@ export const aracSahibiGorevleriGetir = async (req, res) => {
         },
       })
       .populate("koordinatorId", "ad soyad telefon")
-      .populate("gorevlendirilenAraclar.aracId");
+      .populate("aracId");
 
-    if (!gorevler) {
+    if (!gorevler || gorevler.length === 0) {
       return res.status(404).json({ message: "Görev bulunamadı" });
     }
 
     res.status(200).json(gorevler);
   } catch (error) {
-    console.log("Görevleri getirirken hata:", error.message);
+    console.error("Görevleri getirirken hata:", error.message);
     return res.status(500).json({ error: error.message });
-  }
-};
-
-export const aracDurumGuncelle = async (req, res) => {
-  try {
-    const { aracId, gorevDurumu } = req.body;
-
-    const gorev = await Gorev.findById(req.params.id);
-    if (!gorev) return res.status(404).json({ message: "Görev bulunamadı." });
-
-    const aracIndex = gorev.gorevlendirilenAraclar.findIndex(
-      (a) => a.aracId.toString() === aracId
-    );
-
-    if (aracIndex === -1) {
-      return res.status(403).json({ message: "Bu araç bu göreve ait değil." });
-    }
-
-    gorev.gorevlendirilenAraclar[aracIndex].aracDurumu = gorevDurumu;
-    await gorev.save();
-
-    res.status(200).json({ message: "Araç durumu güncellendi", gorev });
-  } catch (err) {
-    console.error("Araç durumu güncelleme hatası:", err.message);
-    res.status(500).json({ error: "Bir hata oluştu" });
   }
 };
