@@ -17,11 +17,14 @@ const Taleplerim = () => {
   });
 
   const filtrelenmisTalepler = talepler.filter((talep) => {
+   
+    const talepID = talep._id?.toLowerCase() || "";
     const baslik = talep.baslik?.toLowerCase() || "";
     const aciklama = talep.aciklama?.toLowerCase() || "";
     const aracTuru = talep.aracTuru?.toLowerCase() || "";
     const searchTerm = arama.toLowerCase();
     return (
+      talepID.includes(searchTerm) ||
       baslik.includes(searchTerm) ||
       aciklama.includes(searchTerm) ||
       aracTuru.includes(searchTerm)
@@ -57,7 +60,7 @@ const Taleplerim = () => {
           <table className="table table-zebra w-full">
             <thead>
               <tr>
-                <th>#</th>
+                <th>Talep ID</th>
                 <th>Başlık</th>
                 <th>Açıklama</th>
                 <th>Tür</th>
@@ -69,7 +72,21 @@ const Taleplerim = () => {
             <tbody>
               {filtrelenmisTalepler.map((talep, index) => (
                 <tr key={talep._id}>
-                  <td>{index + 1}</td>
+                   <td className="flex items-center gap-2" title={talep._id}>
+                    <span>{`${talep._id.slice(0, 4)}...${talep._id.slice(
+                      -4
+                    )}`}</span>
+                    <button
+                      className="btn btn-xs btn-ghost"
+                      onClick={() => {
+                        navigator.clipboard.writeText(talep._id);
+                        toast.success("Talep ID kopyalandı");
+                      }}
+                      title="ID Kopyala"
+                    >
+                      📋
+                    </button>
+                  </td>
                   <td>{talep.baslik}</td>
                   <td>{talep.aciklama}</td>
                   <td>{talep.aracTuru}</td>

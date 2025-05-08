@@ -13,11 +13,11 @@ export const gorevOlustur = async (req, res) => {
     }
 
     const talep = await Talep.findById(talepId);
-    if (!talep || talep.durum !== "beklemede") {
-      return res
-        .status(404)
-        .json({ message: "Talep bulunamadı veya uygun değil" });
+
+    if (!talep) {
+      return res.status(404).json({ message: "Talep bulunamadı" });
     }
+    
 
     const arac = await Arac.findOne({
       _id: aracId,
@@ -141,6 +141,22 @@ export const gorevDurumGuncelle = async (req, res) => {
       },
       { new: true }
     );
+
+    // Görevlendirilen aracı güncelle
+    const arac = await Arac.findById(mevcutGorev.aracId);
+    if (arac) {
+      // 1. Müsaitlik durumu güncelle
+      if (gorevDurumu === "başladı","beklemede") {
+        arac.musaitlikDurumu = false;
+      }
+
+      if (["tamamlandı", "iptal edildi"].includes(gorevDurumu)) {
+        arac.musaitlikDurumu = true;
+      }
+
+      await arac.save();
+    }
+
 
     res.status(200).json({
       message: "Görev durumu başarıyla güncellendi",

@@ -6,6 +6,7 @@ import React from "react";
 import TalepDetayModal from "./modals/talepler/TalepDetayModal";
 import TalepIptalModal from "./modals/talepler/TalepIptalModal";
 import TalepGorevlendirModal from "./modals/talepler/TalepGorevlendirModal";
+import { toast } from "react-hot-toast";
 
 const Talepler = () => {
   const [arama, setArama] = useState("");
@@ -25,14 +26,14 @@ const Talepler = () => {
   const { data: musaitAraclar = [], isLoadingMusaitAraclar } = useQuery({
     queryKey: ["musaitAraclar"],
     queryFn: async () => {
-      const res = await api.get("/araclar/musaitaraclar", );
+      const res = await api.get("/araclar/musaitaraclar");
       return res.data.musaitAraclar;
     },
   });
 
-
   const filtrelenmisTalepler = talepler
     .filter((talep) => {
+      const talepID = talep._id?.toLowerCase() || "";
       const baslik = talep.baslik?.toLowerCase() || "";
       const aciklama = talep.aciklama?.toLowerCase() || "";
       const adres = talep.lokasyon?.adres?.toLowerCase() || "";
@@ -43,6 +44,7 @@ const Talepler = () => {
 
       const aranan = arama.toLowerCase();
       return (
+        talepID.includes(aranan) ||
         baslik.includes(aranan) ||
         aciklama.includes(aranan) ||
         adres.includes(aranan) ||
@@ -94,7 +96,21 @@ const Talepler = () => {
             <tbody>
               {filtrelenmisTalepler.map((talep, index) => (
                 <tr key={talep._id}>
-                  <td>{index + 1}</td>
+                  <td className="flex items-center gap-2" title={talep._id}>
+                    <span>{`${talep._id.slice(0, 4)}...${talep._id.slice(
+                      -4
+                    )}`}</span>
+                    <button
+                      className="btn btn-xs btn-ghost"
+                      onClick={() => {
+                        navigator.clipboard.writeText(talep._id);
+                        toast.success("Talep ID kopyalandı");
+                      }}
+                      title="ID Kopyala"
+                    >
+                      📋
+                    </button>
+                  </td>
                   <td>{talep.baslik}</td>
                   <td>{talep.aciklama}</td>
                   <td>{talep.aracTuru}</td>
@@ -141,18 +157,17 @@ const Talepler = () => {
                             Detay
                           </button>
                         </li>
-                        {talep.durum === "beklemede" && (
-                          <li>
-                            <button
-                              onClick={() => {
-                                setSeciliTalep(talep);
-                                setAcikModal("talepGorevlendirModal");
-                              }}
-                            >
-                              Araç Görevlendir
-                            </button>
-                          </li>
-                        )}
+
+                        <li>
+                          <button
+                            onClick={() => {
+                              setSeciliTalep(talep);
+                              setAcikModal("talepGorevlendirModal");
+                            }}
+                          >
+                            Araç Görevlendir
+                          </button>
+                        </li>
 
                         <li>
                           <button
@@ -192,7 +207,6 @@ const Talepler = () => {
         talep={seciliTalep}
         araclar={musaitAraclar}
       />
-      
     </div>
   );
 };

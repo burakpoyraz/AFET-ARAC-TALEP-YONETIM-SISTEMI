@@ -21,6 +21,7 @@ const GorevlerTalepEden = () => {
 
   const filtrelenmisGorevler = gorevler
     .filter((gorev) => {
+      const talepID = gorev.talepId?._id?.toLowerCase() || "";
       const talepBaslik = gorev?.talepId?.baslik?.toLowerCase() || "";
       const plaka = gorev?.aracId?.plaka?.toLowerCase() || "";
       const aranan = arama.toLowerCase();
@@ -28,7 +29,9 @@ const GorevlerTalepEden = () => {
         durumFiltre === "hepsi" || gorev.gorevDurumu === durumFiltre;
 
       return (
-        durumUygunMu && (talepBaslik.includes(aranan) || plaka.includes(aranan))
+        durumUygunMu && (
+          talepID.includes(aranan) ||
+          talepBaslik.includes(aranan) || plaka.includes(aranan))
       );
     })
     .sort((a, b) => {
@@ -73,6 +76,7 @@ const GorevlerTalepEden = () => {
             <thead>
               <tr>
                 <th>#</th>
+                <th>Talep ID</th>
                 <th>Talep Başlığı</th>
                 <th>Plaka</th>
                 <th>Lokasyon</th>
@@ -84,6 +88,25 @@ const GorevlerTalepEden = () => {
               {filtrelenmisGorevler.map((gorev, index) => (
                 <tr key={gorev._id}>
                   <td>{index + 1}</td>
+                  <td
+                    className="flex items-center gap-2"
+                    title={gorev.talepId._id}
+                  >
+                    <span>{`${gorev.talepId._id.slice(
+                      0,
+                      4
+                    )}...${gorev.talepId._id.slice(-4)}`}</span>
+                    <button
+                      className="btn btn-xs btn-ghost"
+                      onClick={() => {
+                        navigator.clipboard.writeText(gorev.talepId._id);
+                        toast.success("Talep ID kopyalandı");
+                      }}
+                      title="ID Kopyala"
+                    >
+                      📋
+                    </button>
+                  </td>
                   <td>{gorev?.talepId?.baslik || "-"}</td>
                   <td>{gorev?.aracId?.plaka || "-"}</td>
                   <td className="whitespace-nowrap">

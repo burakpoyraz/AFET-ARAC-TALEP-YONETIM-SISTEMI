@@ -21,6 +21,7 @@ const GorevlerimAracSahibi = () => {
 
   const filtrelenmisGorevler = gorevler
     .filter((gorev) => {
+      const talepID = gorev.talepId?._id?.toLowerCase() || "";
       const talepAdi = gorev.talepId?.baslik?.toLowerCase() || "";
       const kurumAdi =
         gorev?.talepId?.talepEdenKurumFirmaId?.kurumAdi?.toLowerCase() || "";
@@ -33,7 +34,8 @@ const GorevlerimAracSahibi = () => {
         durumFiltre === "hepsi" || gorev.gorevDurumu === durumFiltre;
       return (
         durumUygunMu &&
-        (talepAdi.includes(aranan) ||
+        (talepID.includes(aranan) ||
+          talepAdi.includes(aranan) ||
           kurumAdi.includes(aranan) ||
           plaka.includes(aranan) ||
           koordinatAdres.includes(aranan))
@@ -81,26 +83,43 @@ const GorevlerimAracSahibi = () => {
             <thead>
               <tr>
                 <th>#</th>
+                <th>Talep ID</th>
                 <th>Talep Başlığı</th>
                 <th>Talep Eden Kurum</th>
                 <th>Görevlendirilen Plaka</th>
 
                 <th>Konumlar</th>
                 <th>Durum</th>
-              
               </tr>
             </thead>
             <tbody>
               {filtrelenmisGorevler.map((gorev, index) => (
                 <tr key={gorev._id}>
                   <td>{index + 1}</td>
+                  <td
+                    className="flex items-center gap-2"
+                    title={gorev.talepId._id}
+                  >
+                    <span>{`${gorev.talepId._id.slice(
+                      0,
+                      4
+                    )}...${gorev.talepId._id.slice(-4)}`}</span>
+                    <button
+                      className="btn btn-xs btn-ghost"
+                      onClick={() => {
+                        navigator.clipboard.writeText(gorev.talepId._id);
+                        toast.success("Talep ID kopyalandı");
+                      }}
+                      title="ID Kopyala"
+                    >
+                      📋
+                    </button>
+                  </td>
                   <td>{gorev.talepId.baslik}</td>
                   <td>
                     {gorev.talepId?.talepEdenKurumFirmaId?.kurumAdi || "-"}
                   </td>
-                  <td>
-                    {gorev.aracId?.plaka || "-"}
-                  </td>
+                  <td>{gorev.aracId?.plaka || "-"}</td>
 
                   <td className="whitespace-nowrap">
                     <div className="flex flex-col">
@@ -144,7 +163,6 @@ const GorevlerimAracSahibi = () => {
                     )}
                   </td>
 
-            
                   <td>
                     <div className="dropdown dropdown-end">
                       <button tabIndex={0} className="btn btn-xs btn-outline">
@@ -175,7 +193,6 @@ const GorevlerimAracSahibi = () => {
                             Durum Güncelle
                           </button>
                         </li>
-                       
                       </ul>
                     </div>
                   </td>
