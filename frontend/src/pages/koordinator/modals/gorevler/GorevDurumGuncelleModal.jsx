@@ -1,5 +1,5 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import React, { useEffect, useState } from "react";
+import React, { use, useEffect, useState } from "react";
 import api from "../../../../lib/axios";
 import { toast } from "react-hot-toast";
 
@@ -7,7 +7,19 @@ const GorevDurumGuncelleModal = ({ gorev, modal, setModal }) => {
   const [gorevDurum, setGorevDurum] = useState();
 
   const queryClient = useQueryClient();
-  
+
+  const rol = queryClient.getQueryData(["girisYapanKullanici"])?.rol;
+
+
+
+
+  const rolBazliDurumlar = {
+    koordinator: ["beklemede", "başladı", "tamamlandı", "iptal edildi"],
+    talepEden: ["tamamlandı"],
+    arac_sahibi: ["beklemede", "başladı"],
+  };
+
+  const durumSecenekleri = rolBazliDurumlar[rol] || [];
 
   const { mutate: gorevDurumGuncelle } = useMutation({
     mutationFn: async (gorevId) => {
@@ -21,12 +33,11 @@ const GorevDurumGuncelleModal = ({ gorev, modal, setModal }) => {
       queryClient.invalidateQueries(["gorevler"]);
       document.getElementById("gorevDurumGuncelleModal")?.close();
       toast.success("Görev durumu güncellendi.");
-      
     },
     onError: (err) => {
       console.log("HATA:", err);
       const message = err?.response?.data?.message || "Bir hata oluştu";
-      toast.error(message); 
+      toast.error(message);
     },
   });
 
@@ -36,14 +47,13 @@ const GorevDurumGuncelleModal = ({ gorev, modal, setModal }) => {
     modalEl?.addEventListener("close", handleClose);
 
     if (modal === "gorevDurumGuncelleModal" && modalEl) {
-        setGorevDurum(gorev.gorevDurumu);
+      setGorevDurum(gorev.gorevDurumu);
       modalEl.showModal();
       return () => {
         modalEl.removeEventListener("close", handleClose);
       };
     } else if (modalEl?.open) {
       modalEl.close();
-    
     }
   }, [modal]);
 
@@ -54,16 +64,17 @@ const GorevDurumGuncelleModal = ({ gorev, modal, setModal }) => {
       <div className="modal-box">
         <h3 className="font-bold text-lg mb-4">Görev Durumu Güncelle</h3>
         <div className="form-control mb-4">
-       
           <select
-            className="select select-bordered"
+            className="select select-bordered w-full"
             value={gorevDurum}
             onChange={(e) => setGorevDurum(e.target.value)}
           >
-            <option value="beklemede">Beklemede</option>
-            <option value="başladı">Başladı</option>
-            <option value="tamamlandı">Tamamlandı</option>
-            <option value="iptal edildi">İptal Edildi</option>
+            {!gorevDurum && <option value="">Durum Seç</option>}
+            {durumSecenekleri.map((durum) => (
+              <option key={durum} value={durum}>
+                {durum.charAt(0).toUpperCase() + durum.slice(1)}
+              </option>
+            ))}
           </select>
         </div>
 

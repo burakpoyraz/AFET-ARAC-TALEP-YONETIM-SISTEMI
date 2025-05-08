@@ -24,9 +24,7 @@ const GorevlerimAracSahibi = () => {
       const talepAdi = gorev.talepId?.baslik?.toLowerCase() || "";
       const kurumAdi =
         gorev?.talepId?.talepEdenKurumFirmaId?.kurumAdi?.toLowerCase() || "";
-      const plakaListesi = gorev.gorevlendirilenAraclar
-        .map((g) => g.aracId?.plaka?.toLowerCase())
-        .join(" ");
+      const plaka = gorev.aracId?.plaka?.toLowerCase() || "";
       const koordinatAdres =
         gorev.talepId?.lokasyon?.adres?.toLowerCase() || "";
 
@@ -37,7 +35,7 @@ const GorevlerimAracSahibi = () => {
         durumUygunMu &&
         (talepAdi.includes(aranan) ||
           kurumAdi.includes(aranan) ||
-          plakaListesi.includes(aranan) ||
+          plaka.includes(aranan) ||
           koordinatAdres.includes(aranan))
       );
     })
@@ -101,11 +99,7 @@ const GorevlerimAracSahibi = () => {
                     {gorev.talepId?.talepEdenKurumFirmaId?.kurumAdi || "-"}
                   </td>
                   <td>
-                    {gorev.gorevlendirilenAraclar.map((g) => (
-                      <div key={g._id}>
-                        {g.aracId?.plaka} {g.aracId?.aracTuru}
-                      </div>
-                    ))}
+                    {gorev.aracId?.plaka || "-"}
                   </td>
 
                   <td className="whitespace-nowrap">
