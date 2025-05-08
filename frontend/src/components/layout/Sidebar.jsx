@@ -47,7 +47,7 @@ const Sidebar = () => {
           <>
             <h2 className="text-sm text-gray-500 uppercase">TALEP SAHİBİ</h2>
             <Link to="/taleplerim" className="link link-hover">📥 Taleplerim</Link>
-            <Link to="/gorev-takip" className="link link-hover">📍 Görev Takibi</Link>
+            <Link to="/talep-eden/gorevler" className="link link-hover">📍 Görev Takibi</Link>
             <Link to="/bildirimler" className="link link-hover">🔔 Bildirimler </Link>
           </>
         )}

@@ -56,10 +56,11 @@ export const gorevOlustur = async (req, res) => {
     });
   } catch (error) {
     console.error("Görev oluşturulurken hata:", error);
-    return res.status(500).json({ message: "Sunucu hatası", error: error.message });
+    return res
+      .status(500)
+      .json({ message: "Sunucu hatası", error: error.message });
   }
 };
-
 
 export const gorevDetayGetir = async (req, res) => {
   try {
@@ -112,19 +113,18 @@ export const tumGorevleriGetir = async (req, res) => {
   }
 };
 
-
 export const gorevDurumGuncelle = async (req, res) => {
   try {
     const { id } = req.params;
     const { gorevDurumu } = req.body;
 
-    const guncellenenGorev = await Gorev.findById(id);
-    if (!guncellenenGorev) {
+    const mevcutGorev = await Gorev.findById(id);
+    if (!mevcutGorev) {
       return res.status(404).json({ message: "Görev bulunamadı" });
     }
 
     if (
-      guncellenenGorev.gorevDurumu === "tamamlandı" &&
+      mevcutGorev.gorevDurumu === "tamamlandı" &&
       gorevDurumu !== "tamamlandı"
     ) {
       return res.status(400).json({
@@ -132,27 +132,26 @@ export const gorevDurumGuncelle = async (req, res) => {
       });
     }
 
-    if (gorevDurumu === "başladı" && !guncellenenGorev.baslangicZamani) {
-      guncellenenGorev.baslangicZamani = new Date();
-    }
-
-    // Bitiş zamanı ataması
-    if (gorevDurumu === "tamamlandı" && !guncellenenGorev.bitisZamani) {
-      guncellenenGorev.bitisZamani = new Date();
-    }
-
-    guncellenenGorev.gorevDurumu = gorevDurumu;
-    await guncellenenGorev.save();
+    const guncellenmisGorev = await Gorev.findByIdAndUpdate(
+      id,
+      {
+        gorevDurumu,
+        ...(gorevDurumu === "başladı" && { baslangicZamani: new Date() }),
+        ...(gorevDurumu === "tamamlandı" && { bitisZamani: new Date() }),
+      },
+      { new: true }
+    );
 
     res.status(200).json({
       message: "Görev durumu başarıyla güncellendi",
-      gorev: guncellenenGorev,
+      gorev: guncellenmisGorev,
     });
   } catch (error) {
     console.log("Görev durumu güncellenirken hata:", error.message);
     return res.status(500).json({ error: error.message });
   }
 };
+
 export const tahminiSureleriGetir = async (req, res) => {
   try {
     const { aracKonumlari, hedefKonum } = req.body;
@@ -167,7 +166,6 @@ export const tahminiSureleriGetir = async (req, res) => {
     const destination = `${hedefKonum.lat},${hedefKonum.lng}`;
     const apiKey = process.env.GOOGLE_MAPS_API_KEY;
 
-    console.log("API Key:", apiKey);
 
     const url = `https://maps.googleapis.com/maps/api/distancematrix/json?origins=${originsParam}&destinations=${destination}&key=${apiKey}&language=tr`;
 
@@ -222,6 +220,51 @@ export const aracSahibiGorevleriGetir = async (req, res) => {
     res.status(200).json(gorevler);
   } catch (error) {
     console.error("Görevleri getirirken hata:", error.message);
+    return res.status(500).json({ error: error.message });
+  }
+};
+
+export const talepEdenGorevleriGetir = async (req, res) => {
+  try {
+    const talepEdenKurumId = req.kullanici.kurumFirmaId;
+
+    console.log(talepEdenKurumId, "talep eden kurum idsi");
+
+    if (!talepEdenKurumId) {
+      return res.status(400).json({ message: "Kullanıcının kurumu tanımsız." });
+    }
+
+    // kuruma ait talepleri al
+    const talepler = await Talep.find({
+      talepEdenKurumFirmaId: talepEdenKurumId,
+    }).select("_id");
+    const talepIdListesi = talepler.map((t) => t._id);
+
+    if (talepIdListesi.length === 0) {
+      return res.status(404).json({ message: "Kuruma ait talep bulunamadı." });
+    }
+
+    // talepId'ye göre görevleri al
+    const gorevler = await Gorev.find({ talepId: { $in: talepIdListesi } })
+      .populate({
+        path: "talepId",
+        select:
+          "baslik aracTuru aracSayisi lokasyon durum talepEdenKurumFirmaId",
+        populate: {
+          path: "talepEdenKurumFirmaId",
+          select: "kurumAdi iletisim.telefon iletisim.adres",
+        },
+      })
+      .populate("koordinatorId", "ad soyad telefon")
+      .populate("aracId");
+
+    if (!gorevler || gorevler.length === 0) {
+      return res.status(404).json({ message: "Görev bulunamadı." });
+    }
+
+    res.status(200).json(gorevler);
+  } catch (error) {
+    console.error("Talep eden görevlerini getirirken hata:", error.message);
     return res.status(500).json({ error: error.message });
   }
 };

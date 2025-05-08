@@ -22,7 +22,9 @@ const Taleplerim = () => {
     const aracTuru = talep.aracTuru?.toLowerCase() || "";
     const searchTerm = arama.toLowerCase();
     return (
-      baslik.includes(searchTerm) || aciklama.includes(searchTerm) || aracTuru.includes(searchTerm)
+      baslik.includes(searchTerm) ||
+      aciklama.includes(searchTerm) ||
+      aracTuru.includes(searchTerm)
     );
   });
 
@@ -37,15 +39,15 @@ const Taleplerim = () => {
           value={arama}
           onChange={(e) => setArama(e.target.value)}
         />
-         <button
-            className="btn btn-primary flex-shrink-0"
-            onClick={() => {
-              setSeciliTalep(null);
-              setAcikModal("talepEkleDuzenleModal");
-            }}
-          >
-            ➕ Yeni Talep Oluştur
-          </button>
+        <button
+          className="btn btn-primary flex-shrink-0"
+          onClick={() => {
+            setSeciliTalep(null);
+            setAcikModal("talepEkleDuzenleModal");
+          }}
+        >
+          ➕ Yeni Talep Oluştur
+        </button>
       </div>
 
       {isLoading ? (
@@ -73,39 +75,53 @@ const Taleplerim = () => {
                   <td>{talep.aracTuru}</td>
                   <td>{talep.aracSayisi}</td>
                   <td>{talep.lokasyon.adres}</td>
-                  <td>{talep.durum}</td>
+                   <td>
+                    <span
+                      className={`badge ${
+                        talep.durum === "beklemede"
+                          ? "badge-error"
+                          : talep.durum === "tamamlandi"
+                          ? "badge-success"
+                          : talep.durum === "gorevlendirildi"
+                          ? "badge-warning"
+                          : "badge-info"
+                      }`}
+                    >
+                      {talep.durum}
+                    </span>
+                  </td>
                   <td>
-                      <div className="dropdown dropdown-end">
-                        <button tabIndex={0} className="btn btn-xs btn-outline">
-                          İşlemler
-                        </button>
-                        <ul
-                          tabIndex={0}
-                          className="dropdown-content z-[1] menu p-2 shadow bg-base-100 rounded-box w-40"
-                        >
-                          <li>
-                            <button
-                              onClick={() => {
-                                setSeciliTalep(talep);
-                                setAcikModal("talepEkleDuzenleModal");
-                              }}
-                            >
-                              Düzenle
-                            </button>
-                          </li>
-                          <li>
-                            <button
-                              onClick={() => {
-                                setSeciliTalep(talep);
-                                setAcikModal("talepSilOnayModal");
-                              }}
-                            >
-                              Sil
-                            </button>
-                          </li>
-                        </ul>
-                      </div>
-                    </td>
+                    <div className="dropdown dropdown-end">
+                      <button tabIndex={0} className="btn btn-xs btn-outline">
+                        İşlemler
+                      </button>
+                      <ul
+                        tabIndex={0}
+                        className="dropdown-content z-[1] menu p-2 shadow bg-base-100 rounded-box w-40"
+                      >
+                        <li>
+                          <button
+                            onClick={() => {
+                              setSeciliTalep(talep);
+                              setAcikModal("talepEkleDuzenleModal");
+                            }}
+                          >
+                            Düzenle
+                          </button>
+                        </li>
+                        <li>
+                          <button
+                            onClick={() => {
+                              setSeciliTalep(talep);
+                              setAcikModal("talepSilOnayModal");
+                            }}
+                          >
+                            Sil
+                          </button>
+                        </li>
+                      </ul>
+                    </div>
+                  </td>
                 </tr>
               ))}
             </tbody>
@@ -113,11 +129,11 @@ const Taleplerim = () => {
         </div>
       )}
 
-      <TalepEkleDuzenleModal 
-      modal={acikModal}
-      setModal={setAcikModal}
-      duzenlenecekTalep={seciliTalep}
-       />
+      <TalepEkleDuzenleModal
+        modal={acikModal}
+        setModal={setAcikModal}
+        duzenlenecekTalep={seciliTalep}
+      />
     </div>
   );
 };

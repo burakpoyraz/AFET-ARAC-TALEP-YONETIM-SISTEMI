@@ -16,6 +16,7 @@ import Taleplerim from "./pages/talep_eden/Taleplerim";
 import Talepler from "./pages/koordinator/Talepler";
 import Gorevler from "./pages/koordinator/Gorevler";
 import GorevlerimAracSahibi from "./pages/arac_sahibi/GorevlerimAracSahibi";
+import GorevlerimTalepEden from "./pages/talep_eden/GorevlerTalepEden";
 
 
 function App() {
@@ -92,6 +93,7 @@ useEffect(() => {
 
     {/* TALEP EDEN */}
     <Route path="/taleplerim" element={<Taleplerim />} />
+    <Route path="/talep-eden/gorevler" element={<GorevlerimTalepEden />} />
 
 
   </Route>
