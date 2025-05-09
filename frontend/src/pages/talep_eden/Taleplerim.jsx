@@ -2,6 +2,7 @@ import { useQuery } from "@tanstack/react-query";
 import { useState } from "react";
 import api from "../../lib/axios";
 import TalepEkleDuzenleModal from "./modals/TalepEkleDuzenleModal";
+import TalepIptalModal from "../koordinator/modals/talepler/TalepIptalModal";
 
 const Taleplerim = () => {
   const [arama, setArama] = useState("");
@@ -130,10 +131,10 @@ const Taleplerim = () => {
                           <button
                             onClick={() => {
                               setSeciliTalep(talep);
-                              setAcikModal("talepSilOnayModal");
+                              setAcikModal("talepIptalModal");
                             }}
                           >
-                            Sil
+                            İptal Et
                           </button>
                         </li>
                       </ul>
@@ -150,6 +151,12 @@ const Taleplerim = () => {
         modal={acikModal}
         setModal={setAcikModal}
         duzenlenecekTalep={seciliTalep}
+      />
+
+       <TalepIptalModal
+        talep={seciliTalep}
+        modal={acikModal}
+        setModal={setAcikModal}
       />
     </div>
   );

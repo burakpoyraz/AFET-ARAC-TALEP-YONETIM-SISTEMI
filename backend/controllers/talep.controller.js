@@ -1,4 +1,6 @@
 import Talep from "../models/talep.model.js";
+import Kullanici from "../models/kullanici.model.js";
+import { bildirimOlustur } from "../lib/utils/bildirimOlustur.js";
 
 export const talepEkle = async (req, res) => {
   const { baslik, aciklama, aracTuru, aracSayisi, lokasyon, durum } = req.body;
@@ -52,6 +54,57 @@ export const talepEkle = async (req, res) => {
       return res.status(400).json({ error: "Talep oluşturulamadı" });
     }
     await talep.save();
+
+    // 1. Talep eden kullanıcıya bireysel bildirim gönder
+    await bildirimOlustur({
+      kullaniciId: talepEdenKullaniciId,
+      kurumFirmaId: null,
+      baslik: "Talebiniz Oluşturuldu",
+      icerik: `“${talep.baslik}” başlıklı talebiniz başarıyla oluşturuldu.`,
+      hedefUrl: `/talepler/${talep._id}`,
+      tur: "talep",
+      gizlilik: "bireysel",
+    });
+    // 2. Tüm koordinatörleri al ve kurum bazlı grupla
+    const koordinatorler = await Kullanici.find({ rol: "koordinator" }).select(
+      "_id kurumFirmaId"
+    );
+
+    const kurumSet = new Set();
+    const koordinatorsuzlar = [];
+
+    for (const k of koordinatorler) {
+      if (k.kurumFirmaId) {
+        kurumSet.add(k.kurumFirmaId.toString());
+      } else {
+        koordinatorsuzlar.push(k._id); // Kuruma bağlı olmayan koordinatör
+      }
+    }
+    // 3. Her kuruma sadece bir bildirim gönder (kurumsal)
+    for (const kurumId of kurumSet) {
+      await bildirimOlustur({
+        kullaniciId: null,
+        kurumFirmaId: kurumId,
+        baslik: `YENİ TALEP : ${talep.baslik} Talebi`,
+        icerik: `Açıklama: ${talep.aciklama}`,
+        hedefUrl: `/talepler/${talep._id}`,
+        tur: "talep",
+        gizlilik: "kurumsal",
+      });
+    }
+    // 4. Kuruma bağlı olmayan koordinatörlere bireysel bildirim gönder
+    for (const kId of koordinatorsuzlar) {
+      await bildirimOlustur({
+        kullaniciId: kId,
+        kurumFirmaId: null,
+        baslik: `YENİ TALEP : ${talep.baslik} Talebi`,
+        icerik: `Açıklama: ${talep.aciklama}`,
+        hedefUrl: `/talepler/${talep._id}`,
+        tur: "talep",
+        gizlilik: "bireysel",
+      });
+    }
+
     res.status(201).json({ talep });
   } catch (error) {
     res.status(500).json({ error: "Sunucu hatası" });
@@ -150,6 +203,13 @@ export const talepGuncelle = async (req, res) => {
     }
 
     if (durum) {
+      // Görevlendirilen talepler iptal edilemez
+      if (talep.durum === "gorevlendirildi" && durum === "iptal edildi") {
+        return res
+          .status(400)
+          .json({ error: "Görev ataması yapılmış talepler iptal edilemez" });
+      }
+
       talep.durum = durum;
     }
 

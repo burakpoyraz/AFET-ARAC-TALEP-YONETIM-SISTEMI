@@ -17,6 +17,9 @@ import Talepler from "./pages/koordinator/Talepler";
 import Gorevler from "./pages/koordinator/Gorevler";
 import GorevlerimAracSahibi from "./pages/arac_sahibi/GorevlerimAracSahibi";
 import GorevlerimTalepEden from "./pages/talep_eden/GorevlerTalepEden";
+import Bildirimler from "./pages/koordinator/Bildirimler";
+import TalepDetay from "./pages/bildirimler/TalepDetay";
+import GorevDetay from "./pages/bildirimler/GorevDetay";
 
 
 function App() {
@@ -83,6 +86,7 @@ useEffect(() => {
     <Route path="/araclar" element={<Araclar/>} />
     <Route path="/talepler" element={<Talepler />} />
     <Route path="/gorevler" element={<Gorevler />} />
+    <Route path="/bildirimler" element={<Bildirimler />} />
 
 
 
@@ -94,6 +98,12 @@ useEffect(() => {
     {/* TALEP EDEN */}
     <Route path="/taleplerim" element={<Taleplerim />} />
     <Route path="/talep-eden/gorevler" element={<GorevlerimTalepEden />} />
+
+
+    {/* BİLDİRİMLER */}
+    <Route path="/talepler/:id" element={<TalepDetay />} />
+    <Route path="/gorevler/:id" element={<GorevDetay />} />
+
 
 
   </Route>

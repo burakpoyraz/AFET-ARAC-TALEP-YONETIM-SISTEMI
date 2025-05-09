@@ -1,0 +1,28 @@
+import Bildirim from "../models/bildirim.model.js";
+
+
+export const bildirimleriGetir = async (req, res) => {
+  try {
+    const kullaniciId = req.kullanici._id;
+    const kurumFirmaId = req.kullanici.kurumFirmaId;
+
+const filtre = {
+  $or: [
+    { kullaniciId: req.kullanici._id },            // bireysel bildirimler
+    { kurumFirmaId: req.kullanici.kurumFirmaId }   // kurumsal bildirimler
+  ]
+};
+
+    const bildirimler = await Bildirim.find(filtre).sort({ createdAt: -1 });
+
+    if (!bildirimler) {
+        return res.status(404).json({ message: "Bildirim bulunamadı" });
+        }
+    
+        console.log("bildirimler:", bildirimler);
+
+    res.status(200).json(bildirimler);
+  } catch (error) {
+    res.status(500).json({ message: "Bildirimler alınamadı", error: error.message });
+  }
+};

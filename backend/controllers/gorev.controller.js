@@ -2,6 +2,7 @@ import Arac from "../models/arac.model.js";
 import Talep from "../models/talep.model.js";
 import Gorev from "../models/gorev.model.js";
 import axios from "axios";
+import { bildirimOlustur } from "../lib/utils/bildirimOlustur.js";
 
 export const gorevOlustur = async (req, res) => {
   try {
@@ -50,6 +51,68 @@ export const gorevOlustur = async (req, res) => {
     talep.durum = "gorevlendirildi";
     await talep.save();
 
+
+ // 📢 1. Koordinatöre bildirim (görevi oluşturan kişi)
+    await bildirimOlustur({
+      kullaniciId: koordinatorId,
+      baslik: "Görev Oluşturuldu",
+      icerik: `“${talep.baslik}” talebine ait görev başarıyla oluşturuldu.`,
+      hedefUrl: `/gorevler/${yeniGorev._id}`,
+      tur: "gorev",
+      gizlilik: "bireysel",
+    });
+
+    // 📢 2. Talep eden kişi veya kurum
+    if (talep.talepEdenKullaniciId) {
+      await bildirimOlustur({
+        kullaniciId: talep.talepEdenKullaniciId,
+        kurumFirmaId: null,
+        baslik: "Talebinize Araç Atandı",
+        icerik: `“${talep.baslik}” başlıklı talebinize araç görevlendirildi.`,
+        hedefUrl: `/gorevler/${yeniGorev._id}`,
+        tur: "gorev",
+        gizlilik: "bireysel",
+      });
+    }
+
+    if (talep.talepEdenKurumFirmaId) {
+      await bildirimOlustur({
+        kullaniciId: null,
+        kurumFirmaId: talep.talepEdenKurumFirmaId,
+        baslik: "Kurum Talebine Araç Atandı",
+        icerik: `“${talep.baslik}” başlıklı kurum talebinize araç görevlendirildi.`,
+        hedefUrl: `/gorevler/${yeniGorev._id}`,
+        tur: "gorev",
+        gizlilik: "kurumsal",
+      });
+    }
+
+    // 📢 3. Araç sahibine (birey)
+    if (arac.kullaniciId) {
+      await bildirimOlustur({
+        kullaniciId: arac.kullaniciId,
+        baslik: "Aracınız Görevlendirildi",
+        icerik: `“${talep.baslik}” talebi için aracınız görevlendirildi.`,
+        hedefUrl: `/gorevler/${yeniGorev._id}`,
+        tur: "gorev",
+        gizlilik: "bireysel",
+      });
+    }
+
+    // 📢 4. Araç sahibi kuruma
+    if (arac.kurumFirmaId) {
+      await bildirimOlustur({
+        kullaniciId: null,
+        kurumFirmaId: arac.kurumFirmaId,
+        baslik: "Kuruma Ait Araç Görevlendirildi",
+        icerik: `“${talep.baslik}” talebi için kuruma ait araç görevlendirildi.`,
+        hedefUrl: `/gorevler/${yeniGorev._id}`,
+        tur: "gorev",
+        gizlilik: "kurumsal",
+      });
+    }
+
+
     return res.status(201).json({
       message: "Görev başarıyla oluşturuldu",
       gorev: yeniGorev,
@@ -74,7 +137,7 @@ export const gorevDetayGetir = async (req, res) => {
         },
       })
       .populate("koordinatorId", "ad soyad telefon")
-      .populate("gorevlendirilenAraclar.aracId", "plaka aracTuru marka model");
+      .populate("aracId");
 
     if (!gorev) {
       return res.status(404).json({ message: "Görev bulunamadı" });

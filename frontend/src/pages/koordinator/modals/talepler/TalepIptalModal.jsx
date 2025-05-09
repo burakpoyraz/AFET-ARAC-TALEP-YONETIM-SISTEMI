@@ -1,6 +1,7 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import React, { useEffect } from "react";
 import api from "../../../../lib/axios";
+import { toast } from "react-hot-toast";
 
 const TalepIptalModal = ({ talep, modal, setModal }) => {
 
@@ -18,6 +19,12 @@ const TalepIptalModal = ({ talep, modal, setModal }) => {
     onSuccess: () => {
       queryClient.invalidateQueries(["talepler"]);
       document.getElementById("talepIptalModal")?.close();
+      toast.success("Talep durum güncellemesi başarılı.");
+
+
+    },
+    onError: (error) => {
+      toast.error(error.response?.data?.error || "Bir hata oluştu.");
     },
   });
 

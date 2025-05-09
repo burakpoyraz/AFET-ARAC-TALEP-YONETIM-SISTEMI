@@ -13,7 +13,7 @@ const Talepler = () => {
   const [seciliTalep, setSeciliTalep] = useState(null);
   const [acikModal, setAcikModal] = useState(null);
 
-  const apiKey = import.meta.env.VITE_GOOGLE_MAPS_API_KEY;
+
 
   const { data: talepler = [], isLoading } = useQuery({
     queryKey: ["talepler"],

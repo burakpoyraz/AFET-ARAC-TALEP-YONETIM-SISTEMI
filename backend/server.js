@@ -5,6 +5,7 @@ import kurumFirmaRoutes from './routes/kurumFirma.route.js';
 import aracRoutes from './routes/arac.route.js';
 import talepRoutes from './routes/talep.route.js';
 import gorevRoutes from './routes/gorev.route.js';
+import bildirimRoutes from './routes/bildirim.route.js';
 import connectMongoDB from './db/connectMongoDB.js';
 import dotenv from 'dotenv';
 import cookieParser from 'cookie-parser';
@@ -32,6 +33,7 @@ app.use("/api/kurumlar",kurumFirmaRoutes);
 app.use("/api/araclar",aracRoutes);
 app.use("/api/talepler",talepRoutes);
 app.use("/api/gorevler",gorevRoutes);
+app.use("/api/bildirimler", bildirimRoutes); 
 
 
 
