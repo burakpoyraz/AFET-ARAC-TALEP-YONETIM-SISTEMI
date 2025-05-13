@@ -18,7 +18,6 @@ export const gorevOlustur = async (req, res) => {
     if (!talep) {
       return res.status(404).json({ message: "Talep bulunamadı" });
     }
-    
 
     const arac = await Arac.findOne({
       _id: aracId,
@@ -51,8 +50,11 @@ export const gorevOlustur = async (req, res) => {
     talep.durum = "gorevlendirildi";
     await talep.save();
 
+    // Aracın müsaitlik durumu güncellenir
+    arac.musaitlikDurumu = false;
+    await arac.save();
 
- // 📢 1. Koordinatöre bildirim (görevi oluşturan kişi)
+    // 📢 1. Koordinatöre bildirim (görevi oluşturan kişi)
     await bildirimOlustur({
       kullaniciId: koordinatorId,
       baslik: "Görev Oluşturuldu",
@@ -111,7 +113,6 @@ export const gorevOlustur = async (req, res) => {
         gizlilik: "kurumsal",
       });
     }
-
 
     return res.status(201).json({
       message: "Görev başarıyla oluşturuldu",
@@ -209,7 +210,7 @@ export const gorevDurumGuncelle = async (req, res) => {
     const arac = await Arac.findById(mevcutGorev.aracId);
     if (arac) {
       // 1. Müsaitlik durumu güncelle
-      if (gorevDurumu === "başladı","beklemede") {
+      if ((gorevDurumu === "başladı", "beklemede")) {
         arac.musaitlikDurumu = false;
       }
 
@@ -220,6 +221,26 @@ export const gorevDurumGuncelle = async (req, res) => {
       await arac.save();
     }
 
+    if (gorevDurumu === "tamamlandı") {
+      const ilgiliGorev = await Gorev.findById(id);
+
+      // Aynı talebe bağlı diğer görevleri getir (tamamlanmamış olanlar)
+      const digerGorevler = await Gorev.find({
+        talepId: ilgiliGorev.talepId,
+        _id: { $ne: ilgiliGorev._id },
+      });
+
+      // Diğer tüm görevler de tamamlandıysa → talebi güncelle
+      const tumuTamamlandiMi = digerGorevler.every(
+        (g) => g.gorevDurumu === "tamamlandı"
+      );
+
+      if (tumuTamamlandiMi) {
+        await Talep.findByIdAndUpdate(ilgiliGorev.talepId, {
+          durum: "tamamlandı",
+        });
+      }
+    }
 
     res.status(200).json({
       message: "Görev durumu başarıyla güncellendi",
@@ -245,7 +266,6 @@ export const tahminiSureleriGetir = async (req, res) => {
     const destination = `${hedefKonum.lat},${hedefKonum.lng}`;
     const apiKey = process.env.GOOGLE_MAPS_API_KEY;
 
-
     const url = `https://maps.googleapis.com/maps/api/distancematrix/json?origins=${originsParam}&destinations=${destination}&key=${apiKey}&language=tr`;
 
     const response = await axios.get(url);
@@ -256,8 +276,6 @@ export const tahminiSureleriGetir = async (req, res) => {
       sureValue: row.elements[0].duration?.value || null, // saniye cinsinden
       mesafeText: row.elements[0].distance?.text || "-",
     }));
-
-    console.log("API Responsed:", response.data);
 
     return res.status(200).json(bilgiler);
   } catch (error) {
@@ -292,8 +310,11 @@ export const aracSahibiGorevleriGetir = async (req, res) => {
       .populate("koordinatorId", "ad soyad telefon")
       .populate("aracId");
 
-    if (!gorevler || gorevler.length === 0) {
+    if (!gorevler) {
       return res.status(404).json({ message: "Görev bulunamadı" });
+    }
+    if (gorevler.length === 0) {
+      return res.status(200).json([]);
     }
 
     res.status(200).json(gorevler);

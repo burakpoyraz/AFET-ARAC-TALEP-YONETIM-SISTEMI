@@ -1,34 +1,43 @@
-import { useQuery } from '@tanstack/react-query';
-import React from 'react'
-import { useState } from 'react';
-import api from '../../lib/axios';
-import { useNavigate } from 'react-router-dom';
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import React from "react";
+import { useState } from "react";
+import api from "../../lib/axios";
+import { useNavigate } from "react-router-dom";
 
 const Bildirimler = () => {
+  const navigate = useNavigate();
 
-    const navigate = useNavigate();
+  const queryClient = useQueryClient();
 
-      const [filtre, setFiltre] = useState("hepsi");
+  const [filtre, setFiltre] = useState("hepsi");
 
-    const { data: bildirimler = [], isLoading } = useQuery({
-        queryKey: ["bildirimler"],
-        queryFn: async () => {
-            const res = await api.get("/bildirimler");
-        
-            return res.data;
+  const { data: bildirimler = [], isLoading } = useQuery({
+    queryKey: ["bildirimler"],
+    queryFn: async () => {
+      const res = await api.get("/bildirimler");
 
+      return res.data;
+    },
+  });
 
-        },
-    });
-
-      const filtrelenmis = bildirimler.filter((b) =>
+  const filtrelenmis = bildirimler.filter((b) =>
     filtre === "hepsi" ? true : b.tur === filtre
   );
 
-  console.log(bildirimler);
 
 
-
+  const { mutate: bildirimOkunduYap } = useMutation({
+    mutationFn: async (bildirimId) => {
+      const res = await api.put(`/bildirimler/${bildirimId}`);
+      return res.data;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries(["bildirimler"]);
+    },
+  });
+  const okunduYap = (bildirimId) => {
+    bildirimOkunduYap(bildirimId);
+  };
 
   return (
     <div className="p-6">
@@ -43,7 +52,9 @@ const Bildirimler = () => {
               filtre === tip ? "btn-primary" : "btn-outline"
             }`}
           >
-            {tip === "hepsi" ? "Tümü" : tip.charAt(0).toUpperCase() + tip.slice(1)}
+            {tip === "hepsi"
+              ? "Tümü"
+              : tip.charAt(0).toUpperCase() + tip.slice(1)}
           </button>
         ))}
       </div>
@@ -54,39 +65,41 @@ const Bildirimler = () => {
         <ul className="space-y-3">
           {filtrelenmis.map((b) => (
             <li
-  key={b._id}
-  className="p-4 border rounded shadow-sm bg-base-100 hover:bg-base-200 transition"
->
-  <div className="flex items-center justify-between mb-1">
-    <strong className="text-base">{b.baslik}</strong>
-    <span className="badge badge-outline">
-      {b.tur.charAt(0).toUpperCase() + b.tur.slice(1)}
-    </span>
-  </div>
+              key={b._id}
+              className="p-4 border rounded shadow-sm bg-base-100 hover:bg-base-200 transition"
+            >
+              <div className="flex items-center justify-between mb-1">
+                <strong className="text-base">{b.baslik}</strong>
+                <span className="badge badge-outline">
+                  {b.tur.charAt(0).toUpperCase() + b.tur.slice(1)}
+                </span>
+              </div>
 
-  <div className="text-sm text-gray-700 mb-1">{b.icerik}</div>
+              <div className="text-sm text-gray-700 mb-1">{b.icerik}</div>
 
-  <div className="flex items-center justify-between mt-2">
-    <span className="text-xs text-gray-400">
-      {new Date(b.createdAt).toLocaleString("tr-TR")}
-    </span>
-    {b.hedefUrl && (
-      <button
-        onClick={() => navigate(b.hedefUrl)}
-        className="btn btn-xs btn-outline btn-info"
-      >
-        Detay
-      </button>
-    )}
-  </div>
-</li>
+              <div className="flex items-center justify-between mt-2">
+                <span className="text-xs text-gray-400">
+                  {new Date(b.createdAt).toLocaleString("tr-TR")}
+                </span>
+                {b.hedefUrl && (
+                  <button
+                    onClick={() => {
+                      okunduYap(b._id);
+
+                      navigate(b.hedefUrl);
+                    }}
+                    className="btn btn-xs btn-outline btn-info"
+                  >
+                    Detay
+                  </button>
+                )}
+              </div>
+            </li>
           ))}
-
-          
         </ul>
       )}
     </div>
   );
 };
 
-export default Bildirimler
+export default Bildirimler;

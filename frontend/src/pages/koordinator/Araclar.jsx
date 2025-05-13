@@ -2,6 +2,7 @@ import { useQuery } from "@tanstack/react-query";
 import React, { useState } from "react";
 import api from "../../lib/axios";
 import AracDetay from "./modals/araclar/AracDetay";
+import AracSilOnayModal from "../arac_sahibi/modals/AracSilOnayModal";
 
 const Araclar = () => {
   const [acikModal, setAcikModal] = useState(null);
@@ -20,10 +21,12 @@ const Araclar = () => {
   console.log(araclar);
   const filtrelenmisAraclar = araclar.filter((arac) => {
     const plaka = arac.plaka.toLowerCase();
-    const tur= arac.aracTuru.toLowerCase();
-    const adres= arac.konum?.adres.toLowerCase() || "";
+    const tur = arac.aracTuru.toLowerCase();
+    const adres = arac.konum?.adres.toLowerCase() || "";
     const kurumAdi = arac.kurumFirmaId?.kurumAdi?.toLowerCase() || "";
-    const kullaniciAdSoyad = `${arac.kullaniciId?.ad || ""} ${arac.kullaniciId?.soyad || ""}`.toLowerCase();
+    const kullaniciAdSoyad = `${arac.kullaniciId?.ad || ""} ${
+      arac.kullaniciId?.soyad || ""
+    }`.toLowerCase();
 
     const searchTerm = arama.toLowerCase();
 
@@ -104,7 +107,6 @@ const Araclar = () => {
                     ) : (
                       <span className="badge badge-error">Tanımsız</span>
                     )}
-                    
                   </td>
 
                   <td>
@@ -147,6 +149,11 @@ const Araclar = () => {
       )}
 
       <AracDetay arac={seciliArac} modal={acikModal} setModal={setAcikModal} />
+      <AracSilOnayModal
+        modal={acikModal}
+        setModal={setAcikModal}
+        arac={seciliArac}
+      />
     </div>
   );
 };

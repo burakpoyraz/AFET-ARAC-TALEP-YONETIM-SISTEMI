@@ -203,11 +203,15 @@ export const talepGuncelle = async (req, res) => {
     }
 
     if (durum) {
-      // Görevlendirilen talepler iptal edilemez
-      if (talep.durum === "gorevlendirildi" && durum === "iptal edildi") {
-        return res
-          .status(400)
-          .json({ error: "Görev ataması yapılmış talepler iptal edilemez" });
+      // Görevlendirilen veya tamamlanan talepler iptal edilemez
+      if (
+        ["gorevlendirildi", "tamamlandı"].includes(talep.durum) &&
+        durum === "iptal edildi"
+      ) {
+        return res.status(400).json({
+          error:
+            "Görev ataması yapılmış veya tamamlanmış talepler iptal edilemez",
+        });
       }
 
       talep.durum = durum;

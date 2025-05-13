@@ -23,7 +23,7 @@ export const bildirimOlustur = async ({
 
 
         await bildirim.save();
-        console.log("Bildirim oluşturuldu:", bildirim);
+     
         return bildirim;
     } catch (error) {
         console.error("Bildirim oluşturulurken hata:", error.message);

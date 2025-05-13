@@ -6,7 +6,7 @@ import api from "../../lib/axios";
 
 const Sidebar = () => {
 
-  const [bildirimSayisi, setBildirimSayisi] = useState(0);
+  
 
   const queryClient = useQueryClient();
   const kullanici = queryClient.getQueryData(["girisYapanKullanici"]);
@@ -26,7 +26,7 @@ const Sidebar = () => {
    
 ).length;
 
-  console.log(okunmamisSayisi);
+
 
   return (
     <aside className="w-64 bg-base-200 h-full p-4 hidden md:block">
