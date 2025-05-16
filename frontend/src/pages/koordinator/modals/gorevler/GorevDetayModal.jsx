@@ -62,7 +62,7 @@ const GorevDetayModal = ({ gorev, modal, setModal }) => {
     <div className="space-y-3">
       <div className="flex justify-between">
         <span className="font-medium text-gray-600">📌 Görev Durumu:</span>
-        <span className="font-semibold text-gray-800">{gorev?.gorevDurumu}</span>
+        <span className="font-semibold text-gray-800 capitalize">{gorev?.gorevDurumu}</span>
       </div>
 
       <div className="flex justify-between">
@@ -121,21 +121,16 @@ const GorevDetayModal = ({ gorev, modal, setModal }) => {
   {/* Araç Plaka + Tip */}
   <div className="flex items-center gap-2">
     <span className="text-lg">🚗</span>
-    <span className="font-semibold text-base">{gorev?.aracId?.plaka}</span>
-    <span className="text-gray-400 text-sm">
+    <span className="font-semibold text-base uppercase">{gorev?.aracId?.plaka}</span>
+    <span className="text-gray-400 text-sm capitalize">
       ({gorev?.aracId?.aracTuru})
     </span>
-  </div>
-
-  {/* Marka / Model */}
-  <div className="text-sm text-gray-600">
-    {gorev?.aracId?.marka} {gorev?.aracId?.model}
   </div>
 
   {/* Şoför Bilgisi */}
   <div className="flex items-center gap-2">
     <span className="text-gray-600">👨‍✈️</span>
-    <span>
+    <span className="capitalize">
       {gorev?.sofor?.ad} {gorev?.sofor?.soyad} – 📞 {gorev?.sofor?.telefon}
     </span>
   </div>
