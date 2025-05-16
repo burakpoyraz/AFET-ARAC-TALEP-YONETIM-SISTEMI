@@ -3,23 +3,22 @@ import Bildirim from "../models/bildirim.model.js";
 
 export const bildirimleriGetir = async (req, res) => {
   try {
-    const kullaniciId = req.kullanici._id;
-    const kurumFirmaId = req.kullanici.kurumFirmaId;
-
-const filtre = {
-  $or: [
-    { kullaniciId: req.kullanici._id },            // bireysel bildirimler
-    { kurumFirmaId: req.kullanici.kurumFirmaId }   // kurumsal bildirimler
-  ]
-};
+    const filtre = req.kullanici.kurumFirmaId
+      ? {
+          $or: [
+            { kullaniciId: req.kullanici._id },
+            { kurumFirmaId: req.kullanici.kurumFirmaId }
+          ]
+        }
+      : {
+          kullaniciId: req.kullanici._id
+        };
 
     const bildirimler = await Bildirim.find(filtre).sort({ createdAt: -1 });
 
-    if (!bildirimler) {
-        return res.status(404).json({ message: "Bildirim bulunamadı" });
-        }
-    
-   
+    if (!bildirimler || bildirimler.length === 0) {
+      return res.status(404).json({ message: "Bildirim bulunamadı" });
+    }
 
     res.status(200).json(bildirimler);
   } catch (error) {

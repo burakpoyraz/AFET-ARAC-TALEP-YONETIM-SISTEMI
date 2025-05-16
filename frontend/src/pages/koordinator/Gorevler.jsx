@@ -116,17 +116,17 @@ const Gorevler = () => {
                       📋
                     </button>
                   </td>
-                  <td>{gorev.talepId.baslik}</td>
-                  <td>
+                  <td className="capitalize">{gorev.talepId.baslik}</td>
+                  <td className="capitalize">
                     {gorev.talepId?.talepEdenKurumFirmaId?.kurumAdi || "-"}
                   </td>
-                  <td>
+                  <td className="uppercase">
                     {gorev.aracId
-                      ? `${gorev.aracId.plaka} (${gorev.aracId.aracTuru})`
+                      ? gorev.aracId.plaka
                       : "-"}
                   </td>
 
-                  <td className="whitespace-nowrap">
+                  <td className="whitespace-nowrap capitalize">
                     <div className="flex flex-col">
                       <span
                         title={gorev.talepId?.lokasyon?.adres}
@@ -145,24 +145,24 @@ const Gorevler = () => {
                       </button>
                     </div>
                   </td>
-                  <td>
+                  <td className="capitalize">
                     {gorev.gorevDurumu === "tamamlandı" && (
-                      <span className="badge badge-success gap-2">
+                      <span className="badge badge-success gap-2  ">
                         Tamamlandı
                       </span>
                     )}
                     {gorev.gorevDurumu === "başladı" && (
-                      <span className="badge badge-warning gap-2 text-white">
+                      <span className="badge badge-warning gap-2 ">
                         Başladı
                       </span>
                     )}
                     {gorev.gorevDurumu === "beklemede" && (
-                      <span className="badge badge-info gap-2 text-white">
+                      <span className="badge badge-info gap-2 ">
                         Beklemede
                       </span>
                     )}
                     {gorev.gorevDurumu === "iptal edildi" && (
-                      <span className="badge badge-error gap-2 text-white">
+                      <span className="badge badge-error gap-2 ">
                         İptal Edildi
                       </span>
                     )}

@@ -70,18 +70,20 @@ const GirisYap = () => {
       <div
         className="hidden lg:block lg:w-1/2 bg-cover bg-center"
         style={{
-          backgroundPosition: "center",
-          backgroundSize: "cover",
-          backgroundColor: "#4a90e2", // Varsayılan arka plan rengi
+         backgroundImage: 'url("/images/afet_nakliye_gorsel2.png")',
+    backgroundPosition: "center",
+    backgroundSize: "cover",
         }}
       >
-        <div className="flex h-full items-center justify-center bg-black bg-opacity-50">
+       <div className="flex h-full flex-col justify-start items-center bg-black/60 pt-14">
           <div className="text-center text-white p-8">
             <h1 className="text-4xl font-bold mb-4">Tekrar Hoş Geldiniz</h1>
-            <p className="text-xl">
-              Hesabınıza giriş yaparak platformumuzun tüm özelliklerinden
-              yararlanabilirsiniz.
-            </p>
+         <p className="text-xl">
+  Bu sistem, afet dönemlerinde yolcu ve yük taşımacılığı için araç talep ve görevlendirme süreçlerini yönetmek amacıyla geliştirilmiştir. 
+</p>
+<p className="text-xl font-semibold pt-8">
+Devam etmek için hesabınıza giriş yapın.
+</p>
           </div>
         </div>
       </div>
@@ -151,6 +153,16 @@ const GirisYap = () => {
                 </Link>
               </p>
             </div>
+            <div className="mt-6 text-center text-xs text-gray-400 leading-relaxed">
+                Bu sistem, <span className="font-medium">Burak Poyraz</span>{" "}
+                tarafından
+                <span className="font-semibold">
+                  {" "}
+                  Ahmet Yesevi Üniversitesi - Bilgisayar Mühendisliği -
+                </span>
+                <span className="font-semibold"> Proje II</span> dersi
+                kapsamında geliştirilmiştir.
+              </div>
           </div>
         </div>
       </div>

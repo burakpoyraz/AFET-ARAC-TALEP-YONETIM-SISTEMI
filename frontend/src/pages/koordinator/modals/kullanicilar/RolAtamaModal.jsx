@@ -34,9 +34,9 @@ const RolAtamaModal = ({ kullanici, modal, setModal }) => {
     <dialog id="rolAtamaModal" className="modal">
       <div className="modal-box">
         <h3 className="font-bold text-lg border-b pb-1">Rol Atama</h3>
-        <p className="py-2 text-sm text-gray-600">
-          {kullanici.ad} {kullanici.soyad} için yeni rol seçin:
-        </p>
+<p className="py-2 text-sm text-gray-600">
+  <span className="capitalize">{kullanici.ad} {kullanici.soyad}</span> için yeni rol seçin:
+</p>
 
         <select
           className="select select-bordered w-full mb-4"

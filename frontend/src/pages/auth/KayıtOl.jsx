@@ -3,12 +3,11 @@ import React, { useState } from "react";
 import { CiUser, CiMail, CiLock, CiPhone, CiHome } from "react-icons/ci";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import axios from "axios";
-import {toast} from "react-hot-toast";
+import { toast } from "react-hot-toast";
 import { Link } from "react-router-dom";
+import nakliyeGorsel from "/images/afet_nakliye_gorsel.png";
 
 const KayıtOl = () => {
-
-
   const queryClient = useQueryClient();
   const [formData, setFormData] = useState({
     ad: "",
@@ -26,39 +25,33 @@ const KayıtOl = () => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
-  const {mutate,isError,isPending,isSuccess,error} = useMutation({
-
+  const { mutate, isError, isPending, isSuccess, error } = useMutation({
     mutationFn: async (formData) => {
-      try{
-        const res = await axios.post("/api/auth/kayitol", formData,{withCredentials: true});
+      try {
+        const res = await axios.post("/api/auth/kayitol", formData, {
+          withCredentials: true,
+        });
 
-        if(res.data.error){
+        if (res.data.error) {
           throw new Error(res.data.error);
         }
         // Başarılı bir yanıt döndürülürse, bu yanıtı döndürün
-          console.log(res.data);
+        console.log(res.data);
         return res.data;
-      }
-     
-      catch(error){
+      } catch (error) {
         throw new Error(error.response.data.error);
       }
-
     },
     onSuccess: (data) => {
-      
       toast.success("Kayıt başarılı!");
-     
+
       queryClient.invalidateQueries(["girisYapanKullanici"]);
     },
     onError: (error) => {
-
       toast.error("Kayıt hatası: " + error.message);
-      
+
       console.error("Kayıt hatası:", error.message);
     },
-
-    
   });
 
   const handleSubmit = async (e) => {
@@ -69,26 +62,32 @@ const KayıtOl = () => {
     }
     console.log("Gönderilen veriler:", formData);
     mutate(formData);
-    
   };
 
   return (
     <div className="min-h-screen flex">
       {/* Sol Taraf - Görsel */}
       <div
-        className="hidden lg:block lg:w-1/2 bg-cover bg-center"
+        className="relative block lg:w-1/2 min-h-screen bg-cover bg-center z-20"
         style={{
-        //  backgroundImage: 'url("/api/placeholder/800/1200")',
-          backgroundPosition: "center",
+          backgroundImage: 'url("/images/afet_nakliye_gorsel2.png")',
           backgroundSize: "cover",
+          backgroundPosition: "center",
         }}
       >
-        <div className="flex h-full items-center justify-center bg-black bg-opacity-50">
+        {/* Yarı saydam overlay */}
+
+        {/* İçerik katmanı */}
+        <div className="flex h-full flex-col justify-start bg-black/60 items-center pt-14">
           <div className="text-center text-white p-8">
             <h1 className="text-4xl font-bold mb-4">Hoş Geldiniz</h1>
             <p className="text-xl">
-              Hesap oluşturarak platformumuzun tüm özelliklerinden
-              yararlanabilirsiniz.
+              Bu platform, afet dönemlerinde yolcu ve yük taşımacılığı için araç
+              talep ve görevlendirme süreçlerini dijital olarak yönetmek
+              amacıyla geliştirilmiştir.
+            </p>
+            <p className="text-xl font-semibold pt-8">
+              Katılmak ve destek sağlamak için hemen kayıt olun.
             </p>
           </div>
         </div>
@@ -230,6 +229,7 @@ const KayıtOl = () => {
                 Kayıt Ol
               </button>
             </form>
+
             <div className="text-center mt-4">
               <p className="text-sm">
                 Zaten hesabınız var mı?
@@ -237,7 +237,18 @@ const KayıtOl = () => {
                   Giriş Yap
                 </Link>
               </p>
+             
             </div>
+             <div className="mt-6 text-center text-xs text-gray-400 leading-relaxed">
+                Bu sistem, <span className="font-medium">Burak Poyraz</span>{" "}
+                tarafından
+                <span className="font-semibold">
+                  {" "}
+                  Ahmet Yesevi Üniversitesi - Bilgisayar Mühendisliği -
+                </span>
+                <span className="font-semibold"> Proje II</span> dersi
+                kapsamında geliştirilmiştir.
+              </div>
           </div>
         </div>
       </div>

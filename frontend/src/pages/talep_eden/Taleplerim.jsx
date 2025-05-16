@@ -18,7 +18,6 @@ const Taleplerim = () => {
   });
 
   const filtrelenmisTalepler = talepler.filter((talep) => {
-   
     const talepID = talep._id?.toLowerCase() || "";
     const baslik = talep.baslik?.toLowerCase() || "";
     const aciklama = talep.aciklama?.toLowerCase() || "";
@@ -30,7 +29,15 @@ const Taleplerim = () => {
       aciklama.includes(searchTerm) ||
       aracTuru.includes(searchTerm)
     );
-  });
+  }) .sort((a, b) => {
+      const oncelik = {
+        beklemede: 0,
+        gorevlendirildi: 1,
+        tamamlandı: 2,
+        "iptal edildi": 3,
+      };
+      return (oncelik[a.durum] ?? 99) - (oncelik[b.durum] ?? 99);
+    });
 
   return (
     <div className="p-6">
@@ -73,7 +80,7 @@ const Taleplerim = () => {
             <tbody>
               {filtrelenmisTalepler.map((talep, index) => (
                 <tr key={talep._id}>
-                   <td className="flex items-center gap-2" title={talep._id}>
+                  <td className="flex items-center gap-2" title={talep._id}>
                     <span>{`${talep._id.slice(0, 4)}...${talep._id.slice(
                       -4
                     )}`}</span>
@@ -88,21 +95,23 @@ const Taleplerim = () => {
                       📋
                     </button>
                   </td>
-                  <td>{talep.baslik}</td>
-                  <td>{talep.aciklama}</td>
-                  <td>{talep.aracTuru}</td>
-                  <td>{talep.aracSayisi}</td>
-                  <td>{talep.lokasyon.adres}</td>
-                   <td>
+                  <td className="capitalize">{talep.baslik}</td>
+                  <td className="capitalize">{talep.aciklama}</td>
+                  <td className="capitalize">{talep.aracTuru}</td>
+                  <td className="capitalize">{talep.aracSayisi}</td>
+                  <td className="capitalize">{talep.lokasyon.adres}</td>
+                  <td className="capitalize">
                     <span
                       className={`badge ${
                         talep.durum === "beklemede"
-                          ? "badge-error"
-                          : talep.durum === "tamamlandi"
-                          ? "badge-success"
+                          ? "badge badge-info gap-2"
                           : talep.durum === "gorevlendirildi"
-                          ? "badge-warning"
-                          : "badge-info"
+                          ? "badge badge-warning gap-2"
+                          : talep.durum === "tamamlandı"
+                          ? "badge badge-success gap-2 "
+                          : talep.durum === "iptal edildi"
+                          ? "badge badge-error gap-2 "
+                          : "badge-ghost"
                       }`}
                     >
                       {talep.durum}
@@ -153,7 +162,7 @@ const Taleplerim = () => {
         duzenlenecekTalep={seciliTalep}
       />
 
-       <TalepIptalModal
+      <TalepIptalModal
         talep={seciliTalep}
         modal={acikModal}
         setModal={setAcikModal}

@@ -115,11 +115,11 @@ const GorevlerimAracSahibi = () => {
                       📋
                     </button>
                   </td>
-                  <td>{gorev.talepId.baslik}</td>
-                  <td>
+                  <td className="capitalize">{gorev.talepId.baslik}</td>
+                  <td className="capitalize">
                     {gorev.talepId?.talepEdenKurumFirmaId?.kurumAdi || "-"}
                   </td>
-                  <td>{gorev.aracId?.plaka || "-"}</td>
+                  <td className="uppercase">{gorev.aracId?.plaka || "-"}</td>
 
                   <td className="whitespace-nowrap">
                     <div className="flex flex-col">

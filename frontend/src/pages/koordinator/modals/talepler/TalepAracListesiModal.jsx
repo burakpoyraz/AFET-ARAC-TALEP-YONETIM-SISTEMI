@@ -46,7 +46,7 @@ const TalepAracListesiModal = ({
   return (
     <dialog id="talepAracListesiModal" className="modal">
       <div className="modal-box max-w-5xl">
-        <h3 className="font-bold text-lg border-b pb-2 mb-4">🚐 Araç Seç</h3>
+        <h3 className="font-bold text-lg border-b pb-2 mb-4"> Araç Seç</h3>
 
         <div className="flex flex-col md:flex-row gap-3 mb-4">
           <input
@@ -90,16 +90,16 @@ const TalepAracListesiModal = ({
                 onChange={() => setSeciliArac(arac)}
               />
               <div className="flex flex-col gap-1 w-full">
-                <div className="flex justify-between items-center">
+                <div className="flex justify-between items-center capitalize">
                   <div>
-                    <span className="font-bold">{arac.plaka}</span> - {arac.aracTuru}
+                    <span className="font-bold uppercase">{arac.plaka}</span> - {arac.aracTuru}
                   </div>
                   <div className="text-right">
                     <p className="text-sm">📏 {arac.mesafe}</p>
                     <p className="text-sm">🕒 {arac.sure}</p>
                   </div>
                 </div>
-                <p className="text-sm text-gray-600">🏢 {arac.kurumFirmaId?.kurumAdi || `${arac.kullaniciId?.ad || ""} ${arac.kullaniciId?.soyad || ""}`}</p>
+                <p className="text-sm text-gray-600 capitalize">🏢 {arac.kurumFirmaId?.kurumAdi || `${arac.kullaniciId?.ad || ""} ${arac.kullaniciId?.soyad || ""}`}</p>
                 {arac.konum?.adres && (
                   <p className="text-sm text-gray-600">📍 {arac.konum.adres}</p>
                 )}

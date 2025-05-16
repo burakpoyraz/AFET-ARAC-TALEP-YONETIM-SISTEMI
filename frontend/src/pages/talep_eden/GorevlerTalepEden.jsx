@@ -107,9 +107,9 @@ const GorevlerTalepEden = () => {
                       📋
                     </button>
                   </td>
-                  <td>{gorev?.talepId?.baslik || "-"}</td>
-                  <td>{gorev?.aracId?.plaka || "-"}</td>
-                  <td className="whitespace-nowrap">
+                  <td className="capitalize">{gorev?.talepId?.baslik || "-"}</td>
+                  <td className="uppercase">{gorev?.aracId?.plaka || "-"}</td>
+                  <td className="whitespace-nowrap capitalize">
                     <div className="flex flex-col">
                       <span
                         title={gorev.talepId?.lokasyon?.adres}
@@ -128,7 +128,7 @@ const GorevlerTalepEden = () => {
                       </button>
                     </div>
                   </td>
-                  <td>
+                  <td className="capitalize">
                     {gorev.gorevDurumu === "tamamlandı" && (
                       <span className="badge badge-success">Tamamlandı</span>
                     )}

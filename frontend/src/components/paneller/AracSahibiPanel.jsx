@@ -107,7 +107,8 @@ const AracSahibiPanel = () => {
           { title: "İptal Edilen", value: stats.gorev.iptal },
         ]}
         buttonText="Görevlerim"
-        link="/gorevlerim"
+                link="/arac-sahibi/gorevler"
+
       />
     </div>
   );

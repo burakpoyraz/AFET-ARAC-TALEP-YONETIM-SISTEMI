@@ -101,7 +101,7 @@ const TalepGorevlendirModal = ({ talep, araclar, modal, setModal }) => {
   return (
     <dialog id="talepGorevlendirModal" className="modal">
       <div className="modal-box max-w-5xl">
-        <h3 className="font-bold text-lg border-b pb-2 mb-4">🚐 Araç Görevlendir</h3>
+        <h3 className="font-bold text-lg border-b pb-2 mb-4">Araç Görevlendir</h3>
 
         <div className="bg-gray-100 p-4 rounded-md mb-4 text-sm space-y-2">
           <div><strong>Başlık:</strong> {talep.baslik}</div>

@@ -92,11 +92,11 @@ const Kullanicilar = () => {
             {filtrelenmisKullanicilar.map((kullanici, index) => (
               <tr key={kullanici._id}>
                 <td>{index + 1}</td>
-                <td>
+                <td className="capitalize">
                   {kullanici.ad} {kullanici.soyad}
                 </td>
                 <td>{kullanici.email}</td>
-                <td>
+                <td className="capitalize">
                   {kullanici.rol === "beklemede"
                     ? "Beklemede"
                     : kullanici.rol === "koordinator"
@@ -108,7 +108,7 @@ const Kullanicilar = () => {
                     : "-"}
                 </td>
 
-                <td>
+                <td className="capitalize">
                   {kullanici.kullaniciBeyanBilgileri?.kurumFirmaTuru ===
                   "kurulus_adina"
                     ? "Kuruluş Adına"
@@ -118,7 +118,7 @@ const Kullanicilar = () => {
                     : "-"}
                 </td>
 
-                <td>{kullanici.kurumFirmaId?.kurumAdi || "-"}</td>
+                <td className="capitalize">{kullanici.kurumFirmaId?.kurumAdi || "-"}</td>
                 <td>
                   <div className="dropdown dropdown-end">
                     <button tabIndex={0} className="btn btn-xs btn-outline">

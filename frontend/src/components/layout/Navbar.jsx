@@ -1,7 +1,7 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import React from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { FaUserCircle, FaSignOutAlt } from "react-icons/fa";
+import { FaUserCircle, FaSignOutAlt, FaTruck, FaHardHat } from "react-icons/fa";
 import api from "../../lib/axios";
 
 const Navbar = () => {
@@ -32,12 +32,32 @@ const Navbar = () => {
     logout();
   };
 
+  const rolGoster = (rol) => {
+    switch (rol) {
+      case "arac_sahibi":
+        return "Araç Sahibi";
+      case "talep_eden":
+        return "Talep Eden";
+      case "koordinator":
+        return "Koordinatör";
+      default:
+        return rol;
+    }
+  };
+
   return (
     <div className="navbar bg-base-200 shadow-sm px-6">
       {/* Sol: Logo */}
       <div className="flex-1">
-        <Link to="/" className="text-2xl font-bold text-primary">
-          AFET NAKLİYE YÖNETİM SİSTEMİ
+        <Link to="/" className="flex items-center space-x-2">
+          <div className="bg-primary rounded-lg p-2 flex items-center justify-center">
+            <FaTruck className="text-white h-6 w-6" />
+          </div>
+          <div>
+            <span className="text-xl font-bold text-primary">AFET NAKLİYE</span>
+            <span className="hidden md:inline text-xl font-bold text-primary"> YÖNETİM SİSTEMİ</span>
+            <div className="text-xs text-gray-500 -mt-1 hidden md:block">Afet Döneminde Hızlı ve Etkin Nakliye Koordinasyonu</div>
+          </div>
         </Link>
       </div>
 
@@ -46,14 +66,14 @@ const Navbar = () => {
         <div className="flex items-center gap-2">
           <FaUserCircle className="w-8 h-8 text-primary" />
           <div className="hidden sm:block text-sm text-gray-700">
-  <p className="font-medium">
-    {kullanici.ad} {kullanici.soyad}
-  </p>
-  <p className="text-xs text-gray-500">{kullanici.rol}</p>
-  <p className="text-xs italic text-gray-400">
-    {kullanici.kurumFirmaId?.kurumAdi}
-  </p>
-</div>
+            <p className="font-medium capitalize">
+              {kullanici.ad} {kullanici.soyad}
+            </p>
+            <p className="text-xs text-gray-500 capitalize">{rolGoster(kullanici.rol)}</p>
+            <p className="text-xs italic text-gray-400 capitalize">
+              {kullanici.kurumFirmaId?.kurumAdi}
+            </p>
+          </div>
         </div>
 
         <button

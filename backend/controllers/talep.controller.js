@@ -1,6 +1,7 @@
 import Talep from "../models/talep.model.js";
 import Kullanici from "../models/kullanici.model.js";
 import { bildirimOlustur } from "../lib/utils/bildirimOlustur.js";
+import { mailGonder } from "../lib/utils/email.js";
 
 export const talepEkle = async (req, res) => {
   const { baslik, aciklama, aracTuru, aracSayisi, lokasyon, durum } = req.body;
@@ -71,13 +72,13 @@ export const talepEkle = async (req, res) => {
     );
 
     const kurumSet = new Set();
-    const koordinatorsuzlar = [];
+    const kurumaBagliOlmayanKoordinatorler = [];
 
     for (const k of koordinatorler) {
       if (k.kurumFirmaId) {
         kurumSet.add(k.kurumFirmaId.toString());
       } else {
-        koordinatorsuzlar.push(k._id); // Kuruma bağlı olmayan koordinatör
+        kurumaBagliOlmayanKoordinatorler.push(k._id); // Kuruma bağlı olmayan koordinatör
       }
     }
     // 3. Her kuruma sadece bir bildirim gönder (kurumsal)
@@ -85,7 +86,7 @@ export const talepEkle = async (req, res) => {
       await bildirimOlustur({
         kullaniciId: null,
         kurumFirmaId: kurumId,
-        baslik: `YENİ TALEP : ${talep.baslik} Talebi`,
+        baslik: `Yeni Talep : ${talep.baslik} Talebi`,
         icerik: `Açıklama: ${talep.aciklama}`,
         hedefUrl: `/talepler/${talep._id}`,
         tur: "talep",
@@ -93,16 +94,33 @@ export const talepEkle = async (req, res) => {
       });
     }
     // 4. Kuruma bağlı olmayan koordinatörlere bireysel bildirim gönder
-    for (const kId of koordinatorsuzlar) {
+    for (const kId of kurumaBagliOlmayanKoordinatorler) {
       await bildirimOlustur({
         kullaniciId: kId,
         kurumFirmaId: null,
-        baslik: `YENİ TALEP : ${talep.baslik} Talebi`,
+        baslik: `Yeni Talep : ${talep.baslik} Talebi`,
         icerik: `Açıklama: ${talep.aciklama}`,
         hedefUrl: `/talepler/${talep._id}`,
         tur: "talep",
         gizlilik: "bireysel",
       });
+    }
+
+    const tumKoordinatorler = await Kullanici.find({
+      rol: "koordinator",
+    }).select("ad soyad email");
+
+    for (const k of tumKoordinatorler) {
+      if (k.email) {
+        await mailGonder({
+          to: k.email,
+          subject: `Yeni Talep: ${talep.baslik}`,
+          html: `<p>Sayın ${k.ad} ${k.soyad},</p>
+             <p>Yeni bir talep oluşturuldu:</p>
+             <p><strong>${talep.baslik}</strong></p>
+             <p>Açıklama: ${talep.aciklama}</p>`,
+        });
+      }
     }
 
     res.status(201).json({ talep });

@@ -55,9 +55,9 @@ const Talepler = () => {
     .sort((a, b) => {
       const oncelik = {
         beklemede: 0,
-        gorevlendirme_yapildi: 1,
-        tamamlandi: 2,
-        iptal_edildi: 3,
+        gorevlendirildi: 1,
+        tamamlandı: 2,
+        "iptal edildi": 3,
       };
       return (oncelik[a.durum] ?? 99) - (oncelik[b.durum] ?? 99);
     });
@@ -82,7 +82,7 @@ const Talepler = () => {
           <table className="table table-zebra w-full">
             <thead>
               <tr>
-                <th>#</th>
+                <th>Talep ID</th>
                 <th>Başlık</th>
                 <th>Açıklama</th>
                 <th>Araç Türü</th>
@@ -111,27 +111,29 @@ const Talepler = () => {
                       📋
                     </button>
                   </td>
-                  <td>{talep.baslik}</td>
-                  <td>{talep.aciklama}</td>
-                  <td>{talep.aracTuru}</td>
-                  <td>{talep.aracSayisi}</td>
-                  <td>{talep.lokasyon?.adres}</td>
-                  <td>
-                    <span
-                      className={`badge ${
-                        talep.durum === "beklemede"
-                          ? "badge-error"
-                          : talep.durum === "tamamlandi"
-                          ? "badge-success"
-                          : talep.durum === "gorevlendirildi"
-                          ? "badge-warning"
-                          : "badge-info"
-                      }`}
-                    >
-                      {talep.durum}
-                    </span>
-                  </td>
-                  <td>
+                  <td className="capitalize">{talep.baslik}</td>
+                  <td className="capitalize">{talep.aciklama}</td>
+                  <td className="capitalize">{talep.aracTuru}</td>
+                  <td className="capitalize">{talep.aracSayisi}</td>
+                  <td className="capitalize">{talep.lokasyon?.adres}</td>
+                 <td className="capitalize">
+  <span
+    className={`badge ${
+      talep.durum === "beklemede"
+        ? "badge badge-info gap-2"
+        : talep.durum === "gorevlendirildi"
+        ? "badge badge-warning gap-2"
+        : talep.durum === "tamamlandı"
+        ? "badge badge-success gap-2 "
+        : talep.durum === "iptal edildi"
+        ? "badge badge-error gap-2 "
+        : "badge-ghost"
+    }`}
+  >
+    {talep.durum}
+  </span>
+</td>
+                  <td className="capitalize">
                     {talep.talepEdenKurumFirmaId
                       ? talep.talepEdenKurumFirmaId.kurumAdi
                       : `${talep.talepEdenKullaniciId?.ad || ""} ${

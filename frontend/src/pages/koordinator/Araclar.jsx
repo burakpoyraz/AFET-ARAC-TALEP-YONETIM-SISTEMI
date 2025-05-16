@@ -39,6 +39,15 @@ const Araclar = () => {
     );
   });
 
+
+  const siraliAraclar = [...filtrelenmisAraclar].sort((a, b) => {
+  const aSkor =
+    (a.aracDurumu === "aktif" ? 2 : 0) + (a.musaitlikDurumu ? 1 : 0);
+  const bSkor =
+    (b.aracDurumu === "aktif" ? 2 : 0) + (b.musaitlikDurumu ? 1 : 0);
+  return bSkor - aSkor;
+});
+
   return (
     <div className="p-6">
       <h1 className="text-2xl font-bold mb-4">Araçlar</h1>
@@ -71,13 +80,13 @@ const Araclar = () => {
               </tr>
             </thead>
             <tbody>
-              {filtrelenmisAraclar.map((arac, index) => (
+              {siraliAraclar.map((arac, index) => (
                 <tr key={arac._id}>
                   <td>{index + 1}</td>
-                  <td>{arac.plaka}</td>
-                  <td>{arac.aracTuru}</td>
-                  <td>{arac.kapasite}</td>
-                  <td>{arac.kullanimAmaci}</td>
+                  <td className="uppercase">{arac.plaka}</td>
+                  <td className="capitalize">{arac.aracTuru}</td>
+                  <td className="capitalize">{arac.kapasite}</td>
+                  <td className="capitalize">{arac.kullanimAmaci}</td>
                   <td>
                     {arac.aracDurumu === "aktif" ? (
                       <span className="badge badge-success">Aktif</span>
@@ -94,7 +103,7 @@ const Araclar = () => {
                     )}
                   </td>
 
-                  <td>
+                  <td className="capitalize">
                     {" "}
                     {arac.kurumFirmaId ? (
                       <span className="badge badge-info">

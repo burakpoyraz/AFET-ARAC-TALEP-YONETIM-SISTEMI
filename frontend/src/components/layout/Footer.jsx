@@ -3,7 +3,7 @@ import React from "react";
 const Footer = () => {
   return (
     <footer className="bg-base-200 text-base-content mt-10">
-     <div className="footer p-10 max-w-7xl mx-auto text-sm flex flex-wrap justify-between gap-8">
+      <div className="footer p-10 max-w-7xl mx-auto text-sm flex flex-wrap justify-between gap-8">
         <div>
           <h2 className="text-lg font-bold">🚨 Afet Araç Talep ve Yönetim Sistemi</h2>
           <p className="max-w-xs">
@@ -14,6 +14,7 @@ const Footer = () => {
         <div>
           <span className="footer-title">Hazırlayan</span>
           <p>Burak Poyraz</p>
+          <p>Ahmet Yesevi Üniversitesi</p>
           <p>Bilgisayar Mühendisliği</p>
           <p>Proje II Dersi</p>
         </div>
@@ -21,7 +22,17 @@ const Footer = () => {
         <div>
           <span className="footer-title">İletişim</span>
           <p>Email: burak.poyraz32@gmail.com</p>
-          <p>GitHub: <a href="https://github.com/burakpoyraz/AFET-ARAC-TALEP-YONETIM-SISTEMI" className="link link-hover">AFET ARAC TALEP YONETIM SISTEMI</a></p>
+          <p>
+            GitHub:{" "}
+            <a
+              href="https://github.com/burakpoyraz/AFET-ARAC-TALEP-YONETIM-SISTEMI"
+              className="link link-hover"
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              AFET ARAC TALEP YONETIM SISTEMI
+            </a>
+          </p>
         </div>
       </div>
 

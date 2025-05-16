@@ -3,6 +3,9 @@ import Talep from "../models/talep.model.js";
 import Gorev from "../models/gorev.model.js";
 import axios from "axios";
 import { bildirimOlustur } from "../lib/utils/bildirimOlustur.js";
+import { mailGonder } from "../lib/utils/email.js";
+import Kullanici from "../models/kullanici.model.js";
+import KurumFirma from "../models/kurumFirma.model.js";
 
 export const gorevOlustur = async (req, res) => {
   try {
@@ -54,7 +57,7 @@ export const gorevOlustur = async (req, res) => {
     arac.musaitlikDurumu = false;
     await arac.save();
 
-    // 📢 1. Koordinatöre bildirim (görevi oluşturan kişi)
+    //  1. Koordinatöre bildirim (görevi oluşturan kişi)
     await bildirimOlustur({
       kullaniciId: koordinatorId,
       baslik: "Görev Oluşturuldu",
@@ -64,7 +67,17 @@ export const gorevOlustur = async (req, res) => {
       gizlilik: "bireysel",
     });
 
-    // 📢 2. Talep eden kişi veya kurum
+    const koordinator = await Kullanici.findById(koordinatorId);
+    if (koordinator?.email) {
+      await mailGonder({
+        to: koordinator.email,
+        subject: "Görev Oluşturuldu",
+        html: `<p>Sayın ${koordinator.ad} ${koordinator.soyad},</p>
+               <p>“${talep.baslik}” başlıklı talep için bir görev oluşturuldu.</p>`,
+      });
+    }
+
+    //  2. Talep eden kişi veya kurum
     if (talep.talepEdenKullaniciId) {
       await bildirimOlustur({
         kullaniciId: talep.talepEdenKullaniciId,
@@ -89,7 +102,17 @@ export const gorevOlustur = async (req, res) => {
       });
     }
 
-    // 📢 3. Araç sahibine (birey)
+    const talepEden = await Kullanici.findById(talep.talepEdenKullaniciId);
+    if (talepEden?.email) {
+      await mailGonder({
+        to: talepEden.email,
+        subject: "Talebinize Araç Atandı",
+        html: `<p>Sayın ${talepEden.ad} ${talepEden.soyad},</p>
+                 <p>“${talep.baslik}” başlıklı talebinize bir araç atandı. Detaylar için sisteme giriş yapabilirsiniz.</p>`,
+      });
+    }
+
+    //  3. Araç sahibine (birey)
     if (arac.kullaniciId) {
       await bildirimOlustur({
         kullaniciId: arac.kullaniciId,
@@ -101,7 +124,7 @@ export const gorevOlustur = async (req, res) => {
       });
     }
 
-    // 📢 4. Araç sahibi kuruma
+    //  4. Araç sahibi kuruma
     if (arac.kurumFirmaId) {
       await bildirimOlustur({
         kullaniciId: null,
@@ -112,6 +135,29 @@ export const gorevOlustur = async (req, res) => {
         tur: "gorev",
         gizlilik: "kurumsal",
       });
+    }
+    const aracSahibi = await Kullanici.findById(arac.kullaniciId);
+    if (aracSahibi?.email) {
+      await mailGonder({
+        to: aracSahibi.email,
+        subject: "Aracınız Görevlendirildi",
+        html: `<p>Sayın ${aracSahibi.ad} ${aracSahibi.soyad},</p>
+                 <p>Aracınız “${talep.baslik}” başlıklı talep için görevlendirildi.</p>`,
+      });
+    }
+
+    const kurum = await KurumFirma.findById(arac.kurumFirmaId);
+    const kurumEmail = kurum?.iletisim?.email;
+
+    if (kurumEmail) {
+      await mailGonder({
+        to: kurumEmail,
+        subject: "Kuruluşunuza Ait Araç Görevlendirildi",
+        html: `<p>Sayın ${kurum.kurumAdi},</p>
+             <p>“${talep.baslik}” başlıklı talep için kuruluşunuza ait bir araç görevlendirildi.</p>`,
+      });
+    } else {
+      console.log("Kuruma ait araç var ama e-posta adresi tanımsız.");
     }
 
     return res.status(201).json({
@@ -186,13 +232,12 @@ export const gorevDurumGuncelle = async (req, res) => {
     if (!mevcutGorev) {
       return res.status(404).json({ message: "Görev bulunamadı" });
     }
-
     if (
-      mevcutGorev.gorevDurumu === "tamamlandı" &&
-      gorevDurumu !== "tamamlandı"
+      ["tamamlandı", "iptal edildi"].includes(mevcutGorev.gorevDurumu) &&
+      gorevDurumu !== mevcutGorev.gorevDurumu
     ) {
       return res.status(400).json({
-        message: "Tamamlanmış bir görev başka bir duruma geçirilemez.",
+        message: `"${mevcutGorev.gorevDurumu}" durumundaki bir görev başka bir duruma geçirilemez.`,
       });
     }
 
@@ -221,24 +266,22 @@ export const gorevDurumGuncelle = async (req, res) => {
       await arac.save();
     }
 
-    if (gorevDurumu === "tamamlandı") {
+    if (["tamamlandı", "iptal edildi"].includes(gorevDurumu)) {
       const ilgiliGorev = await Gorev.findById(id);
 
-      // Aynı talebe bağlı diğer görevleri getir (tamamlanmamış olanlar)
-      const digerGorevler = await Gorev.find({
-        talepId: ilgiliGorev.talepId,
-        _id: { $ne: ilgiliGorev._id },
-      });
+      const ilgiliTalepId = ilgiliGorev.talepId;
 
-      // Diğer tüm görevler de tamamlandıysa → talebi güncelle
-      const tumuTamamlandiMi = digerGorevler.every(
-        (g) => g.gorevDurumu === "tamamlandı"
-      );
+      const tumGorevler = await Gorev.find({ talepId: ilgiliTalepId });
 
-      if (tumuTamamlandiMi) {
-        await Talep.findByIdAndUpdate(ilgiliGorev.talepId, {
-          durum: "tamamlandı",
-        });
+      const tumDurumlar = tumGorevler.map((g) => g.gorevDurumu);
+
+      const hepsiTamamlandi = tumDurumlar.every((d) => d === "tamamlandı");
+      const hepsiIptal = tumDurumlar.every((d) => d === "iptal edildi");
+
+      if (hepsiTamamlandi) {
+        await Talep.findByIdAndUpdate(ilgiliTalepId, { durum: "tamamlandı" });
+      } else if (hepsiIptal) {
+        await Talep.findByIdAndUpdate(ilgiliTalepId, { durum: "beklemede" });
       }
     }
 

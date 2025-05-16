@@ -53,7 +53,7 @@ const KurumModal = ({ kullanici, kurumlar, modal, setModal }) => {
       <div className="modal-box">
         <h3 className="font-bold text-lg  border-b pb-1">Kurum Eşle</h3>
         <p className="text-sm text-gray-600 mb-2 pt-2">
-          {kullanici?.ad} {kullanici?.soyad} için kurum seçin:
+          <span className="capitalize">{kullanici.ad} {kullanici.soyad}</span> için kurum seçin:
         </p>
 
         <input

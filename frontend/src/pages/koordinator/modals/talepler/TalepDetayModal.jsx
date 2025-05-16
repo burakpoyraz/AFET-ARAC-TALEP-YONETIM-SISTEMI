@@ -44,7 +44,7 @@ const TalepDetayModal = ({ talep, modal, setModal }) => {
 
             <div>
               <span className="font-semibold">🚗 Araç Türü:</span>
-              <p>{talep.aracTuru}</p>
+              <p className="capitalize">{talep.aracTuru}</p>
             </div>
 
             <div>
@@ -62,7 +62,7 @@ const TalepDetayModal = ({ talep, modal, setModal }) => {
               <p>
                 {talep.durum === "beklemede"
                   ? "Beklemede"
-                  : talep.durum === "gorevlendirme_yapildi"
+                  : talep.durum === "gorevlendirildi"
                   ? "Görevlendirme Yapıldı"
                   : talep.durum === "tamamlandi"
                   ? "Tamamlandı"
@@ -72,7 +72,7 @@ const TalepDetayModal = ({ talep, modal, setModal }) => {
           </div>
 
           {/* Sağ: Talep Eden Kullanıcı Bilgileri */}
-          <div className="bg-gray-50 rounded-lg border p-4 space-y-2">
+          <div className="bg-gray-50 rounded-lg border p-4 space-y-2 capitalize">
             <h4 className="text-md font-bold border-b pb-1 mb-2">Talep Eden</h4>
             <div>
               <span className="font-semibold">👤 Ad Soyad:</span>

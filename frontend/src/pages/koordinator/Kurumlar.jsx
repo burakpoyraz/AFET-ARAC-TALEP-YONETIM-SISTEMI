@@ -73,11 +73,11 @@ const Kurumlar = () => {
               {filtrelenmisKurumlar.map((kurum, index) => (
                 <tr key={kurum._id}>
                   <td>{index + 1}</td>
-                  <td>{kurum.kurumAdi}</td>
-                  <td>{kurum.kurumTuru}</td>
-                  <td>{kurum.iletisim?.telefon}</td>
+                  <td className="capitalize">{kurum.kurumAdi}</td>
+                  <td className="capitalize">{kurum.kurumTuru}</td>
+                  <td className="capitalize">{kurum.iletisim?.telefon}</td>
                   <td>{kurum.iletisim?.email}</td>
-                  <td>{kurum.iletisim?.adres}</td>
+                  <td className="capitalize">{kurum.iletisim?.adres}</td>
                   <td>
                     <div className="dropdown dropdown-end">
                       <button tabIndex={0} className="btn btn-xs btn-outline">
