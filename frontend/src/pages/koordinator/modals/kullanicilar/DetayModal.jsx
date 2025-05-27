@@ -62,9 +62,6 @@ const DetayModal = ({ kullanici, modal,setModal }) => {
               <div>
                 {kullanici.kullaniciBeyanBilgileri?.kurumFirmaAdi || "-"}
               </div>
-
-              <div className="font-semibold">Pozisyon:</div>
-              <div>{kullanici.kullaniciBeyanBilgileri?.pozisyon || "-"}</div>
             </div>
           </div>
         )}

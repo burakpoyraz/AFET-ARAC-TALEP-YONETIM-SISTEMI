@@ -209,19 +209,7 @@ const KayıtOl = () => {
                       onChange={handleInputChanges}
                     />
                   </label>
-                  <label className="input validator mb-4 w-full flex items-center gap-2">
-                    <span className="opacity-50">
-                      <CiHome />
-                    </span>
-                    <input
-                      type="text"
-                      name="pozisyon"
-                      required
-                      placeholder="Pozisyon"
-                      className="grow"
-                      onChange={handleInputChanges}
-                    />
-                  </label>
+                
                 </div>
               )}
 
