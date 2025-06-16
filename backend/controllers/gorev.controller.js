@@ -6,6 +6,7 @@ import { bildirimOlustur } from "../lib/utils/bildirimOlustur.js";
 import { mailGonder } from "../lib/utils/email.js";
 import Kullanici from "../models/kullanici.model.js";
 import KurumFirma from "../models/kurumFirma.model.js";
+import { gorevPdfOlustur } from "../lib/utils/pdfOlustur.js";
 
 export const gorevOlustur = async (req, res) => {
   try {
@@ -409,5 +410,37 @@ export const talepEdenGorevleriGetir = async (req, res) => {
   } catch (error) {
     console.error("Talep eden görevlerini getirirken hata:", error.message);
     return res.status(500).json({ error: error.message });
+  }
+};
+
+export const gorevPdfIndir = async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    const gorev = await Gorev.findById(id)
+      .populate({
+        path: "talepId",
+        populate: {
+          path: "talepEdenKurumFirmaId",
+          select: "kurumAdi iletisim.telefon iletisim.adres",
+        },
+      })
+      .populate("koordinatorId", "ad soyad telefon")
+      .populate("aracId");
+
+    if (!gorev) return res.status(404).json({ message: "Görev bulunamadı." });
+
+    const pdfBuffer = await gorevPdfOlustur(gorev);
+
+    res.set({
+      "Content-Type": "application/pdf",
+      "Content-Disposition": `attachment; filename="gorev-${id}.pdf"`,
+      "Content-Length": pdfBuffer.length,
+    });
+
+    res.send(pdfBuffer);
+  } catch (err) {
+    console.error("PDF oluşturulurken hata:", err);
+    res.status(500).json({ message: "PDF oluşturulamadı", error: err.message });
   }
 };
