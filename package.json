@@ -22,7 +22,8 @@
     "mongoose": "^8.12.1",
     "nodemailer": "^7.0.3",
     "pdfkit": "^0.17.1",
-    "qrcode": "^1.5.4"
+    "qrcode": "^1.5.4",
+    "xlsx": "^0.18.5"
   },
   "devDependencies": {
     "nodemon": "^3.1.9"

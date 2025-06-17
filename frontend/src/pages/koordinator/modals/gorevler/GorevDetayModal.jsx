@@ -50,15 +50,13 @@ const GorevDetayModal = ({ gorev, modal, setModal }) => {
       responseType: "blob",
     });
 
-    const url = window.URL.createObjectURL(new Blob([response.data], { type: "application/pdf" }));
-    const link = document.createElement("a");
-    link.href = url;
-    link.setAttribute("download", `gorev-${gorev._id}.pdf`);
-    document.body.appendChild(link);
-    link.click();
-    link.remove();
+    const blob = new Blob([response.data], { type: "application/pdf" });
+    const url = window.URL.createObjectURL(blob);
+
+    // Yeni sekmede göster
+    window.open(url, "_blank");
   } catch (err) {
-    console.error("PDF indirilemedi:", err);
+    console.error("PDF görüntülenemedi:", err);
     alert("PDF oluşturulamadı.");
   }
 };

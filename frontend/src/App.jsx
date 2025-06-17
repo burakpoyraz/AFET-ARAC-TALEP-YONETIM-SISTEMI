@@ -20,6 +20,8 @@ import GorevlerimTalepEden from "./pages/talep_eden/GorevlerTalepEden";
 import Bildirimler from "./pages/koordinator/Bildirimler";
 import TalepDetay from "./pages/bildirimler/TalepDetay";
 import GorevDetay from "./pages/bildirimler/GorevDetay";
+import Raporlama from "./pages/koordinator/Raporlar";
+import Raporlar from "./pages/koordinator/Raporlar";
 
 
 function App() {
@@ -87,6 +89,7 @@ useEffect(() => {
     <Route path="/talepler" element={<Talepler />} />
     <Route path="/gorevler" element={<Gorevler />} />
     <Route path="/bildirimler" element={<Bildirimler />} />
+    <Route path="/raporlar" element={<Raporlar />} />
 
 
 

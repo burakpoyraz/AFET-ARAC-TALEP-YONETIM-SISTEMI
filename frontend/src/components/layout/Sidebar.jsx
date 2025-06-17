@@ -99,6 +99,7 @@ const Sidebar = () => {
               <MenuItem to="/talepler" icon={Inbox} label="Talepler" />
               <MenuItem to="/gorevler" icon={MapPin} label="Görevler" />
               <MenuItem to="/bildirimler" icon={Bell} label="Bildirimler" badge={okunmamisSayisi} />
+              <MenuItem to="/raporlar" icon={Clipboard} label="Raporlar" />
               
             </>
           )}

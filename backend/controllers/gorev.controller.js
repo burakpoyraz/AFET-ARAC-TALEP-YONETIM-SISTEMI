@@ -7,6 +7,7 @@ import { mailGonder } from "../lib/utils/email.js";
 import Kullanici from "../models/kullanici.model.js";
 import KurumFirma from "../models/kurumFirma.model.js";
 import { gorevPdfOlustur } from "../lib/utils/pdfOlustur.js";
+import { excelOlustur } from "../lib/utils/excelOlustur.js";
 
 export const gorevOlustur = async (req, res) => {
   try {
@@ -434,7 +435,7 @@ export const gorevPdfIndir = async (req, res) => {
 
     res.set({
       "Content-Type": "application/pdf",
-      "Content-Disposition": `attachment; filename="gorev-${id}.pdf"`,
+      "Content-Disposition": `inline; filename="gorev-${id}.pdf"`,
       "Content-Length": pdfBuffer.length,
     });
 
@@ -442,5 +443,32 @@ export const gorevPdfIndir = async (req, res) => {
   } catch (err) {
     console.error("PDF oluşturulurken hata:", err);
     res.status(500).json({ message: "PDF oluşturulamadı", error: err.message });
+  }
+};
+
+export const excelIndir = async (req, res) => {
+  try {
+const gorevler = await Gorev.find({})
+  .populate({
+    path: "talepId",
+    populate: {
+      path: "talepEdenKurumFirmaId",
+      model: "KurumFirma"
+    }
+  })
+  .populate("aracId");
+
+    const excelBuffer = excelOlustur(gorevler);
+
+    res.setHeader("Content-Disposition", "attachment; filename=gorev-raporu.xlsx");
+    res.setHeader(
+      "Content-Type",
+      "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+    );
+
+    res.send(excelBuffer);
+  } catch (err) {
+    console.error("Excel oluşturulamadı:", err);
+    res.status(500).json({ message: "Excel oluşturulamadı" });
   }
 };

@@ -75,7 +75,7 @@ export async function gorevPdfOlustur(gorev) {
     ], margin + tableColWidth + 20, tableTopY);
 
     // Görev Detayları
-    const detayTopY = 350;
+    const detayTopY = 330;
     const detayWidth = contentWidth - 130;
     const detayX = margin;
 
@@ -120,8 +120,8 @@ export async function gorevPdfOlustur(gorev) {
     }
 
     // İmza
-    const mudurAdi = "Serhan ÖZKANLI";
-    const signY = doc.page.height - 100;
+    const mudurAdi = "Adı  SOYADI";
+    const signY = doc.page.height - 60;
     const signX = pageWidth / 2 - 100;
 
     doc.font("Turkce-Bold").fontSize(10).fillColor("black")
