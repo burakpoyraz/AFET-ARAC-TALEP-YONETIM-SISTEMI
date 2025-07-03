@@ -1,6 +1,7 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import React, { useEffect } from "react";
 import api from "../../../../lib/axios";
+import { toast } from "react-hot-toast";
 
 const RolAtamaModal = ({ kullanici, modal, setModal }) => {
   const [yeniRol, setYeniRol] = React.useState("");
@@ -8,17 +9,21 @@ const RolAtamaModal = ({ kullanici, modal, setModal }) => {
 
   const { mutate: rolGuncelle } = useMutation({
     mutationFn: async (yeniRol) => {
-      const res = await api.put(`/kullanicilar/${kullanici._id}`, {
-        ...kullanici,
-        rol: yeniRol,
+      const res = await api.put(`/kullanicilar/${kullanici._id}/rol-ata`, {
+        rol: yeniRol
       });
       return res.data;
     },
     onSuccess: () => {
       queryClient.invalidateQueries(["kullanicilar"]);
-
+      toast.success("Rol başarıyla güncellendi");
       document.getElementById("rolAtamaModal")?.close();
+      setModal(null);
     },
+    onError: (error) => {
+      toast.error("Rol güncellenirken bir hata oluştu");
+      console.error("Rol güncelleme hatası:", error);
+    }
   });
 
   useEffect(() => {
@@ -30,21 +35,31 @@ const RolAtamaModal = ({ kullanici, modal, setModal }) => {
 
   if (!kullanici) return null;
 
+  const handleRolDegisim = (e) => {
+    const secilenRol = e.target.value;
+    setYeniRol(secilenRol);
+    
+    if (secilenRol === "talep_eden") {
+      toast.success("Not: Talep Eden rolü seçildiğinde kayıt türü otomatik olarak 'Kuruluş Adına' olarak güncellenecektir.", {
+        duration: 5000,
+      });
+    }
+  };
+
   return (
     <dialog id="rolAtamaModal" className="modal">
       <div className="modal-box">
         <h3 className="font-bold text-lg border-b pb-1">Rol Atama</h3>
-<p className="py-2 text-sm text-gray-600">
-  <span className="capitalize">{kullanici.ad} {kullanici.soyad}</span> için yeni rol seçin:
-</p>
+        <p className="py-2 text-sm text-gray-600">
+          <span className="capitalize">{kullanici.ad} {kullanici.soyad}</span> için yeni rol seçin:
+        </p>
 
         <select
           className="select select-bordered w-full mb-4"
           value={yeniRol}
-          onChange={(e) => setYeniRol(e.target.value)}
+          onChange={handleRolDegisim}
         >
           <option value="beklemede">Beklemede</option>
-
           <option value="koordinator">Koordinatör</option>
           <option value="arac_sahibi">Araç Sahibi</option>
           <option value="talep_eden">Talep Eden</option>

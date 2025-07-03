@@ -1,8 +1,8 @@
 import React, { useState } from "react";
 
-import { CiUser, CiMail, CiLock, CiPhone, CiHome } from "react-icons/ci";
+import { CiUser, CiMail, CiLock, CiPhone } from "react-icons/ci";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import axios from "axios";
+import api from "../../lib/axios";
 import { toast } from "react-hot-toast";
 import { Link } from "react-router-dom";
 import nakliyeGorsel from "/images/afet_nakliye_gorsel.png";
@@ -16,9 +16,6 @@ const KayıtOl = () => {
     sifre: "",
     sifreTekrar: "",
     telefon: "",
-    kurumFirmaAdi: "",
-    kurumFirmaTuru: "kendi_adima",
-    pozisyon: "",
   });
 
   const handleInputChanges = (e) => {
@@ -28,9 +25,7 @@ const KayıtOl = () => {
   const { mutate, isError, isPending, isSuccess, error } = useMutation({
     mutationFn: async (formData) => {
       try {
-        const res = await axios.post("/api/auth/kayitol", formData, {
-          withCredentials: true,
-        });
+        const res = await api.post("/auth/kayitol", formData);
 
         if (res.data.error) {
           throw new Error(res.data.error);
@@ -39,7 +34,7 @@ const KayıtOl = () => {
         console.log(res.data);
         return res.data;
       } catch (error) {
-        throw new Error(error.response.data.error);
+        throw new Error(error.response?.data?.error || error.message);
       }
     },
     onSuccess: (data) => {
@@ -183,60 +178,23 @@ const KayıtOl = () => {
                 />
               </label>
 
-              <select
-                defaultValue=""
-                name="kurumFirmaTuru"
-                className="select mb-4 w-full"
-                onChange={handleInputChanges}
+              <button
+                type="submit"
+                className={`btn btn-primary w-full ${isPending ? "loading" : ""}`}
+                disabled={isPending}
               >
-                <option value="kendi_adima">Kendi Adıma</option>
-                <option value="kurulus_adina">Kuruluş Adına</option>
-              </select>
-
-              {formData.kurumFirmaTuru === "kurulus_adina" && (
-                <div>
-                  {" "}
-                  <label className="input validator mb-4 w-full flex items-center gap-2">
-                    <span className="opacity-50">
-                      <CiHome />
-                    </span>
-                    <input
-                      type="text"
-                      name="kurumFirmaAdi"
-                      required
-                      placeholder="Kurum/Firma Adı"
-                      className="grow"
-                      onChange={handleInputChanges}
-                    />
-                  </label>
-                
-                </div>
-              )}
-
-              <button type="submit" className="btn btn-primary w-full">
-                Kayıt Ol
+                {isPending ? "Kaydediliyor..." : "Kayıt Ol"}
               </button>
-            </form>
 
-            <div className="text-center mt-4">
-              <p className="text-sm">
-                Zaten hesabınız var mı?
-                <Link to="/girisyap" className="link link-primary ml-1">
-                  Giriş Yap
-                </Link>
-              </p>
-             
-            </div>
-             <div className="mt-6 text-center text-xs text-gray-400 leading-relaxed">
-                Bu sistem, <span className="font-medium">Burak Poyraz</span>{" "}
-                tarafından
-                <span className="font-semibold">
-                  {" "}
-                  Ahmet Yesevi Üniversitesi - Bilgisayar Mühendisliği -
-                </span>
-                <span className="font-semibold"> Proje II</span> dersi
-                kapsamında geliştirilmiştir.
+              <div className="text-center mt-4">
+                <p>
+                  Zaten hesabınız var mı?{" "}
+                  <Link to="/girisyap" className="text-primary hover:underline">
+                    Giriş Yap
+                  </Link>
+                </p>
               </div>
+            </form>
           </div>
         </div>
       </div>
