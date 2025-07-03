@@ -5,11 +5,12 @@ import api from "../../../lib/axios";
 import HaritaKonumSecici from "../../../components/maps/HaritaKonumSecici";
 
 const TalepEkleDuzenleModal = ({ modal, setModal, duzenlenecekTalep }) => {
-    const icon="/icons/hedef.png"
+  console.log("[TalepEkleDuzenleModal] Rendering with props:", { modal, duzenlenecekTalep });
+  const icon="/icons/hedef.png"
   const queryClient = useQueryClient();
 
   const girisYapanKullanici = queryClient.getQueryData(["girisYapanKullanici"]);
-
+  console.log("[TalepEkleDuzenleModal] Giriş yapan kullanıcı:", girisYapanKullanici);
 
   const [formData, setFormData] = useState({
     baslik: "",
@@ -22,92 +23,130 @@ const TalepEkleDuzenleModal = ({ modal, setModal, duzenlenecekTalep }) => {
   const [lokasyon, setLokasyon] = useState(null);
 
   useEffect(() => {
-    const modalEl = document.getElementById("talepEkleDuzenleModal");
-    const handleClose = () => setModal(null);
-    modalEl?.addEventListener("close", handleClose);
-
-    if (modal === "talepEkleDuzenleModal") {
-      modalEl.showModal();
-
-      if (duzenlenecekTalep) {
-        setFormData({
-          baslik: duzenlenecekTalep.baslik,
-          aciklama: duzenlenecekTalep.aciklama,
-          aracTuru: duzenlenecekTalep.aracTuru,
-          aracSayisi: duzenlenecekTalep.aracSayisi,
-          adres: duzenlenecekTalep.lokasyon.adres,
-          talepEdenKullaniciId: girisYapanKullanici._id,
-          talepEdenKurumFirmaId: girisYapanKullanici.kurumFirmaId._id,
-
-        });
-        setLokasyon({
-          adres: duzenlenecekTalep.lokasyon.adres,
-          lat: duzenlenecekTalep.lokasyon.lat,
-          lng: duzenlenecekTalep.lokasyon.lng,
-        });
-      } else {
-        setFormData({
-          baslik: "",
-          aciklama: "",
-          aracTuru: "otomobil",
-          aracSayisi: 1,
-          adres: "",
-          talepEdenKullaniciId: girisYapanKullanici._id,
-          talepEdenKurumFirmaId: girisYapanKullanici.kurumFirmaId._id,
-        });
-        setLokasyon(null);
+    try {
+      console.log("[TalepEkleDuzenleModal] Modal effect running, modal state:", modal);
+      const modalEl = document.getElementById("talepEkleDuzenleModal");
+      if (!modalEl) {
+        console.error("[TalepEkleDuzenleModal] Modal element not found!");
+        return;
       }
 
-      return () => {
-        modalEl?.removeEventListener("close", handleClose);
-      };
-    } else {
-      modalEl.close();
+      const handleClose = () => setModal(null);
+      modalEl?.addEventListener("close", handleClose);
+
+      if (modal === "talepEkleDuzenleModal") {
+        modalEl.showModal();
+
+        if (duzenlenecekTalep) {
+          console.log("[TalepEkleDuzenleModal] Setting form data for edit:", duzenlenecekTalep);
+          setFormData({
+            baslik: duzenlenecekTalep.baslik,
+            aciklama: duzenlenecekTalep.aciklama,
+            aracTuru: duzenlenecekTalep.aracTuru,
+            aracSayisi: duzenlenecekTalep.aracSayisi,
+            adres: duzenlenecekTalep.lokasyon.adres,
+            talepEdenKullaniciId: girisYapanKullanici._id,
+            talepEdenKurumFirmaId: girisYapanKullanici.kurumFirmaId._id,
+          });
+          setLokasyon({
+            adres: duzenlenecekTalep.lokasyon.adres,
+            lat: duzenlenecekTalep.lokasyon.lat,
+            lng: duzenlenecekTalep.lokasyon.lng,
+          });
+        } else {
+          console.log("[TalepEkleDuzenleModal] Setting form data for new talep");
+          setFormData({
+            baslik: "",
+            aciklama: "",
+            aracTuru: "otomobil",
+            aracSayisi: 1,
+            adres: "",
+            talepEdenKullaniciId: girisYapanKullanici?._id,
+            talepEdenKurumFirmaId: girisYapanKullanici?.kurumFirmaId?._id,
+          });
+          setLokasyon(null);
+        }
+
+        return () => {
+          modalEl?.removeEventListener("close", handleClose);
+        };
+      } else {
+        modalEl.close();
+      }
+    } catch (error) {
+      console.error("[TalepEkleDuzenleModal] Error in modal effect:", error);
+      toast.error("Modal açılırken bir hata oluştu");
     }
   }, [modal]);
 
   useEffect(() => {
     if (lokasyon?.adres) {
+      console.log("[TalepEkleDuzenleModal] Updating address from location:", lokasyon);
       setFormData((prev) => ({ ...prev, adres: lokasyon.adres }));
     }
   }, [lokasyon?.adres]);
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
+    console.log("[TalepEkleDuzenleModal] Input change:", { name, value });
     setFormData((prev) => ({ ...prev, [name]: value }));
   };
 
   const { mutate: talepEkleDuzenle } = useMutation({
     mutationFn: async (data) => {
+      console.log("[TalepEkleDuzenleModal] Submitting data:", data);
+      if (!data.talepEdenKullaniciId || !data.talepEdenKurumFirmaId) {
+        throw new Error("Kullanıcı bilgileri eksik. Lütfen tekrar giriş yapın.");
+      }
+      
       const payload = {
         ...data,
         lokasyon: {
           adres: data.adres,
-          lat: lokasyon.lat,
-          lng: lokasyon.lng,
+          lat: lokasyon?.lat,
+          lng: lokasyon?.lng,
         },
       };
+      console.log("[TalepEkleDuzenleModal] Sending payload:", payload);
       const res = duzenlenecekTalep
         ? await api.put(`/talepler/${duzenlenecekTalep._id}`, payload)
         : await api.post("/talepler", payload);
       return res.data;
     },
-    onSuccess: () => {
+    onSuccess: (data) => {
+      console.log("[TalepEkleDuzenleModal] Mutation successful:", data);
       queryClient.invalidateQueries(["talepler"]);
       setModal(null);
       toast.success(duzenlenecekTalep ? "Talep güncellendi" : "Talep oluşturuldu");
     },
     onError: (error) => {
-      toast.error(error?.response?.data?.error || "Talep işlemi başarısız.");
+      console.error("[TalepEkleDuzenleModal] Mutation error:", error);
+      toast.error(
+        error?.response?.data?.error || 
+        error?.message || 
+        "Talep işlemi başarısız."
+      );
     },
   });
 
   const handleSubmit = () => {
-    if (!lokasyon || !formData.adres) {
-      toast.error("Adres ve konum bilgisi zorunludur.");
-      return;
+    try {
+      console.log("[TalepEkleDuzenleModal] Handling submit");
+      if (!lokasyon || !formData.adres) {
+        toast.error("Adres ve konum bilgisi zorunludur.");
+        return;
+      }
+      
+      if (!girisYapanKullanici?._id || !girisYapanKullanici?.kurumFirmaId?._id) {
+        toast.error("Kullanıcı bilgileri eksik. Lütfen tekrar giriş yapın.");
+        return;
+      }
+      
+      talepEkleDuzenle(formData);
+    } catch (error) {
+      console.error("[TalepEkleDuzenleModal] Submit error:", error);
+      toast.error("İşlem sırasında bir hata oluştu");
     }
-    talepEkleDuzenle(formData);
   };
 
   return (
