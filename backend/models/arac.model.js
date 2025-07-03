@@ -68,6 +68,10 @@ const AracSchema = mongoose.Schema(
       ref: "Kullanici",
       default: null,
     },
+    isDeleted: {
+      type: Boolean,
+      default: false,
+    },
   },
   { timestamps: true }
 );

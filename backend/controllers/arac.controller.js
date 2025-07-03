@@ -36,7 +36,7 @@ export const aracEkle = async (req, res) => {
       yeniKonum = { lat, lng, adres };
     }
 
-    const aracVarMi = await Arac.findOne({ plaka });
+    const aracVarMi = await Arac.findOne({ plaka, isDeleted: false });
 
     if (aracVarMi) {
       return res
@@ -82,7 +82,7 @@ export const aracEkle = async (req, res) => {
 
 export const tumAraclariGetir = async (req, res) => {
   try {
-    const araclar = await Arac.find({})
+    const araclar = await Arac.find({ isDeleted: false })
       .populate("kurumFirmaId", "kurumAdi")
       .populate("kullaniciId", "ad soyad");
     if (!araclar) {
@@ -100,6 +100,7 @@ export const musaitAraclariGetir = async (req, res) => {
     const musaitAraclar = await Arac.find({
       musaitlikDurumu: true,
       aracDurumu: "aktif",
+      isDeleted: false,
     })
       .populate("kurumFirmaId", "kurumAdi")
       .populate("kullaniciId", "ad soyad");
@@ -120,11 +121,11 @@ export const kullaniciyaKurumaAitAraclariGetir = async (req, res) => {
   try {
     let araclar;
     if (kurumFirmaId) {
-      araclar = await Arac.find({ kurumFirmaId })
+      araclar = await Arac.find({ kurumFirmaId, isDeleted: false })
         .populate("kurumFirmaId", "kurumAdi")
         .populate("kullaniciId", "ad soyad");
     } else {
-      araclar = await Arac.find({ kullaniciId })
+      araclar = await Arac.find({ kullaniciId, isDeleted: false })
         .populate("kurumFirmaId", "kurumAdi")
         .populate("kullaniciId", "ad soyad");
     }
@@ -144,7 +145,7 @@ export const kullaniciyaKurumaAitAraclariGetir = async (req, res) => {
 export const aracGetir = async (req, res) => {
   const { plaka } = req.params;
   try {
-    const arac = await Arac.findOne({ plaka });
+    const arac = await Arac.findOne({ plaka, isDeleted: false });
     if (!arac) {
       return res.status(404).json({ error: "Araç bulunamadı" });
     }
@@ -167,7 +168,7 @@ export const aracGuncelle = async (req, res) => {
     konum,
   } = req.body;
   try {
-    const mevcutArac = await Arac.findOne({ plaka });
+    const mevcutArac = await Arac.findOne({ plaka, isDeleted: false });
     if (!mevcutArac) {
       return res.status(404).json({ error: "Araç bulunamadı" });
     }
@@ -176,6 +177,7 @@ export const aracGuncelle = async (req, res) => {
       const plakaVarMi = await Arac.findOne({
         plaka: yeniPlaka,
         _id: { $ne: mevcutArac._id },
+        isDeleted: false,
       });
       if (plakaVarMi) {
         return res
@@ -218,11 +220,15 @@ export const aracGuncelle = async (req, res) => {
 export const aracSil = async (req, res) => {
   const { plaka } = req.params;
   try {
-    const arac = await Arac.findOneAndDelete({ plaka });
-    if (!arac) {
+    const arac = await Arac.findOne({ plaka });
+    if (!arac || arac.isDeleted) {
       return res.status(404).json({ error: "Araç bulunamadı" });
     }
-    res.status(200).json({ arac });
+    
+    arac.isDeleted = true;
+    await arac.save();
+    
+    res.status(200).json({ message: "Araç başarıyla silindi" });
   } catch (error) {
     console.log(`Araç silinirken hata oluştu: ${error.message}`);
     res.status(500).json({ error: error.message });

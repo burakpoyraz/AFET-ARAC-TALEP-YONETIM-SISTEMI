@@ -18,7 +18,7 @@ export const gorevOlustur = async (req, res) => {
       return res.status(400).json({ message: "Eksik bilgi gönderildi" });
     }
 
-    const talep = await Talep.findById(talepId);
+    const talep = await Talep.findOne({ _id: talepId, isDeleted: false });
 
     if (!talep) {
       return res.status(404).json({ message: "Talep bulunamadı" });
@@ -28,6 +28,7 @@ export const gorevOlustur = async (req, res) => {
       _id: aracId,
       musaitlikDurumu: true,
       aracDurumu: "aktif",
+      isDeleted: false,
     });
 
     if (!arac) {
@@ -69,7 +70,7 @@ export const gorevOlustur = async (req, res) => {
       gizlilik: "bireysel",
     });
 
-    const koordinator = await Kullanici.findById(koordinatorId);
+    const koordinator = await Kullanici.findOne({ _id: koordinatorId, isDeleted: false });
     if (koordinator?.email) {
       await mailGonder({
         to: koordinator.email,
@@ -104,7 +105,7 @@ export const gorevOlustur = async (req, res) => {
       });
     }
 
-    const talepEden = await Kullanici.findById(talep.talepEdenKullaniciId);
+    const talepEden = await Kullanici.findOne({ _id: talep.talepEdenKullaniciId, isDeleted: false });
     if (talepEden?.email) {
       await mailGonder({
         to: talepEden.email,
@@ -138,7 +139,7 @@ export const gorevOlustur = async (req, res) => {
         gizlilik: "kurumsal",
       });
     }
-    const aracSahibi = await Kullanici.findById(arac.kullaniciId);
+    const aracSahibi = await Kullanici.findOne({ _id: arac.kullaniciId, isDeleted: false });
     if (aracSahibi?.email) {
       await mailGonder({
         to: aracSahibi.email,
@@ -148,7 +149,7 @@ export const gorevOlustur = async (req, res) => {
       });
     }
 
-    const kurum = await KurumFirma.findById(arac.kurumFirmaId);
+    const kurum = await KurumFirma.findOne({ _id: arac.kurumFirmaId, isDeleted: false });
     const kurumEmail = kurum?.iletisim?.email;
 
     if (kurumEmail) {
@@ -177,7 +178,7 @@ export const gorevOlustur = async (req, res) => {
 export const gorevDetayGetir = async (req, res) => {
   try {
     const { id } = req.params;
-    const gorev = await Gorev.findById(id)
+    const gorev = await Gorev.findOne({ _id: id, isDeleted: false })
       .populate({
         path: "talepId",
         populate: {
@@ -201,7 +202,7 @@ export const gorevDetayGetir = async (req, res) => {
 
 export const tumGorevleriGetir = async (req, res) => {
   try {
-    const gorevler = await Gorev.find()
+    const gorevler = await Gorev.find({ isDeleted: false })
       .populate({
         path: "talepId",
         select:
@@ -230,7 +231,7 @@ export const gorevDurumGuncelle = async (req, res) => {
     const { id } = req.params;
     const { gorevDurumu } = req.body;
 
-    const mevcutGorev = await Gorev.findById(id);
+    const mevcutGorev = await Gorev.findOne({ _id: id, isDeleted: false });
     if (!mevcutGorev) {
       return res.status(404).json({ message: "Görev bulunamadı" });
     }
@@ -243,8 +244,8 @@ export const gorevDurumGuncelle = async (req, res) => {
       });
     }
 
-    const guncellenmisGorev = await Gorev.findByIdAndUpdate(
-      id,
+    const guncellenmisGorev = await Gorev.findOneAndUpdate(
+      { _id: id, isDeleted: false },
       {
         gorevDurumu,
         ...(gorevDurumu === "başladı" && { baslangicZamani: new Date() }),
@@ -254,7 +255,7 @@ export const gorevDurumGuncelle = async (req, res) => {
     );
 
     // Görevlendirilen aracı güncelle
-    const arac = await Arac.findById(mevcutGorev.aracId);
+    const arac = await Arac.findOne({ _id: mevcutGorev.aracId, isDeleted: false });
     if (arac) {
       // 1. Müsaitlik durumu güncelle
       if ((gorevDurumu === "başladı", "beklemede")) {
@@ -269,11 +270,11 @@ export const gorevDurumGuncelle = async (req, res) => {
     }
 
     if (["tamamlandı", "iptal edildi"].includes(gorevDurumu)) {
-      const ilgiliGorev = await Gorev.findById(id);
+      const ilgiliGorev = await Gorev.findOne({ _id: id, isDeleted: false });
 
       const ilgiliTalepId = ilgiliGorev.talepId;
 
-      const tumGorevler = await Gorev.find({ talepId: ilgiliTalepId });
+      const tumGorevler = await Gorev.find({ talepId: ilgiliTalepId, isDeleted: false });
 
       const tumDurumlar = tumGorevler.map((g) => g.gorevDurumu);
 
@@ -281,9 +282,9 @@ export const gorevDurumGuncelle = async (req, res) => {
       const hepsiIptal = tumDurumlar.every((d) => d === "iptal edildi");
 
       if (hepsiTamamlandi) {
-        await Talep.findByIdAndUpdate(ilgiliTalepId, { durum: "tamamlandı" });
+        await Talep.findOneAndUpdate({ _id: ilgiliTalepId, isDeleted: false }, { durum: "tamamlandı" });
       } else if (hepsiIptal) {
-        await Talep.findByIdAndUpdate(ilgiliTalepId, { durum: "beklemede" });
+        await Talep.findOneAndUpdate({ _id: ilgiliTalepId, isDeleted: false }, { durum: "beklemede" });
       }
     }
 
@@ -336,12 +337,14 @@ export const aracSahibiGorevleriGetir = async (req, res) => {
         { kullaniciId: req.kullanici._id },
         { kurumFirmaId: req.kullanici.kurumFirmaId },
       ],
+      isDeleted: false,
     }).select("_id");
 
     const aracIdListesi = araclar.map((a) => a._id);
 
     const gorevler = await Gorev.find({
       aracId: { $in: aracIdListesi },
+      isDeleted: false,
     })
       .populate({
         path: "talepId",
@@ -382,6 +385,7 @@ export const talepEdenGorevleriGetir = async (req, res) => {
     // kuruma ait talepleri al
     const talepler = await Talep.find({
       talepEdenKurumFirmaId: talepEdenKurumId,
+      isDeleted: false,
     }).select("_id");
     const talepIdListesi = talepler.map((t) => t._id);
 
@@ -390,7 +394,7 @@ export const talepEdenGorevleriGetir = async (req, res) => {
     }
 
     // talepId'ye göre görevleri al
-    const gorevler = await Gorev.find({ talepId: { $in: talepIdListesi } })
+    const gorevler = await Gorev.find({ talepId: { $in: talepIdListesi }, isDeleted: false })
       .populate({
         path: "talepId",
         select:
@@ -418,7 +422,7 @@ export const gorevPdfIndir = async (req, res) => {
   try {
     const { id } = req.params;
 
-    const gorev = await Gorev.findById(id)
+    const gorev = await Gorev.findOne({ _id: id, isDeleted: false })
       .populate({
         path: "talepId",
         populate: {
@@ -448,7 +452,7 @@ export const gorevPdfIndir = async (req, res) => {
 
 export const excelIndir = async (req, res) => {
   try {
-const gorevler = await Gorev.find({})
+const gorevler = await Gorev.find({ isDeleted: false })
   .populate({
     path: "talepId",
     populate: {

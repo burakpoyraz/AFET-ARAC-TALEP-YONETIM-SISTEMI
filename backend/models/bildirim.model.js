@@ -37,6 +37,10 @@ const BildirimShema= mongoose.Schema(
       enum: ["bireysel", "kurumsal"],
       default: "bireysel",
     },
+    isDeleted: {
+      type: Boolean,
+      default: false,
+    },
   },
   { timestamps: true }
 );

@@ -38,6 +38,7 @@ export const kayitOl = async(req, res) => {
         console.log('Checking for existing user with email or phone:', { email, telefon });
         const kullaniciVarMi = await Kullanici.findOne({
             $or: [{ email }, { telefon }],
+            isDeleted: false,
         });
 
         if (kullaniciVarMi) {
@@ -137,7 +138,7 @@ export const girisYap = async(req, res) => {
     try {
         const { email, sifre } = req.body;
 
-        const kullanici = await Kullanici.findOne({ email });
+        const kullanici = await Kullanici.findOne({ email, isDeleted: false });
 
         if (!kullanici) {
             return res.status(400).json({ error: "Bu email ile kayıtlı bir kullanıcı bulunamadı" });
