@@ -3,6 +3,7 @@ import { useState } from "react";
 import api from "../../lib/axios";
 import TalepEkleDuzenleModal from "./modals/TalepEkleDuzenleModal";
 import TalepIptalModal from "../koordinator/modals/talepler/TalepIptalModal";
+import { toast } from "react-hot-toast";
 
 const Taleplerim = () => {
   const [arama, setArama] = useState("");
@@ -21,23 +22,52 @@ const Taleplerim = () => {
     const talepID = talep._id?.toLowerCase() || "";
     const baslik = talep.baslik?.toLowerCase() || "";
     const aciklama = talep.aciklama?.toLowerCase() || "";
-    const aracTuru = talep.aracTuru?.toLowerCase() || "";
     const searchTerm = arama.toLowerCase();
+    
+    // Araç türlerinde de arama yap
+    let araclarMatch = false;
+    if (talep.araclar && Array.isArray(talep.araclar)) {
+      araclarMatch = talep.araclar.some(arac => 
+        arac.aracTuru?.toLowerCase().includes(searchTerm)
+      );
+    } else if (talep.aracTuru) {
+      araclarMatch = talep.aracTuru.toLowerCase().includes(searchTerm);
+    }
+    
     return (
       talepID.includes(searchTerm) ||
       baslik.includes(searchTerm) ||
       aciklama.includes(searchTerm) ||
-      aracTuru.includes(searchTerm)
+      araclarMatch
     );
-  }) .sort((a, b) => {
-      const oncelik = {
-        beklemede: 0,
-        gorevlendirildi: 1,
-        tamamlandı: 2,
-        "iptal edildi": 3,
-      };
-      return (oncelik[a.durum] ?? 99) - (oncelik[b.durum] ?? 99);
-    });
+  }).sort((a, b) => {
+    const oncelik = {
+      beklemede: 0,
+      gorevlendirildi: 1,
+      tamamlandı: 2,
+      "iptal edildi": 3,
+    };
+    return (oncelik[a.durum] ?? 99) - (oncelik[b.durum] ?? 99);
+  });
+
+  // Araç türlerini ve sayılarını özet olarak göstermek için yardımcı fonksiyon
+  const aracOzetiGetir = (talep) => {
+    // Eski veri yapısı ile uyumluluk kontrolü
+    if (!talep.araclar && talep.aracTuru) {
+      return `${talep.aracTuru} (${talep.aracSayisi})`;
+    }
+    
+    if (!talep.araclar || talep.araclar.length === 0) {
+      return "-";
+    }
+    
+    if (talep.araclar.length === 1) {
+      return `${talep.araclar[0].aracTuru} (${talep.araclar[0].aracSayisi})`;
+    }
+    
+    const toplamArac = talep.araclar.reduce((toplam, arac) => toplam + arac.aracSayisi, 0);
+    return `${talep.araclar.length} türde ${toplamArac} araç`;
+  };
 
   return (
     <div className="p-6">
@@ -71,10 +101,10 @@ const Taleplerim = () => {
                 <th>Talep ID</th>
                 <th>Başlık</th>
                 <th>Açıklama</th>
-                <th>Tür</th>
-                <th>Sayısı</th>
+                <th>Araçlar</th>
                 <th>Adres</th>
                 <th>Durum</th>
+                <th>İşlemler</th>
               </tr>
             </thead>
             <tbody>
@@ -97,8 +127,7 @@ const Taleplerim = () => {
                   </td>
                   <td className="capitalize">{talep.baslik}</td>
                   <td className="capitalize">{talep.aciklama}</td>
-                  <td className="capitalize">{talep.aracTuru}</td>
-                  <td className="capitalize">{talep.aracSayisi}</td>
+                  <td className="capitalize">{aracOzetiGetir(talep)}</td>
                   <td className="capitalize">{talep.lokasyon.adres}</td>
                   <td className="capitalize">
                     <span
