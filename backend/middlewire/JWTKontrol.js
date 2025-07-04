@@ -14,7 +14,9 @@ export const JWTKontrol = async (req, res, next) => {
         
         const kullanici = await Kullanici.findById(decoded.userId).select("-sifre").populate("kurumFirmaId", "kurumAdi")
 
-     
+        if (!kullanici || kullanici.isDeleted) {
+            return res.status(401).json({ error: "Bu işlem için giriş yapmanız gerekiyor." });
+        }
 
         req.kullanici = kullanici;
     

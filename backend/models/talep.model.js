@@ -66,6 +66,10 @@ const TalepSchema = mongoose.Schema({
     ],
     default: "beklemede",
   },
+  isDeleted: {
+    type: Boolean,
+    default: false,
+  },
 });
 
 const Talep = mongoose.model("Talep", TalepSchema);

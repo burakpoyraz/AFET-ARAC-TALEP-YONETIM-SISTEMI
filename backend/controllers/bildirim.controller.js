@@ -14,7 +14,7 @@ export const bildirimleriGetir = async (req, res) => {
           kullaniciId: req.kullanici._id
         };
 
-    const bildirimler = await Bildirim.find(filtre).sort({ createdAt: -1 });
+    const bildirimler = await Bildirim.find({ ...filtre, isDeleted: false }).sort({ createdAt: -1 });
 
     if (!bildirimler || bildirimler.length === 0) {
       return res.status(404).json({ message: "Bildirim bulunamadı" });
@@ -33,8 +33,8 @@ export const bildirimOkunduYap = async (req, res) => {
 
    
 
-    const bildirim = await Bildirim.findByIdAndUpdate(
-      bildirimId,
+    const bildirim = await Bildirim.findOneAndUpdate(
+      { _id: bildirimId, isDeleted: false },
       { okundu: true },
       { new: true }
     );

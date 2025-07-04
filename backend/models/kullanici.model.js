@@ -53,6 +53,10 @@ const KullaniciSchema = mongoose.Schema({
         type: Schema.Types.ObjectId,
         ref: "Kullanici",
     },
+    isDeleted: {
+        type: Boolean,
+        default: false,
+    },
 }, { timestamps: true });
 
 const Kullanici = mongoose.model("Kullanici", KullaniciSchema);

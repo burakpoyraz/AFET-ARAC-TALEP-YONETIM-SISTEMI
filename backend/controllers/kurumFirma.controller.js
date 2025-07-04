@@ -19,7 +19,7 @@ export const kurumFirmaOlustur = async (req, res) => {
         .json({ error: "Geçerli bir telefon numarası giriniz" });
     }
 
-    const firmaVarMi = await KurumFirma.findOne({ kurumAdi });
+    const firmaVarMi = await KurumFirma.findOne({ kurumAdi, isDeleted: false });
     if (firmaVarMi) {
       return res
         .status(400)
@@ -29,6 +29,7 @@ export const kurumFirmaOlustur = async (req, res) => {
     if (telefon) {
       const firmaVarMi = await KurumFirma.findOne({
         "iletisim.telefon": telefon,
+        isDeleted: false,
       });
       if (firmaVarMi) {
         return res.status(400).json({
@@ -37,7 +38,7 @@ export const kurumFirmaOlustur = async (req, res) => {
       }
     }
     if (email) {
-      const firmaVarMi = await KurumFirma.findOne({ "iletisim.email": email });
+      const firmaVarMi = await KurumFirma.findOne({ "iletisim.email": email, isDeleted: false });
       if (firmaVarMi) {
         return res
           .status(400)
@@ -68,7 +69,7 @@ export const kurumFirmaOlustur = async (req, res) => {
 
 export const tumKurumFirmalariGetir = async (req, res) => {
   try {
-    const tumFirmalar = await KurumFirma.find();
+    const tumFirmalar = await KurumFirma.find({ isDeleted: false });
 
     if (!tumFirmalar) {
       return res.status(404).json({ error: "Kayıtlı kurum/firma bulunamadı" });
@@ -87,7 +88,7 @@ export const kurumFirmaGetir = async (req, res) => {
   const { id } = req.params;
 
   try {
-    const firma = await KurumFirma.findById(id);
+    const firma = await KurumFirma.findOne({ _id: id, isDeleted: false });
 
     if (!firma) {
       return res.status(404).json({ error: "Kurum/firma bulunamadı" });
@@ -118,6 +119,7 @@ export const kurumFirmaGuncelle = async (req, res) => {
     const kurumFirmaVarMi = await KurumFirma.findOne({
       $and: [
         { _id: { $ne: id } },
+        { isDeleted: false },
         {
           $or: [
             { kurumAdi },
@@ -140,8 +142,8 @@ export const kurumFirmaGuncelle = async (req, res) => {
       }
     }
 
-    const kurumFirma = await KurumFirma.findByIdAndUpdate(
-      id,
+    const kurumFirma = await KurumFirma.findOneAndUpdate(
+      { _id: id, isDeleted: false },
       {
         kurumAdi,
         kurumTuru,
@@ -165,13 +167,16 @@ export const kurumFirmaSil = async (req, res) => {
   const { id } = req.params;
 
   try {
-    const kurumFirma = await KurumFirma.findByIdAndDelete(id);
+    const kurumFirma = await KurumFirma.findById(id);
 
-    if (!kurumFirma) {
+    if (!kurumFirma || kurumFirma.isDeleted) {
       return res.status(404).json({ error: "Kurum/firma bulunamadı" });
     }
 
-    res.status(200).json(kurumFirma);
+    kurumFirma.isDeleted = true;
+    await kurumFirma.save();
+
+    res.status(200).json({ message: "Kurum/firma başarıyla silindi" });
   } catch (error) {
     console.error(`Kurum/firma silinirken hata oluştu: ${error.message}`);
     return res.status(500).json({ error: "Sunucu hatası" });
@@ -184,6 +189,7 @@ export const kurumFirmaAra = async (req, res) => {
   try {
     const firmalar = await KurumFirma.find({
       kurumAdi: { $regex: `.*${arama}.*`, $options: "i" }, // Büyük-küçük harf duyarsız arama
+      isDeleted: false,
     });
 
     if (firmalar.length === 0) {

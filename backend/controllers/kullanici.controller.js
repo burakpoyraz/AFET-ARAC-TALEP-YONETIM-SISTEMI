@@ -3,7 +3,7 @@ import Kullanici from "../models/kullanici.model.js";
 
 export const kullanicilariGetir = async(req, res) => {
     try {
-        const kullanicilar = await Kullanici.find().select("-sifre").populate("kurumFirmaId", "kurumAdi")
+        const kullanicilar = await Kullanici.find({ isDeleted: false }).select("-sifre").populate("kurumFirmaId", "kurumAdi")
             .sort({ createdAt: -1 });
 
 
@@ -21,7 +21,7 @@ export const kullanicilariGetir = async(req, res) => {
 export const kullaniciGetir = async(req, res) => {
     const { id } = req.params;
     try {
-        const kullanici = await Kullanici.findById(id).select("-sifre");
+        const kullanici = await Kullanici.findOne({ _id: id, isDeleted: false }).select("-sifre");
 
         if (!kullanici) {
             return res.status(404).json({ error: "Kullanıcı bulunamadı" });
@@ -43,6 +43,7 @@ export const kullaniciGuncelle = async(req, res) => {
         const kullaniciVarMi = await Kullanici.findOne({
             $and: [
                 { _id: { $ne: id } }, // kendisi hariç
+                { isDeleted: false }, // silinmemiş kullanıcılar
                 { $or: [{ email }, { telefon }] } // email veya telefon eşleşiyor mu
             ]
         });
@@ -52,7 +53,11 @@ export const kullaniciGuncelle = async(req, res) => {
         }
 
 
-        const kullanici = await Kullanici.findByIdAndUpdate(id, { ad, soyad, email, telefon, kurumFirmaId, rol }, { new: true }).select("-sifre");
+        const kullanici = await Kullanici.findOneAndUpdate(
+            { _id: id, isDeleted: false }, 
+            { ad, soyad, email, telefon, kurumFirmaId, rol }, 
+            { new: true }
+        ).select("-sifre");
 
         if (!kullanici) {
             return res.status(404).json({ error: "Kullanıcı bulunamadı" });
@@ -69,13 +74,16 @@ export const kullaniciSil = async(req, res) => {
     const { id } = req.params;
 
     try {
-        const kullanici = await Kullanici.findByIdAndDelete(id);
+        const kullanici = await Kullanici.findById(id);
 
-        if (!kullanici) {
+        if (!kullanici || kullanici.isDeleted) {
             return res.status(404).json({ error: "Kullanıcı bulunamadı" });
         }
 
-        res.status(200).json(kullanici);
+        kullanici.isDeleted = true;
+        await kullanici.save();
+
+        res.status(200).json({ message: "Kullanıcı başarıyla silindi" });
     } catch (error) {
         console.error(`Kullanıcı silinirken hata oluştu: ${error.message}`);
         return res.status(500).json({ error: "Sunucu hatası" });
@@ -101,8 +109,8 @@ export const kullaniciRolveKurumFirmaAta = async(req, res) => {
             updateData["kullaniciBeyanBilgileri.kurumFirmaTuru"] = "kurulus_adina";
         }
 
-        const kullanici = await Kullanici.findByIdAndUpdate(
-            id,
+        const kullanici = await Kullanici.findOneAndUpdate(
+            { _id: id, isDeleted: false },
             updateData, { new: true, runValidators: true }
         ).populate("kurumFirmaId", "kurumAdi");
 

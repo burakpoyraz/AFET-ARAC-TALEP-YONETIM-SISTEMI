@@ -67,7 +67,7 @@ export const talepEkle = async (req, res) => {
       gizlilik: "bireysel",
     });
     // 2. Tüm koordinatörleri al ve kurum bazlı grupla
-    const koordinatorler = await Kullanici.find({ rol: "koordinator" }).select(
+    const koordinatorler = await Kullanici.find({ rol: "koordinator", isDeleted: false }).select(
       "_id kurumFirmaId"
     );
 
@@ -108,6 +108,7 @@ export const talepEkle = async (req, res) => {
 
     const tumKoordinatorler = await Kullanici.find({
       rol: "koordinator",
+      isDeleted: false,
     }).select("ad soyad email");
 
     for (const k of tumKoordinatorler) {
@@ -131,7 +132,7 @@ export const talepEkle = async (req, res) => {
 
 export const tumTalepleriGetir = async (req, res) => {
   try {
-    const talepler = await Talep.find()
+    const talepler = await Talep.find({ isDeleted: false })
       .populate("talepEdenKullaniciId", "ad soyad telefon")
       .populate("talepEdenKurumFirmaId", "kurumAdi iletisim.telefon");
 
@@ -151,6 +152,7 @@ export const kurumaAitTalepleriGetir = async (req, res) => {
   try {
     const talepler = await Talep.find({
       talepEdenKurumFirmaId: kurumFirmaId,
+      isDeleted: false,
     }).populate("talepEdenKullaniciId", "ad soyad");
 
     if (!talepler) {
@@ -167,7 +169,7 @@ export const talepGetir = async (req, res) => {
   const { id } = req.params;
 
   try {
-    const talep = await Talep.findById(id)
+    const talep = await Talep.findOne({ _id: id, isDeleted: false })
       .populate("talepEdenKullaniciId", "ad soyad")
       .populate(
         "talepEdenKurumFirmaId",
@@ -189,7 +191,7 @@ export const talepGuncelle = async (req, res) => {
   const { baslik, aciklama, aracTuru, aracSayisi, lokasyon, durum } = req.body;
 
   try {
-    const talep = await Talep.findById(id);
+    const talep = await Talep.findOne({ _id: id, isDeleted: false });
 
     if (!talep) {
       return res.status(404).json({ error: "Talep bulunamadı" });
@@ -247,13 +249,16 @@ export const talepSil = async (req, res) => {
   const { id } = req.params;
 
   try {
-    const talep = await Talep.findByIdAndDelete(id);
+    const talep = await Talep.findById(id);
 
-    if (!talep) {
+    if (!talep || talep.isDeleted) {
       return res.status(404).json({ error: "Talep bulunamadı" });
     }
 
-    res.status(200).json({ talep });
+    talep.isDeleted = true;
+    await talep.save();
+
+    res.status(200).json({ message: "Talep başarıyla silindi" });
   } catch (error) {
     return res.status(500).json({ error: "Sunucu hatası" });
   }
