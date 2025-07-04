@@ -7,37 +7,34 @@ const Footer = () => {
         <div>
           <h2 className="text-lg font-bold">🚨 Afet Araç Talep ve Yönetim Sistemi</h2>
           <p className="max-w-xs">
-            Bu sistem, afet dönemlerinde yolcu ve yük taşımacılığı için araç talep ve görevlendirme süreçlerini yönetmek amacıyla geliştirilmiştir.
+            Bu sistem, afet dönemlerinde yolcu ve yük taşımacılığı için araç talep ve görevlendirme süreçlerini yönetmek amacıyla T.C. Ulaştırma ve Altyapı Bakanlığı işbirliğiyle geliştirilmiştir.
           </p>
         </div>
 
         <div>
-          <span className="footer-title">Hazırlayan</span>
-          <p>Burak Poyraz</p>
-          <p>Ahmet Yesevi Üniversitesi</p>
-          <p>Bilgisayar Mühendisliği</p>
-          <p>Proje II Dersi</p>
+          <span className="footer-title">KURUMSAL</span>
+          <p>T.C. Ulaştırma ve Altyapı Bakanlığı</p>
+          <p>VI. Bölge Müdürlüğü</p>
+          <p>AFAD - Afet ve Acil Durum</p>
+          <p>Yönetimi Başkanlığı</p>
         </div>
 
         <div>
-          <span className="footer-title">İletişim</span>
-          <p>Email: burak.poyraz32@gmail.com</p>
+          <span className="footer-title">İLETİŞİM</span>
           <p>
-            GitHub:{" "}
-            <a
-              href="https://github.com/burakpoyraz/AFET-ARAC-TALEP-YONETIM-SISTEMI"
-              className="link link-hover"
-              target="_blank"
-              rel="noopener noreferrer"
-            >
-              AFET ARAC TALEP YONETIM SISTEMI
-            </a>
+            <strong>UAB VI. Bölge Müdürlüğü:</strong>
           </p>
+          <p>Liman Mah. Liman Cad. 07130</p>
+          <p>Konyaaltı - ANTALYA</p>
+          <p>Tel: 0 242 246 20 00</p>
+          <p>E-posta: antalyabolge@uab.gov.tr</p>
         </div>
       </div>
 
       <div className="footer footer-center p-4 bg-base-300 text-base-content text-xs">
-        <p>© {new Date().getFullYear()} Tüm Hakları Saklıdır.</p>
+        <div className="flex flex-col items-center gap-1">
+          <p>© {new Date().getFullYear()} T.C. Ulaştırma ve Altyapı Bakanlığı & AFAD - Tüm Hakları Saklıdır.</p>
+        </div>
       </div>
     </footer>
   );

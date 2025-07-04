@@ -1,4 +1,11 @@
 @import "tailwindcss";
 @plugin "daisyui" {
     themes: light --default;
-  }
+}
+
+
+/* Add bottom margin to table containers */
+
+.overflow-x-auto {
+    padding-bottom: 12rem;
+}
