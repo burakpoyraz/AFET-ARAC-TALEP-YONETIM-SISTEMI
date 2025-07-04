@@ -7,7 +7,7 @@ const Footer = () => {
         <div>
           <h2 className="text-lg font-bold">🚨 Afet Araç Talep ve Yönetim Sistemi</h2>
           <p className="max-w-xs">
-            Bu sistem, afet dönemlerinde yolcu ve yük taşımacılığı için araç talep ve görevlendirme süreçlerini yönetmek amacıyla T.C. Ulaştırma ve Altyapı Bakanlığı ve AFAD işbirliğiyle geliştirilmiştir.
+            Bu sistem, afet dönemlerinde yolcu ve yük taşımacılığı için araç talep ve görevlendirme süreçlerini yönetmek amacıyla T.C. Ulaştırma ve Altyapı Bakanlığı işbirliğiyle geliştirilmiştir.
           </p>
         </div>
 
