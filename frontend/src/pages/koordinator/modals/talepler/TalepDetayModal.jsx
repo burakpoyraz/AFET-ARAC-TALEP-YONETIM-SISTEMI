@@ -2,8 +2,8 @@ import React, { useEffect } from "react";
 import HaritaKonumSecici from "../../../../components/maps/HaritaKonumSecici";
 
 const TalepDetayModal = ({ talep, modal, setModal }) => {
-
-     const icon="/icons/hedef.png"
+  const icon="/icons/hedef.png"
+  
   useEffect(() => {
     const modalEl = document.getElementById("talepDetayModal");
     const handleClose = () => setModal(null);
@@ -20,6 +20,9 @@ const TalepDetayModal = ({ talep, modal, setModal }) => {
   }, [modal]);
 
   if (!talep) return null;
+  
+  // Eski veri yapısı ile uyumluluk kontrolü
+  const araclar = talep.araclar || (talep.aracTuru ? [{ aracTuru: talep.aracTuru, aracSayisi: talep.aracSayisi || 1 }] : []);
 
   return (
     <dialog id="talepDetayModal" className="modal">
@@ -32,9 +35,9 @@ const TalepDetayModal = ({ talep, modal, setModal }) => {
           {/* Sol: Talep Bilgileri */}
           <div className="space-y-2">
             <div>
-            <h4 className="text-lg font-semibold text-white bg-teal-900 px-4 py-2 rounded-t-md border-b">
-  {talep.baslik.toLocaleUpperCase("tr")}
-</h4>
+              <h4 className="text-lg font-semibold text-white bg-teal-900 px-4 py-2 rounded-t-md border-b">
+                {talep.baslik.toLocaleUpperCase("tr")}
+              </h4>
             </div>
 
             <div>
@@ -43,13 +46,33 @@ const TalepDetayModal = ({ talep, modal, setModal }) => {
             </div>
 
             <div>
-              <span className="font-semibold">🚗 Araç Türü:</span>
-              <p className="capitalize">{talep.aracTuru}</p>
-            </div>
-
-            <div>
-              <span className="font-semibold">🔢 Araç Sayısı:</span>
-              <p>{talep.aracSayisi}</p>
+              <span className="font-semibold">🚗 Talep Edilen Araçlar:</span>
+              <div className="overflow-x-auto">
+                <table className="table table-xs table-zebra w-full mt-2">
+                  <thead>
+                    <tr>
+                      <th>Araç Türü</th>
+                      <th className="text-right">Adet</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {araclar.map((arac, index) => (
+                      <tr key={index}>
+                        <td className="capitalize">{arac.aracTuru}</td>
+                        <td className="text-right">{arac.aracSayisi}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                  <tfoot>
+                    <tr>
+                      <th>Toplam</th>
+                      <th className="text-right">
+                        {araclar.reduce((toplam, arac) => toplam + arac.aracSayisi, 0)}
+                      </th>
+                    </tr>
+                  </tfoot>
+                </table>
+              </div>
             </div>
 
             <div>
@@ -93,7 +116,7 @@ const TalepDetayModal = ({ talep, modal, setModal }) => {
 
             <div>
               <span className="font-semibold">☎️ Kurum Telefon:</span>
-              <p>{talep.talepEdenKurumFirmaId?.iletisim.telefon || "-"}</p>
+              <p>{talep.talepEdenKurumFirmaId?.iletisim?.telefon || "-"}</p>
             </div>
           </div>
         </div>

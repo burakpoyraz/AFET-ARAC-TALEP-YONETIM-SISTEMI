@@ -13,8 +13,6 @@ const Talepler = () => {
   const [seciliTalep, setSeciliTalep] = useState(null);
   const [acikModal, setAcikModal] = useState(null);
 
-
-
   const { data: talepler = [], isLoading } = useQuery({
     queryKey: ["talepler"],
     queryFn: async () => {
@@ -62,6 +60,25 @@ const Talepler = () => {
       return (oncelik[a.durum] ?? 99) - (oncelik[b.durum] ?? 99);
     });
 
+  // Araç türlerini ve sayılarını özet olarak göstermek için yardımcı fonksiyon
+  const aracOzetiGetir = (talep) => {
+    // Eski veri yapısı ile uyumluluk kontrolü
+    if (!talep.araclar && talep.aracTuru) {
+      return `${talep.aracTuru} (${talep.aracSayisi})`;
+    }
+    
+    if (!talep.araclar || talep.araclar.length === 0) {
+      return "-";
+    }
+    
+    if (talep.araclar.length === 1) {
+      return `${talep.araclar[0].aracTuru} (${talep.araclar[0].aracSayisi})`;
+    }
+    
+    const toplamArac = talep.araclar.reduce((toplam, arac) => toplam + arac.aracSayisi, 0);
+    return `${talep.araclar.length} türde ${toplamArac} araç`;
+  };
+
   return (
     <div className="p-6">
       <h1 className="text-2xl font-bold mb-4">Talepler</h1>
@@ -85,8 +102,7 @@ const Talepler = () => {
                 <th>Talep ID</th>
                 <th>Başlık</th>
                 <th>Açıklama</th>
-                <th>Araç Türü</th>
-                <th>Adet</th>
+                <th>Araçlar</th>
                 <th>Lokasyon</th>
                 <th>Durum</th>
                 <th>Talep Eden</th>
@@ -113,8 +129,7 @@ const Talepler = () => {
                   </td>
                   <td className="capitalize">{talep.baslik}</td>
                   <td className="capitalize">{talep.aciklama}</td>
-                  <td className="capitalize">{talep.aracTuru}</td>
-                  <td className="capitalize">{talep.aracSayisi}</td>
+                  <td className="capitalize">{aracOzetiGetir(talep)}</td>
                   <td className="capitalize">{talep.lokasyon?.adres}</td>
                  <td className="capitalize">
   <span
