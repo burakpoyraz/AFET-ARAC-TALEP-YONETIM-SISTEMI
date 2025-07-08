@@ -10,6 +10,10 @@ const Taleplerim = () => {
   const [acikModal, setAcikModal] = useState(null);
   const [seciliTalep, setSeciliTalep] = useState(null);
 
+  const { data: girisYapanKullanici } = useQuery({
+    queryKey: ["girisYapanKullanici"],
+  });
+
   const { data: talepler = [], isLoading } = useQuery({
     queryKey: ["taleplerim"],
     queryFn: async () => {
@@ -49,6 +53,14 @@ const Taleplerim = () => {
     };
     return (oncelik[a.durum] ?? 99) - (oncelik[b.durum] ?? 99);
   });
+
+  // Kullanıcının talebi düzenleyebilme yetkisi var mı?
+  const kullaniciDuzenleyebilirMi = (talep) => {
+    return (
+      talep.talepEdenKullaniciId._id === girisYapanKullanici._id && 
+      talep.durum === "beklemede"
+    );
+  };
 
   // Araç türlerini ve sayılarını özet olarak göstermek için yardımcı fonksiyon
   const aracOzetiGetir = (talep) => {
@@ -147,36 +159,38 @@ const Taleplerim = () => {
                     </span>
                   </td>
                   <td>
-                    <div className="dropdown dropdown-end">
-                      <button tabIndex={0} className="btn btn-xs btn-outline">
-                        İşlemler
-                      </button>
-                      <ul
-                        tabIndex={0}
-                        className="dropdown-content z-[1] menu p-2 shadow bg-base-100 rounded-box w-40"
-                      >
-                        <li>
-                          <button
-                            onClick={() => {
-                              setSeciliTalep(talep);
-                              setAcikModal("talepEkleDuzenleModal");
-                            }}
-                          >
-                            Düzenle
-                          </button>
-                        </li>
-                        <li>
-                          <button
-                            onClick={() => {
-                              setSeciliTalep(talep);
-                              setAcikModal("talepIptalModal");
-                            }}
-                          >
-                            İptal Et
-                          </button>
-                        </li>
-                      </ul>
-                    </div>
+                    {kullaniciDuzenleyebilirMi(talep) && (
+                      <div className="dropdown dropdown-end">
+                        <button tabIndex={0} className="btn btn-xs btn-outline">
+                          İşlemler
+                        </button>
+                        <ul
+                          tabIndex={0}
+                          className="dropdown-content z-[1] menu p-2 shadow bg-base-100 rounded-box w-40"
+                        >
+                          <li>
+                            <button
+                              onClick={() => {
+                                setSeciliTalep(talep);
+                                setAcikModal("talepEkleDuzenleModal");
+                              }}
+                            >
+                              Düzenle
+                            </button>
+                          </li>
+                          <li>
+                            <button
+                              onClick={() => {
+                                setSeciliTalep(talep);
+                                setAcikModal("talepIptalModal");
+                              }}
+                            >
+                              İptal Et
+                            </button>
+                          </li>
+                        </ul>
+                      </div>
+                    )}
                   </td>
                 </tr>
               ))}
