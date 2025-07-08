@@ -75,8 +75,30 @@ export const gorevOlustur = async(req, res) => {
             await mailGonder({
                 to: koordinator.email,
                 subject: "Görev Oluşturuldu",
-                html: `<p>Sayın ${koordinator.ad} ${koordinator.soyad},</p>
-               <p>"${talep.baslik}" başlıklı talep için bir görev oluşturuldu.</p>`,
+                html: `
+                <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
+                    <h2 style="color: #2c3e50;">Görev Oluşturuldu</h2>
+                    <p>Sayın ${koordinator.ad} ${koordinator.soyad},</p>
+                    
+                    <div style="background-color: #f8f9fa; padding: 15px; border-radius: 5px; margin: 15px 0;">
+                        <h3 style="color: #2c3e50; margin-top: 0;">Talep Bilgileri</h3>
+                        <p><strong>Başlık:</strong> ${talep.baslik}</p>
+                        <p><strong>Açıklama:</strong> ${talep.aciklama}</p>
+                        <p><strong>Konum:</strong> ${talep.lokasyon.adres}</p>
+                        <p><a href="https://www.google.com/maps?q=${talep.lokasyon.lat},${talep.lokasyon.lng}" 
+                              style="background-color: #4CAF50; color: white; padding: 10px 15px; text-decoration: none; border-radius: 5px; display: inline-block;">
+                            Google Haritada Görüntüle
+                        </a></p>
+                    </div>
+
+                    <div style="background-color: #f8f9fa; padding: 15px; border-radius: 5px; margin: 15px 0;">
+                        <h3 style="color: #2c3e50; margin-top: 0;">Araç Bilgileri</h3>
+                        <p><strong>Araç Türü:</strong> ${arac.aracTuru}</p>
+                        <p><strong>Plaka:</strong> ${arac.plaka}</p>
+                        <p><strong>Şoför:</strong> ${sofor.ad} ${sofor.soyad}</p>
+                        <p><strong>Şoför Telefon:</strong> ${sofor.telefon}</p>
+                    </div>
+                </div>`,
             });
         }
 
@@ -110,8 +132,37 @@ export const gorevOlustur = async(req, res) => {
             await mailGonder({
                 to: talepEden.email,
                 subject: "Talebinize Araç Atandı",
-                html: `<p>Sayın ${talepEden.ad} ${talepEden.soyad},</p>
-                 <p>"${talep.baslik}" başlıklı talebinize bir araç atandı. Detaylar için sisteme giriş yapabilirsiniz.</p>`,
+                html: `
+                <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
+                    <h2 style="color: #2c3e50;">Talebinize Araç Atandı</h2>
+                    <p>Sayın ${talepEden.ad} ${talepEden.soyad},</p>
+                    
+                    <div style="background-color: #f8f9fa; padding: 15px; border-radius: 5px; margin: 15px 0;">
+                        <h3 style="color: #2c3e50; margin-top: 0;">Talep Bilgileri</h3>
+                        <p><strong>Başlık:</strong> ${talep.baslik}</p>
+                        <p><strong>Açıklama:</strong> ${talep.aciklama}</p>
+                        <p><strong>Konum:</strong> ${talep.lokasyon.adres}</p>
+                        <p><a href="https://www.google.com/maps?q=${talep.lokasyon.lat},${talep.lokasyon.lng}" 
+                              style="background-color: #4CAF50; color: white; padding: 10px 15px; text-decoration: none; border-radius: 5px; display: inline-block;">
+                            Google Haritada Görüntüle
+                        </a></p>
+                    </div>
+
+                    <div style="background-color: #f8f9fa; padding: 15px; border-radius: 5px; margin: 15px 0;">
+                        <h3 style="color: #2c3e50; margin-top: 0;">Görevlendirilen Araç Bilgileri</h3>
+                        <p><strong>Araç Türü:</strong> ${arac.aracTuru}</p>
+                        <p><strong>Plaka:</strong> ${arac.plaka}</p>
+                        <p><strong>Şoför:</strong> ${sofor.ad} ${sofor.soyad}</p>
+                        <p><strong>Şoför Telefon:</strong> ${sofor.telefon}</p>
+                    </div>
+
+                    <div style="background-color: #f8f9fa; padding: 15px; border-radius: 5px; margin: 15px 0;">
+                        <h3 style="color: #2c3e50; margin-top: 0;">Koordinatör Bilgileri</h3>
+                        <p><strong>Ad Soyad:</strong> ${koordinator.ad} ${koordinator.soyad}</p>
+                        <p><strong>Telefon:</strong> ${koordinator.telefon}</p>
+                        <p><strong>E-posta:</strong> ${koordinator.email}</p>
+                    </div>
+                </div>`,
             });
         }
 
@@ -139,13 +190,42 @@ export const gorevOlustur = async(req, res) => {
                 gizlilik: "kurumsal",
             });
         }
+
         const aracSahibi = await Kullanici.findOne({ _id: arac.kullaniciId, isDeleted: false });
         if (aracSahibi && aracSahibi.email) {
             await mailGonder({
                 to: aracSahibi.email,
                 subject: "Aracınız Görevlendirildi",
-                html: `<p>Sayın ${aracSahibi.ad} ${aracSahibi.soyad},</p>
-                 <p>Aracınız "${talep.baslik}" başlıklı talep için görevlendirildi.</p>`,
+                html: `
+                <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
+                    <h2 style="color: #2c3e50;">Aracınız Görevlendirildi</h2>
+                    <p>Sayın ${aracSahibi.ad} ${aracSahibi.soyad},</p>
+                    
+                    <div style="background-color: #f8f9fa; padding: 15px; border-radius: 5px; margin: 15px 0;">
+                        <h3 style="color: #2c3e50; margin-top: 0;">Talep Bilgileri</h3>
+                        <p><strong>Başlık:</strong> ${talep.baslik}</p>
+                        <p><strong>Açıklama:</strong> ${talep.aciklama}</p>
+                        <p><strong>Konum:</strong> ${talep.lokasyon.adres}</p>
+                        <p><a href="https://www.google.com/maps?q=${talep.lokasyon.lat},${talep.lokasyon.lng}" 
+                              style="background-color: #4CAF50; color: white; padding: 10px 15px; text-decoration: none; border-radius: 5px; display: inline-block;">
+                            Google Haritada Görüntüle
+                        </a></p>
+                    </div>
+
+                    <div style="background-color: #f8f9fa; padding: 15px; border-radius: 5px; margin: 15px 0;">
+                        <h3 style="color: #2c3e50; margin-top: 0;">Görev Bilgileri</h3>
+                        <p><strong>Araç Plakası:</strong> ${arac.plaka}</p>
+                        <p><strong>Şoför:</strong> ${sofor.ad} ${sofor.soyad}</p>
+                        <p><strong>Şoför Telefon:</strong> ${sofor.telefon}</p>
+                    </div>
+
+                    <div style="background-color: #f8f9fa; padding: 15px; border-radius: 5px; margin: 15px 0;">
+                        <h3 style="color: #2c3e50; margin-top: 0;">Koordinatör Bilgileri</h3>
+                        <p><strong>Ad Soyad:</strong> ${koordinator.ad} ${koordinator.soyad}</p>
+                        <p><strong>Telefon:</strong> ${koordinator.telefon}</p>
+                        <p><strong>E-posta:</strong> ${koordinator.email}</p>
+                    </div>
+                </div>`,
             });
         }
 
@@ -159,8 +239,37 @@ export const gorevOlustur = async(req, res) => {
             await mailGonder({
                 to: kurumEmail,
                 subject: "Kuruluşunuza Ait Araç Görevlendirildi",
-                html: `<p>Sayın ${kurum.kurumAdi},</p>
-             <p>"${talep.baslik}" başlıklı talep için kuruluşunuza ait bir araç görevlendirildi.</p>`,
+                html: `
+                <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
+                    <h2 style="color: #2c3e50;">Kuruluşunuza Ait Araç Görevlendirildi</h2>
+                    <p>Sayın ${kurum.kurumAdi} Yetkilisi,</p>
+                    
+                    <div style="background-color: #f8f9fa; padding: 15px; border-radius: 5px; margin: 15px 0;">
+                        <h3 style="color: #2c3e50; margin-top: 0;">Talep Bilgileri</h3>
+                        <p><strong>Başlık:</strong> ${talep.baslik}</p>
+                        <p><strong>Açıklama:</strong> ${talep.aciklama}</p>
+                        <p><strong>Konum:</strong> ${talep.lokasyon.adres}</p>
+                        <p><a href="https://www.google.com/maps?q=${talep.lokasyon.lat},${talep.lokasyon.lng}" 
+                              style="background-color: #4CAF50; color: white; padding: 10px 15px; text-decoration: none; border-radius: 5px; display: inline-block;">
+                            Google Haritada Görüntüle
+                        </a></p>
+                    </div>
+
+                    <div style="background-color: #f8f9fa; padding: 15px; border-radius: 5px; margin: 15px 0;">
+                        <h3 style="color: #2c3e50; margin-top: 0;">Görev Bilgileri</h3>
+                        <p><strong>Araç Plakası:</strong> ${arac.plaka}</p>
+                        <p><strong>Araç Türü:</strong> ${arac.aracTuru}</p>
+                        <p><strong>Şoför:</strong> ${sofor.ad} ${sofor.soyad}</p>
+                        <p><strong>Şoför Telefon:</strong> ${sofor.telefon}</p>
+                    </div>
+
+                    <div style="background-color: #f8f9fa; padding: 15px; border-radius: 5px; margin: 15px 0;">
+                        <h3 style="color: #2c3e50; margin-top: 0;">Koordinatör Bilgileri</h3>
+                        <p><strong>Ad Soyad:</strong> ${koordinator.ad} ${koordinator.soyad}</p>
+                        <p><strong>Telefon:</strong> ${koordinator.telefon}</p>
+                        <p><strong>E-posta:</strong> ${koordinator.email}</p>
+                    </div>
+                </div>`,
             });
         } else {
             console.log("Kuruma ait araç var ama e-posta adresi tanımsız.");
