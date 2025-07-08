@@ -27,6 +27,17 @@ const TalepEkleDuzenleModal = ({ modal, setModal, duzenlenecekTalep }) => {
   const girisYapanKullanici = queryClient.getQueryData(["girisYapanKullanici"]);
   console.log("[TalepEkleDuzenleModal] Giriş yapan kullanıcı:", girisYapanKullanici);
 
+  // Kullanıcının talebi düzenleyebilme yetkisi var mı?
+  const kullaniciDuzenleyebilirMi = () => {
+    if (!duzenlenecekTalep || !girisYapanKullanici) return false;
+    
+    return (
+      girisYapanKullanici.rol === "koordinator" || 
+      (duzenlenecekTalep.talepEdenKullaniciId._id === girisYapanKullanici._id && 
+       duzenlenecekTalep.durum === "beklemede")
+    );
+  };
+
   const [formData, setFormData] = useState({
     baslik: "",
     aciklama: "",
@@ -52,6 +63,13 @@ const TalepEkleDuzenleModal = ({ modal, setModal, duzenlenecekTalep }) => {
         modalEl.showModal();
 
         if (duzenlenecekTalep) {
+          // Düzenleme yetkisi kontrolü
+          if (!kullaniciDuzenleyebilirMi()) {
+            toast.error("Bu talebi düzenleme yetkiniz yok");
+            setModal(null);
+            return;
+          }
+
           console.log("[TalepEkleDuzenleModal] Setting form data for edit:", duzenlenecekTalep);
           
           // Eski veri yapısı ile uyumluluk kontrolü
@@ -84,8 +102,8 @@ const TalepEkleDuzenleModal = ({ modal, setModal, duzenlenecekTalep }) => {
             aciklama: "",
             araclar: [{ aracTuru: "otomobil", aracSayisi: 1 }],
             adres: "",
-            talepEdenKullaniciId: girisYapanKullanici?._id,
-            talepEdenKurumFirmaId: girisYapanKullanici?.kurumFirmaId?._id,
+            talepEdenKullaniciId: girisYapanKullanici._id,
+            talepEdenKurumFirmaId: girisYapanKullanici.kurumFirmaId._id,
           });
           setLokasyon(null);
         }
