@@ -1,138 +1,135 @@
 import Talep from "../models/talep.model.js";
 import Kullanici from "../models/kullanici.model.js";
+import KurumFirma from "../models/kurumFirma.model.js";
 import { bildirimOlustur } from "../lib/utils/bildirimOlustur.js";
 import { mailGonder } from "../lib/utils/email.js";
 
 export const talepEkle = async(req, res) => {
-    const { baslik, aciklama, araclar, lokasyon, durum } = req.body;
+        try {
+            const { baslik, aciklama, lokasyon, araclar, talepEdenKullaniciId, talepEdenKurumFirmaId } = req.body;
 
-    try {
-        const talepEdenKullaniciId = req.kullanici._id;
-        const talepEdenKurumFirmaId = req.kullanici.kurumFirmaId;
-
-        if (!baslik) {
-            return res.status(400).json({ error: "Başlık bilgisi zorunludur" });
-        }
-        if (!aciklama) {
-            return res.status(400).json({ error: "Açıklama bilgisi zorunludur" });
-        }
-        if (!araclar || !Array.isArray(araclar) || araclar.length === 0) {
-            return res.status(400).json({ error: "En az bir araç türü ve sayısı belirtilmelidir" });
-        }
-
-        // Validate each vehicle entry
-        for (const arac of araclar) {
-            if (!arac.aracTuru) {
-                return res.status(400).json({ error: "Araç türü bilgisi zorunludur" });
-            }
-            if (!arac.aracSayisi || arac.aracSayisi < 1) {
-                return res.status(400).json({ error: "Araç sayısı en az 1 olmalıdır" });
-            }
-        }
-
-        if (!lokasyon) {
-            return res.status(400).json({ error: "Lokasyon bilgisi zorunludur" });
-        }
-
-        const { adres, lat, lng } = lokasyon;
-        if (!adres) {
-            return res.status(400).json({ error: "Adres bilgisi zorunludur" });
-        }
-        if (!lat) {
-            return res.status(400).json({ error: "Enlem bilgisi zorunludur" });
-        }
-        if (!lng) {
-            return res.status(400).json({ error: "Boylam bilgisi zorunludur" });
-        }
-        const talep = new Talep({
-            baslik,
-            aciklama,
-            talepEdenKullaniciId,
-            talepEdenKurumFirmaId,
-            araclar,
-            lokasyon: {
-                adres,
-                lat,
-                lng,
-            },
-            durum: durum || "beklemede",
-        });
-
-        if (!talep) {
-            return res.status(400).json({ error: "Talep oluşturulamadı" });
-        }
-        await talep.save();
-
-        // 1. Talep eden kullanıcıya bireysel bildirim gönder
-        await bildirimOlustur({
-            kullaniciId: talepEdenKullaniciId,
-            kurumFirmaId: null,
-            baslik: "Talebiniz Oluşturuldu",
-            icerik: `"${talep.baslik}" başlıklı talebiniz başarıyla oluşturuldu.`,
-            hedefUrl: `/talepler/${talep._id}`,
-            tur: "talep",
-            gizlilik: "bireysel",
-        });
-        // 2. Tüm koordinatörleri al ve kurum bazlı grupla
-        const koordinatorler = await Kullanici.find({ rol: "koordinator", isDeleted: false }).select(
-            "_id kurumFirmaId"
-        );
-
-        const kurumSet = new Set();
-        const kurumaBagliOlmayanKoordinatorler = [];
-
-        for (const k of koordinatorler) {
-            if (k.kurumFirmaId) {
-                kurumSet.add(k.kurumFirmaId.toString());
-            } else {
-                kurumaBagliOlmayanKoordinatorler.push(k._id); // Kuruma bağlı olmayan koordinatör
-            }
-        }
-        // 3. Her kuruma sadece bir bildirim gönder (kurumsal)
-        for (const kurumId of kurumSet) {
-            await bildirimOlustur({
-                kullaniciId: null,
-                kurumFirmaId: kurumId,
-                baslik: `Yeni Talep : ${talep.baslik} Talebi`,
-                icerik: `Açıklama: ${talep.aciklama}`,
-                hedefUrl: `/talepler/${talep._id}`,
-                tur: "talep",
-                gizlilik: "kurumsal",
+            // Yeni talebi oluştur
+            const talep = new Talep({
+                baslik,
+                aciklama,
+                lokasyon,
+                araclar,
+                talepEdenKullaniciId,
+                talepEdenKurumFirmaId,
             });
-        }
-        // 4. Kuruma bağlı olmayan koordinatörlere bireysel bildirim gönder
-        for (const kId of kurumaBagliOlmayanKoordinatorler) {
-            await bildirimOlustur({
-                kullaniciId: kId,
-                kurumFirmaId: null,
-                baslik: `Yeni Talep : ${talep.baslik} Talebi`,
-                icerik: `Açıklama: ${talep.aciklama}`,
-                hedefUrl: `/talepler/${talep._id}`,
-                tur: "talep",
-                gizlilik: "bireysel",
+
+            // Talebi kaydet
+            await talep.save();
+
+            // Talep eden kişi ve kurum bilgilerini çek
+            const talepEden = await Kullanici.findOne({
+                _id: talep.talepEdenKullaniciId,
+                isDeleted: false
             });
-        }
 
-        const tumKoordinatorler = await Kullanici.find({
-            rol: "koordinator",
-            isDeleted: false,
-        }).select("ad soyad email");
+            const talepEdenKurum = await KurumFirma.findOne({
+                _id: talep.talepEdenKurumFirmaId,
+                isDeleted: false
+            });
 
-        for (const k of tumKoordinatorler) {
-            if (k.email) {
-                await mailGonder({
-                    to: k.email,
-                    subject: `Yeni Talep: ${talep.baslik}`,
-                    html: `<p>Sayın ${k.ad} ${k.soyad},</p>
-             <p>Yeni bir talep oluşturuldu:</p>
-             <p><strong>${talep.baslik}</strong></p>
-             <p>Açıklama: ${talep.aciklama}</p>`,
+            // Koordinatörlere bildirim gönder
+            const tumKoordinatorler = await Kullanici.find({
+                rol: "koordinator",
+                isDeleted: false,
+            }).select("ad soyad email");
+
+            // Her koordinatöre bildirim gönder
+            const kurumSet = new Set();
+            const kurumaBagliOlmayanKoordinatorler = [];
+
+            for (const koordinator of tumKoordinatorler) {
+                if (koordinator.kurumFirmaId) {
+                    kurumSet.add(koordinator.kurumFirmaId.toString());
+                } else {
+                    kurumaBagliOlmayanKoordinatorler.push(koordinator._id);
+                }
+            }
+
+            // 3. Her kuruma sadece bir bildirim gönder (kurumsal)
+            for (const kurumId of kurumSet) {
+                await bildirimOlustur({
+                    kullaniciId: null,
+                    kurumFirmaId: kurumId,
+                    baslik: `Yeni Talep : ${talep.baslik} Talebi`,
+                    icerik: `Açıklama: ${talep.aciklama}`,
+                    hedefUrl: `/talepler/${talep._id}`,
+                    tur: "talep",
+                    gizlilik: "kurumsal",
+                });
+            }
+
+            // 4. Kuruma bağlı olmayan koordinatörlere bireysel bildirim gönder
+            for (const kId of kurumaBagliOlmayanKoordinatorler) {
+                await bildirimOlustur({
+                    kullaniciId: kId,
+                    kurumFirmaId: null,
+                    baslik: `Yeni Talep : ${talep.baslik} Talebi`,
+                    icerik: `Açıklama: ${talep.aciklama}`,
+                    hedefUrl: `/talepler/${talep._id}`,
+                    tur: "talep",
+                    gizlilik: "bireysel",
+                });
+            }
+
+            // Koordinatörlere e-posta gönder
+            for (const k of tumKoordinatorler) {
+                if (k.email) {
+                    await mailGonder({
+                                to: k.email,
+                                subject: `Yeni Talep: ${talep.baslik}`,
+                                html: `
+                    <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
+                        <h2 style="color: #2c3e50;">Yeni Talep Oluşturuldu</h2>
+                        <p>Sayın ${k.ad} ${k.soyad},</p>
+                        
+                        <div style="background-color: #f8f9fa; padding: 15px; border-radius: 5px; margin: 15px 0;">
+                            <h3 style="color: #2c3e50; margin-top: 0;">Talep Bilgileri</h3>
+                            <p><strong>Başlık:</strong> ${talep.baslik}</p>
+                            <p><strong>Açıklama:</strong> ${talep.aciklama}</p>
+                            <p><strong>Konum:</strong> ${talep.lokasyon.adres}</p>
+                            <p><a href="https://www.google.com/maps?q=${talep.lokasyon.lat},${talep.lokasyon.lng}" 
+                                  style="background-color: #4CAF50; color: white; padding: 10px 15px; text-decoration: none; border-radius: 5px; display: inline-block;">
+                                Google Haritada Görüntüle
+                            </a></p>
+                        </div>
+
+                        <div style="background-color: #f8f9fa; padding: 15px; border-radius: 5px; margin: 15px 0;">
+                            <h3 style="color: #2c3e50; margin-top: 0;">İstenen Araçlar</h3>
+                            ${talep.araclar.map(arac => `
+                                <div style="margin-bottom: 10px;">
+                                    <p><strong>Araç Türü:</strong> ${arac.aracTuru}</p>
+                                    <p><strong>İstenen Adet:</strong> ${arac.aracSayisi}</p>
+                                </div>
+                            `).join('')}
+                        </div>
+
+                        <div style="background-color: #f8f9fa; padding: 15px; border-radius: 5px; margin: 15px 0;">
+                            <h3 style="color: #2c3e50; margin-top: 0;">Talep Eden Bilgileri</h3>
+                            ${talepEden ? `
+                                <p><strong>Ad Soyad:</strong> ${talepEden.ad} ${talepEden.soyad}</p>
+                                <p><strong>Telefon:</strong> ${talepEden.telefon}</p>
+                                <p><strong>E-posta:</strong> ${talepEden.email}</p>
+                            ` : ''}
+                            ${talepEdenKurum ? `
+                                <p><strong>Kurum Adı:</strong> ${talepEdenKurum.kurumAdi}</p>
+                                <p><strong>Kurum Telefon:</strong> ${talepEdenKurum.iletisim?.telefon || 'Belirtilmemiş'}</p>
+                                <p><strong>Kurum E-posta:</strong> ${talepEdenKurum.iletisim?.email || 'Belirtilmemiş'}</p>
+                                <p><strong>Kurum Adres:</strong> ${talepEdenKurum.iletisim?.adres || 'Belirtilmemiş'}</p>
+                            ` : ''}
+                        </div>
+                    </div>`,
                 });
             }
         }
 
         res.status(201).json({ talep });
     } catch (error) {
+        console.error("Talep oluşturulurken hata:", error);
         res.status(500).json({ error: "Sunucu hatası" });
     }
 };
