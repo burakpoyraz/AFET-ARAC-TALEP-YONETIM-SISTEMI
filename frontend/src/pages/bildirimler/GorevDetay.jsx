@@ -59,7 +59,7 @@ const GorevDetay = () => {
             </div>
 
             <div>
-              <label className="font-semibold block mb-1">Şoför</label>
+              <label className="font-semibold block mb-1">Şoför bilgisi</label>
               <div className="bg-base-200 p-2 rounded">
                 {gorev.sofor?.ad} {gorev.sofor?.soyad} ({gorev.sofor?.telefon})
               </div>
