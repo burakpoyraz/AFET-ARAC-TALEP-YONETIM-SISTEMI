@@ -1,5 +1,6 @@
 import 'package:afet_arac_takip/core/init/navigation/navigation_route.dart';
 import 'package:afet_arac_takip/core/init/navigation/navigation_service.dart';
+import 'package:afet_arac_takip/product/cache/local_storage.dart';
 import 'package:afet_arac_takip/product/theme/app_theme.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -8,6 +9,10 @@ import 'package:provider/provider.dart';
 Future<void> main() async {
   try {
     WidgetsFlutterBinding.ensureInitialized();
+
+    // Initialize local storage
+    await LocalStorage.instance.init();
+    debugPrint('Local storage initialized');
 
     // Set preferred orientations
     await SystemChrome.setPreferredOrientations([

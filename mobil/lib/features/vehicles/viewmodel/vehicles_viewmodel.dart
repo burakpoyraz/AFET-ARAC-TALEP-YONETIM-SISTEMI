@@ -24,11 +24,14 @@ class VehiclesViewModel extends ChangeNotifier {
           final index = _vehicles.indexOf(vehicle);
           _vehicles[index] = Vehicle(
             plaka: vehicle.plaka,
+            aracTuru: vehicle.aracTuru,
+            kullanimAmaci: vehicle.kullanimAmaci,
+            kapasite: vehicle.kapasite,
+            aracDurumu: vehicle.aracDurumu,
+            musaitlikDurumu: vehicle.musaitlikDurumu,
+            konum: locations[vehicle.plaka],
             marka: vehicle.marka,
             model: vehicle.model,
-            kapasite: vehicle.kapasite,
-            durum: vehicle.durum,
-            konum: locations[vehicle.plaka],
           );
           updated = true;
         }
@@ -47,8 +50,14 @@ class VehiclesViewModel extends ChangeNotifier {
 
     return _vehicles.where((vehicle) {
       return vehicle.plaka.toLowerCase().contains(_searchQuery.toLowerCase()) ||
-          vehicle.marka.toLowerCase().contains(_searchQuery.toLowerCase()) ||
-          vehicle.model.toLowerCase().contains(_searchQuery.toLowerCase());
+          vehicle.aracTuru.toLowerCase().contains(_searchQuery.toLowerCase()) ||
+          vehicle.kullanimAmaci
+              .toLowerCase()
+              .contains(_searchQuery.toLowerCase()) ||
+          (vehicle.marka?.toLowerCase().contains(_searchQuery.toLowerCase()) ??
+              false) ||
+          (vehicle.model?.toLowerCase().contains(_searchQuery.toLowerCase()) ??
+              false);
     }).toList();
   }
 
@@ -209,18 +218,20 @@ class VehiclesViewModel extends ChangeNotifier {
   /// Filter vehicles by status
   List<Vehicle> getVehiclesByStatus(String status) {
     return _filteredVehicles
-        .where((vehicle) => vehicle.durum == status)
+        .where((vehicle) => vehicle.aracDurumu == status)
         .toList();
   }
 
+  /// Get active vehicles
+  List<Vehicle> get activeVehicles => getVehiclesByStatus('aktif');
+
+  /// Get inactive vehicles
+  List<Vehicle> get inactiveVehicles => getVehiclesByStatus('pasif');
+
   /// Get available vehicles
-  List<Vehicle> get availableVehicles => getVehiclesByStatus('available');
-
-  /// Get busy vehicles
-  List<Vehicle> get busyVehicles => getVehiclesByStatus('busy');
-
-  /// Get maintenance vehicles
-  List<Vehicle> get maintenanceVehicles => getVehiclesByStatus('maintenance');
+  List<Vehicle> get availableVehicles => _filteredVehicles
+      .where((vehicle) => vehicle.musaitlikDurumu == true)
+      .toList();
 
   @override
   void dispose() {

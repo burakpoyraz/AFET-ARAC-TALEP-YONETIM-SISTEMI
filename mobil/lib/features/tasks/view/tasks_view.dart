@@ -1,177 +1,87 @@
-import 'package:afet_arac_takip/features/tasks/model/task_model.dart';
-import 'package:afet_arac_takip/features/tasks/viewmodel/tasks_viewmodel.dart';
-import 'package:afet_arac_takip/product/widgets/custom_button.dart';
-import 'package:flutter/cupertino.dart';
+import 'package:afet_arac_takip/features/tasks/view/my_tasks_view.dart';
+import 'package:afet_arac_takip/product/cache/local_storage.dart';
 import 'package:flutter/material.dart';
-import 'package:google_maps_flutter/google_maps_flutter.dart';
-import 'package:provider/provider.dart';
 
-/// Tasks view
-class TasksView extends StatefulWidget {
+/// Tasks view that shows different content based on user role
+class TasksView extends StatelessWidget {
   /// Creates a tasks view
   const TasksView({super.key});
 
   @override
-  State<TasksView> createState() => _TasksViewState();
-}
-
-class _TasksViewState extends State<TasksView> {
-  @override
   Widget build(BuildContext context) {
-    return ChangeNotifierProvider(
-      create: (_) => TasksViewModel()..getTasks(),
-      child: Scaffold(
+    final user = LocalStorage.instance.getUser();
+
+    if (user == null) {
+      return const Scaffold(
+        body: Center(
+          child: Text('Kullanıcı bilgisi bulunamadı'),
+        ),
+      );
+    }
+
+    // Show different views based on user role
+    if (user.isKoordinator) {
+      // TODO: Implement KoordinatorTasksView
+      return Scaffold(
         appBar: AppBar(
-          title: const Text('Görevlerim'),
+          title: const Text('Görev Yönetimi'),
         ),
-        body: Consumer<TasksViewModel>(
-          builder: (context, viewModel, _) {
-            if (viewModel.isLoading) {
-              return const Center(
-                child: CupertinoActivityIndicator(),
-              );
-            }
-
-            if (viewModel.tasks.isEmpty) {
-              return Center(
-                child: Text(
-                  'Henüz görev atanmamış',
-                  style: Theme.of(context).textTheme.titleMedium,
-                ),
-              );
-            }
-
-            return ListView.builder(
-              padding: const EdgeInsets.all(16),
-              itemCount: viewModel.tasks.length,
-              itemBuilder: (context, index) {
-                final task = viewModel.tasks[index];
-                return Card(
-                  margin: const EdgeInsets.only(bottom: 16),
-                  child: Column(
-                    children: [
-                      ListTile(
-                        title: Text(task.arac.plaka),
-                        subtitle: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text('Tahmini Süre: ${task.tahminiSure} dakika'),
-                            Text('Tahmini Mesafe: ${task.tahminiMesafe} km'),
-                            Text('Durum: ${task.durum}'),
-                          ],
-                        ),
-                        trailing: task.durum == 'beklemede'
-                            ? CustomButton(
-                                onPressed: () =>
-                                    _showStartTaskDialog(context, task),
-                                text: 'Başlat',
-                                width: 100,
-                              )
-                            : task.durum == 'devam_ediyor'
-                                ? CustomButton(
-                                    onPressed: () =>
-                                        _showCompleteTaskDialog(context, task),
-                                    text: 'Tamamla',
-                                    width: 100,
-                                  )
-                                : null,
-                      ),
-                      SizedBox(
-                        height: 200,
-                        child: GoogleMap(
-                          initialCameraPosition: CameraPosition(
-                            target: LatLng(
-                              task.baslangicKonum.lat,
-                              task.baslangicKonum.lng,
-                            ),
-                            zoom: 12,
-                          ),
-                          markers: {
-                            Marker(
-                              markerId: MarkerId('baslangic_${task.id}'),
-                              position: LatLng(
-                                task.baslangicKonum.lat,
-                                task.baslangicKonum.lng,
-                              ),
-                              infoWindow: const InfoWindow(
-                                title: 'Başlangıç Noktası',
-                              ),
-                            ),
-                            Marker(
-                              markerId: MarkerId('bitis_${task.id}'),
-                              position: LatLng(
-                                task.bitisKonum.lat,
-                                task.bitisKonum.lng,
-                              ),
-                              infoWindow: const InfoWindow(
-                                title: 'Bitiş Noktası',
-                              ),
-                            ),
-                          },
-                        ),
-                      ),
-                    ],
-                  ),
-                );
-              },
-            );
-          },
+        body: const Center(
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Icon(
+                Icons.construction,
+                size: 64,
+                color: Colors.grey,
+              ),
+              SizedBox(height: 16),
+              Text(
+                'Koordinatör Görev Yönetimi',
+                style: TextStyle(fontSize: 18),
+              ),
+              Text('Geliştirme aşamasında...'),
+            ],
+          ),
         ),
-      ),
-    );
-  }
-
-  void _showStartTaskDialog(BuildContext context, Task task) {
-    showCupertinoDialog<void>(
-      context: context,
-      builder: (context) => CupertinoAlertDialog(
-        title: const Text('Görevi Başlat'),
-        content: Text(
-            '${task.arac.plaka} plakalı aracın görevini başlatmak istediğinize emin misiniz?'),
-        actions: [
-          CupertinoDialogAction(
-            onPressed: () => Navigator.pop(context),
-            child: const Text('İptal'),
+      );
+    } else if (user.isAracSahibi) {
+      return const MyTasksView();
+    } else if (user.isTalepEden) {
+      // TODO: Implement TalepEdenTasksView
+      return Scaffold(
+        appBar: AppBar(
+          title: const Text('Görev Takibi'),
+        ),
+        body: const Center(
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Icon(
+                Icons.construction,
+                size: 64,
+                color: Colors.grey,
+              ),
+              SizedBox(height: 16),
+              Text(
+                'Talep Eden Görev Takibi',
+                style: TextStyle(fontSize: 18),
+              ),
+              Text('Geliştirme aşamasında...'),
+            ],
           ),
-          CupertinoDialogAction(
-            onPressed: () {
-              context.read<TasksViewModel>().updateTaskStatus(
-                    id: task.id,
-                    status: 'devam_ediyor',
-                  );
-              Navigator.pop(context);
-            },
-            child: const Text('Başlat'),
-          ),
-        ],
-      ),
-    );
-  }
-
-  void _showCompleteTaskDialog(BuildContext context, Task task) {
-    showCupertinoDialog<void>(
-      context: context,
-      builder: (context) => CupertinoAlertDialog(
-        title: const Text('Görevi Tamamla'),
-        content: Text(
-            '${task.arac.plaka} plakalı aracın görevini tamamlamak istediğinize emin misiniz?'),
-        actions: [
-          CupertinoDialogAction(
-            onPressed: () => Navigator.pop(context),
-            child: const Text('İptal'),
-          ),
-          CupertinoDialogAction(
-            onPressed: () {
-              context.read<TasksViewModel>().updateTaskStatus(
-                    id: task.id,
-                    status: 'tamamlandi',
-                  );
-              Navigator.pop(context);
-            },
-            child: const Text('Tamamla'),
-          ),
-        ],
-      ),
-    );
+        ),
+      );
+    } else {
+      // For other roles, show a message
+      return Scaffold(
+        appBar: AppBar(
+          title: const Text('Görevler'),
+        ),
+        body: const Center(
+          child: Text('Bu rol için görev görünümü mevcut değil'),
+        ),
+      );
+    }
   }
 }

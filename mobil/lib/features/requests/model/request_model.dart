@@ -1,70 +1,143 @@
-import 'package:afet_arac_takip/features/vehicles/model/vehicle_model.dart';
-
-/// Request model
+/// Request model for handling request data
 class Request {
-  /// Creates a request model
   Request({
     required this.id,
-    required this.talepEdenKullaniciId,
-    required this.talepEdenKurumFirmaId,
-    required this.adres,
+    required this.baslik,
+    required this.aciklama,
+    required this.araclar,
     required this.lokasyon,
     required this.durum,
-    required this.olusturulmaTarihi,
-    this.tamamlanmaTarihi,
+    required this.olusturulmaZamani,
+    required this.talepEdenKullaniciId,
+    this.talepEdenKurumFirmaId,
+    this.kurumAdi,
+    this.talepEdenAdi,
   });
 
-  /// Creates a request model from json
   factory Request.fromJson(Map<String, dynamic> json) {
     return Request(
-      id: json['_id'] as String,
-      talepEdenKullaniciId: json['talepEdenKullaniciId'] as String,
-      talepEdenKurumFirmaId: json['talepEdenKurumFirmaId'] as String,
-      adres: json['adres'] as String,
+      id: json['_id'] as String? ?? '',
+      baslik: json['baslik'] as String? ?? 'Başlık Yok',
+      aciklama: json['aciklama'] as String? ?? 'Açıklama Yok',
+      araclar: (json['araclar'] as List<dynamic>?)
+              ?.map((e) => VehicleRequest.fromJson(e as Map<String, dynamic>))
+              .toList() ??
+          [],
       lokasyon: Location.fromJson(json['lokasyon'] as Map<String, dynamic>),
-      durum: json['durum'] as String,
-      olusturulmaTarihi: DateTime.parse(json['olusturulmaTarihi'] as String),
-      tamamlanmaTarihi: json['tamamlanmaTarihi'] != null
-          ? DateTime.parse(json['tamamlanmaTarihi'] as String)
+      durum: json['durum'] as String? ?? 'beklemede',
+      olusturulmaZamani:
+          DateTime.tryParse(json['olusturulmaZamani'] as String? ?? '') ??
+              DateTime.now(),
+      talepEdenKullaniciId: json['talepEdenKullaniciId'] is String
+          ? json['talepEdenKullaniciId'] as String
+          : (json['talepEdenKullaniciId'] as Map<String, dynamic>?)
+                      ?.containsKey('_id') ??
+                  false
+              ? (json['talepEdenKullaniciId'] as Map<String, dynamic>)['_id']
+                      as String? ??
+                  ''
+              : '',
+      talepEdenKurumFirmaId: json['talepEdenKurumFirmaId'] is String
+          ? json['talepEdenKurumFirmaId'] as String
+          : (json['talepEdenKurumFirmaId'] as Map<String, dynamic>?)
+                      ?.containsKey('_id') ??
+                  false
+              ? (json['talepEdenKurumFirmaId'] as Map<String, dynamic>)['_id']
+                  as String?
+              : null,
+      kurumAdi: json['talepEdenKurumFirmaId'] is Map<String, dynamic>
+          ? (json['talepEdenKurumFirmaId'] as Map<String, dynamic>)['kurumAdi']
+              as String?
+          : null,
+      talepEdenAdi: json['talepEdenKullaniciId'] is Map<String, dynamic>
+          ? '${(json['talepEdenKullaniciId'] as Map<String, dynamic>)['ad'] as String? ?? ''} ${(json['talepEdenKullaniciId'] as Map<String, dynamic>)['soyad'] as String? ?? ''}'
+              .trim()
           : null,
     );
   }
-
-  /// Request id
   final String id;
-
-  /// Request user id
-  final String talepEdenKullaniciId;
-
-  /// Request organization id
-  final String talepEdenKurumFirmaId;
-
-  /// Request address
-  final String adres;
-
-  /// Request location
+  final String baslik;
+  final String aciklama;
+  final List<VehicleRequest> araclar;
   final Location lokasyon;
-
-  /// Request status
   final String durum;
+  final DateTime olusturulmaZamani;
+  final String talepEdenKullaniciId;
+  final String? talepEdenKurumFirmaId;
+  final String? kurumAdi;
+  final String? talepEdenAdi;
 
-  /// Request creation date
-  final DateTime olusturulmaTarihi;
+  String get statusDisplayText {
+    switch (durum) {
+      case 'beklemede':
+        return 'Beklemede';
+      case 'gorevlendirildi':
+        return 'Görevlendirildi';
+      case 'tamamlandı':
+        return 'Tamamlandı';
+      case 'iptal edildi':
+        return 'İptal Edildi';
+      default:
+        return durum;
+    }
+  }
 
-  /// Request completion date
-  final DateTime? tamamlanmaTarihi;
+  String get vehicleSummary {
+    if (araclar.isEmpty) return 'Araç bilgisi yok';
+    if (araclar.length == 1) {
+      final arac = araclar.first;
+      return '${arac.aracSayisi} ${arac.aracTuru}';
+    }
+    return '${araclar.length} farklı türde araç';
+  }
+}
 
-  /// Converts request model to json
+class VehicleRequest {
+  VehicleRequest({
+    required this.aracTuru,
+    required this.aracSayisi,
+  });
+
+  factory VehicleRequest.fromJson(Map<String, dynamic> json) {
+    return VehicleRequest(
+      aracTuru: json['aracTuru'] as String? ?? 'Belirtilmemiş',
+      aracSayisi: json['aracSayisi'] as int? ?? 1,
+    );
+  }
+  final String aracTuru;
+  final int aracSayisi;
+
   Map<String, dynamic> toJson() {
     return {
-      '_id': id,
-      'talepEdenKullaniciId': talepEdenKullaniciId,
-      'talepEdenKurumFirmaId': talepEdenKurumFirmaId,
+      'aracTuru': aracTuru,
+      'aracSayisi': aracSayisi,
+    };
+  }
+}
+
+class Location {
+  Location({
+    required this.adres,
+    required this.lat,
+    required this.lng,
+  });
+
+  factory Location.fromJson(Map<String, dynamic> json) {
+    return Location(
+      adres: json['adres'] as String? ?? 'Adres Yok',
+      lat: (json['lat'] as num?)?.toDouble() ?? 0.0,
+      lng: (json['lng'] as num?)?.toDouble() ?? 0.0,
+    );
+  }
+  final String adres;
+  final double lat;
+  final double lng;
+
+  Map<String, dynamic> toJson() {
+    return {
       'adres': adres,
-      'lokasyon': lokasyon.toJson(),
-      'durum': durum,
-      'olusturulmaTarihi': olusturulmaTarihi.toIso8601String(),
-      'tamamlanmaTarihi': tamamlanmaTarihi?.toIso8601String(),
+      'lat': lat,
+      'lng': lng,
     };
   }
 }

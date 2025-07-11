@@ -1,4 +1,5 @@
 import 'package:afet_arac_takip/core/init/navigation/navigation_service.dart';
+import 'package:afet_arac_takip/features/auth/model/user_model.dart';
 import 'package:afet_arac_takip/product/cache/local_storage.dart';
 import 'package:afet_arac_takip/product/network/network_manager.dart';
 import 'package:dio/dio.dart';
@@ -91,11 +92,18 @@ class LoginViewModel extends ChangeNotifier {
         }
 
         await _localStorage.setToken(token);
-        await _localStorage.setUser(user.toString());
+        final userModel = User.fromJson(user);
+        await _localStorage.setUser(userModel);
         debugPrint('[LoginViewModel] Token and user data saved');
 
-        await _navigationService.navigateToPageClear(path: '/vehicles');
-        debugPrint('[LoginViewModel] Navigation to vehicles page completed');
+        // Navigate based on user role
+        var initialRoute = '/main';
+        if (userModel.isBeklemede) {
+          initialRoute = '/pending-approval';
+        }
+
+        await _navigationService.navigateToPageClear(path: initialRoute);
+        debugPrint('[LoginViewModel] Navigation to $initialRoute completed');
       } else {
         final errorMessage =
             response.data?['error'] as String? ?? 'Giriş başarısız';

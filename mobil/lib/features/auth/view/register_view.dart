@@ -14,7 +14,8 @@ class RegisterView extends StatefulWidget {
 }
 
 class _RegisterViewState extends State<RegisterView> {
-  late final TextEditingController _nameController;
+  late final TextEditingController _adController;
+  late final TextEditingController _soyadController;
   late final TextEditingController _emailController;
   late final TextEditingController _phoneController;
   late final TextEditingController _passwordController;
@@ -23,7 +24,8 @@ class _RegisterViewState extends State<RegisterView> {
   @override
   void initState() {
     super.initState();
-    _nameController = TextEditingController();
+    _adController = TextEditingController();
+    _soyadController = TextEditingController();
     _emailController = TextEditingController();
     _phoneController = TextEditingController();
     _passwordController = TextEditingController();
@@ -32,7 +34,8 @@ class _RegisterViewState extends State<RegisterView> {
 
   @override
   void dispose() {
-    _nameController.dispose();
+    _adController.dispose();
+    _soyadController.dispose();
     _emailController.dispose();
     _phoneController.dispose();
     _passwordController.dispose();
@@ -60,9 +63,15 @@ class _RegisterViewState extends State<RegisterView> {
                 ),
                 const SizedBox(height: 24),
                 CustomTextField(
-                  controller: _nameController,
-                  labelText: 'Ad Soyad',
-                  hintText: 'Ad ve soyadınızı girin',
+                  controller: _adController,
+                  labelText: 'Ad',
+                  hintText: 'Adınızı girin',
+                ),
+                const SizedBox(height: 16),
+                CustomTextField(
+                  controller: _soyadController,
+                  labelText: 'Soyad',
+                  hintText: 'Soyadınızı girin',
                 ),
                 const SizedBox(height: 16),
                 CustomTextField(
@@ -102,14 +111,29 @@ class _RegisterViewState extends State<RegisterView> {
                 const SizedBox(height: 32),
                 Consumer<RegisterViewModel>(
                   builder: (context, viewModel, _) {
+                    if (viewModel.errorMessage != null) {
+                      WidgetsBinding.instance.addPostFrameCallback((_) {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(
+                            content: Text(viewModel.errorMessage!),
+                            backgroundColor:
+                                Theme.of(context).colorScheme.error,
+                          ),
+                        );
+                      });
+                    }
                     return CustomButton(
-                      onPressed: () => viewModel.register(
-                        name: _nameController.text,
-                        email: _emailController.text,
-                        phone: _phoneController.text,
-                        password: _passwordController.text,
-                        passwordConfirm: _passwordConfirmController.text,
-                      ),
+                      onPressed: viewModel.isLoading
+                          ? null
+                          : () => viewModel.register(
+                                ad: _adController.text.trim(),
+                                soyad: _soyadController.text.trim(),
+                                email: _emailController.text.trim(),
+                                phone: _phoneController.text.trim(),
+                                password: _passwordController.text,
+                                passwordConfirm:
+                                    _passwordConfirmController.text,
+                              ),
                       text: 'Hesap Oluştur',
                       isLoading: viewModel.isLoading,
                     );

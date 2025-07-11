@@ -79,10 +79,13 @@ class _AddVehicleModalState extends State<AddVehicleModal> {
                     onPressed: () {
                       final vehicle = Vehicle(
                         plaka: _plakaController.text,
+                        aracTuru: 'otomobil', // Default value
+                        kullanimAmaci: 'yolcu', // Default value
+                        kapasite: int.parse(_kapasiteController.text),
+                        aracDurumu: 'aktif',
+                        musaitlikDurumu: true,
                         marka: _markaController.text,
                         model: _modelController.text,
-                        kapasite: int.parse(_kapasiteController.text),
-                        durum: 'musait',
                       );
 
                       viewModel.addVehicle(vehicle);

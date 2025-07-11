@@ -9,6 +9,7 @@ class VehicleCard extends StatelessWidget {
     this.onTap,
     this.onEdit,
     this.onDelete,
+    this.onToggleAvailability,
     super.key,
   });
 
@@ -23,6 +24,9 @@ class VehicleCard extends StatelessWidget {
 
   /// Called when the delete button is tapped
   final VoidCallback? onDelete;
+
+  /// Called when the availability toggle is tapped
+  final VoidCallback? onToggleAvailability;
 
   @override
   Widget build(BuildContext context) {
@@ -48,7 +52,8 @@ class VehicleCard extends StatelessWidget {
             Container(
               padding: const EdgeInsets.all(16),
               decoration: BoxDecoration(
-                color: _getStatusColor(vehicle.durum).withValues(alpha: 0.1),
+                color:
+                    _getStatusColor(vehicle.aracDurumu).withValues(alpha: 0.1),
                 borderRadius:
                     const BorderRadius.vertical(top: Radius.circular(12)),
               ),
@@ -68,11 +73,11 @@ class VehicleCard extends StatelessWidget {
                       vertical: 4,
                     ),
                     decoration: BoxDecoration(
-                      color: _getStatusColor(vehicle.durum),
+                      color: _getStatusColor(vehicle.aracDurumu),
                       borderRadius: BorderRadius.circular(8),
                     ),
                     child: Text(
-                      _getStatusText(vehicle.durum),
+                      _getStatusText(vehicle.aracDurumu),
                       style: const TextStyle(
                         color: CupertinoColors.white,
                         fontSize: 12,
@@ -92,7 +97,7 @@ class VehicleCard extends StatelessWidget {
                   Row(
                     children: [
                       Text(
-                        '${vehicle.marka} ${vehicle.model}',
+                        '${vehicle.aracTuru} - ${vehicle.kullanimAmaci}',
                         style: const TextStyle(
                           fontSize: 16,
                           fontWeight: FontWeight.w500,
@@ -108,6 +113,43 @@ class VehicleCard extends StatelessWidget {
                       ),
                     ],
                   ),
+                  const SizedBox(height: 8),
+                  Row(
+                    children: [
+                      Container(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 6,
+                          vertical: 2,
+                        ),
+                        decoration: BoxDecoration(
+                          color: vehicle.musaitlikDurumu
+                              ? CupertinoColors.systemGreen.withOpacity(0.1)
+                              : CupertinoColors.systemRed.withOpacity(0.1),
+                          borderRadius: BorderRadius.circular(4),
+                        ),
+                        child: Text(
+                          vehicle.musaitlikDurumu ? 'Müsait' : 'Meşgul',
+                          style: TextStyle(
+                            fontSize: 12,
+                            color: vehicle.musaitlikDurumu
+                                ? CupertinoColors.systemGreen
+                                : CupertinoColors.systemRed,
+                            fontWeight: FontWeight.w500,
+                          ),
+                        ),
+                      ),
+                      if (vehicle.marka != null && vehicle.model != null) ...[
+                        const Spacer(),
+                        Text(
+                          '${vehicle.marka} ${vehicle.model}',
+                          style: const TextStyle(
+                            fontSize: 12,
+                            color: CupertinoColors.systemGrey,
+                          ),
+                        ),
+                      ],
+                    ],
+                  ),
                   if (vehicle.konum != null) ...[
                     const SizedBox(height: 8),
                     Row(
@@ -118,12 +160,15 @@ class VehicleCard extends StatelessWidget {
                           color: CupertinoColors.systemGrey,
                         ),
                         const SizedBox(width: 4),
-                        Text(
-                          'Konum: ${vehicle.konum!.lat.toStringAsFixed(6)}, '
-                          '${vehicle.konum!.lng.toStringAsFixed(6)}',
-                          style: const TextStyle(
-                            fontSize: 14,
-                            color: CupertinoColors.systemGrey,
+                        Expanded(
+                          child: Text(
+                            vehicle.konum!.adres,
+                            style: const TextStyle(
+                              fontSize: 14,
+                              color: CupertinoColors.systemGrey,
+                            ),
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
                           ),
                         ),
                       ],
@@ -204,11 +249,9 @@ class VehicleCard extends StatelessWidget {
 
   Color _getStatusColor(String status) {
     switch (status.toLowerCase()) {
-      case 'available':
+      case 'aktif':
         return CupertinoColors.systemGreen;
-      case 'busy':
-        return CupertinoColors.systemOrange;
-      case 'maintenance':
+      case 'pasif':
         return CupertinoColors.systemRed;
       default:
         return CupertinoColors.systemGrey;
@@ -217,12 +260,10 @@ class VehicleCard extends StatelessWidget {
 
   String _getStatusText(String status) {
     switch (status.toLowerCase()) {
-      case 'available':
-        return 'Müsait';
-      case 'busy':
-        return 'Görevde';
-      case 'maintenance':
-        return 'Bakımda';
+      case 'aktif':
+        return 'Aktif';
+      case 'pasif':
+        return 'Pasif';
       default:
         return 'Bilinmiyor';
     }

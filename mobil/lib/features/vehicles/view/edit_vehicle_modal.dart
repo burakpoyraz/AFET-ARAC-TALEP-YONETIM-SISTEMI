@@ -26,8 +26,8 @@ class _EditVehicleModalState extends State<EditVehicleModal> {
   @override
   void initState() {
     super.initState();
-    _markaController = TextEditingController(text: widget.vehicle.marka);
-    _modelController = TextEditingController(text: widget.vehicle.model);
+    _markaController = TextEditingController(text: widget.vehicle.marka ?? '');
+    _modelController = TextEditingController(text: widget.vehicle.model ?? '');
     _kapasiteController = TextEditingController(
       text: widget.vehicle.kapasite.toString(),
     );
@@ -83,11 +83,14 @@ class _EditVehicleModalState extends State<EditVehicleModal> {
                     onPressed: () {
                       final vehicle = Vehicle(
                         plaka: widget.vehicle.plaka,
+                        aracTuru: widget.vehicle.aracTuru,
+                        kullanimAmaci: widget.vehicle.kullanimAmaci,
+                        kapasite: int.parse(_kapasiteController.text),
+                        aracDurumu: widget.vehicle.aracDurumu,
+                        musaitlikDurumu: widget.vehicle.musaitlikDurumu,
+                        konum: widget.vehicle.konum,
                         marka: _markaController.text,
                         model: _modelController.text,
-                        kapasite: int.parse(_kapasiteController.text),
-                        durum: widget.vehicle.durum,
-                        konum: widget.vehicle.konum,
                       );
 
                       viewModel.updateVehicle(vehicle);

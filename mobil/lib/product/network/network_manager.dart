@@ -72,7 +72,7 @@ class NetworkManager {
             debugPrint('⚠️ Request timeout, retrying...');
             // Retry the request
             try {
-              final response = await dio.request(
+              final response = await dio.request<Map<String, dynamic>>(
                 error.requestOptions.path,
                 data: error.requestOptions.data,
                 options: Options(
@@ -147,7 +147,7 @@ class NetworkManager {
       debugPrint('[NetworkManager] Testing connection to $_baseUrl');
 
       // Just check if the server is reachable
-      final response = await dio.get('/').timeout(
+      final response = await dio.get<Map<String, dynamic>>('/').timeout(
         const Duration(seconds: 5),
         onTimeout: () {
           debugPrint('[NetworkManager] Connection timeout after 5 seconds');
