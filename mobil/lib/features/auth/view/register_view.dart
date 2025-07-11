@@ -1,10 +1,8 @@
-import 'package:flutter/cupertino.dart';
+import 'package:afet_arac_takip/features/auth/viewmodel/register_viewmodel.dart';
+import 'package:afet_arac_takip/product/widgets/custom_button.dart';
+import 'package:afet_arac_takip/product/widgets/custom_text_field.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-
-import '../../../product/widgets/custom_button.dart';
-import '../../../product/widgets/custom_text_field.dart';
-import '../viewmodel/register_viewmodel.dart';
 
 /// Register view
 class RegisterView extends StatefulWidget {

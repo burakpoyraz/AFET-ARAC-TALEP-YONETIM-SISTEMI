@@ -1,11 +1,10 @@
+import 'package:afet_arac_takip/features/tasks/model/task_model.dart';
+import 'package:afet_arac_takip/product/network/network_manager.dart';
 import 'package:flutter/material.dart';
-
-import '../../../product/network/network_manager.dart';
-import '../model/task_model.dart';
 
 /// Tasks view model
 class TasksViewModel extends ChangeNotifier {
-  final _networkManager = NetworkManager.instance;
+  final NetworkManager _networkManager = NetworkManager.instance;
 
   List<Task> _tasks = [];
   List<Task> get tasks => _tasks;
@@ -23,14 +22,16 @@ class TasksViewModel extends ChangeNotifier {
     try {
       isLoading = true;
 
-      final response = await _networkManager.dio.get('/gorev/arac-sahibi');
+      final response = await _networkManager.dio
+          .get<Map<String, dynamic>>('/gorev/arac-sahibi');
 
       if (response.statusCode == 200) {
-        final List<dynamic> data = response.data;
-        _tasks = data.map((e) => Task.fromJson(e)).toList();
+        final data = response.data! as List<dynamic>;
+        _tasks =
+            data.map((e) => Task.fromJson(e as Map<String, dynamic>)).toList();
         notifyListeners();
       }
-    } catch (e) {
+    } on Exception catch (e) {
       debugPrint('Get tasks error: $e');
     } finally {
       isLoading = false;
@@ -45,7 +46,7 @@ class TasksViewModel extends ChangeNotifier {
     try {
       isLoading = true;
 
-      final response = await _networkManager.dio.put(
+      final response = await _networkManager.dio.put<Map<String, dynamic>>(
         '/gorev/durum-guncelle/$id',
         data: {
           'durum': status,
@@ -55,7 +56,7 @@ class TasksViewModel extends ChangeNotifier {
       if (response.statusCode == 200) {
         await getTasks();
       }
-    } catch (e) {
+    } on Exception catch (e) {
       debugPrint('Update task status error: $e');
     } finally {
       isLoading = false;

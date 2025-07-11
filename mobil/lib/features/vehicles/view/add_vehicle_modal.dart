@@ -1,11 +1,9 @@
+import 'package:afet_arac_takip/features/vehicles/model/vehicle_model.dart';
+import 'package:afet_arac_takip/features/vehicles/viewmodel/vehicles_viewmodel.dart';
+import 'package:afet_arac_takip/product/widgets/custom_button.dart';
+import 'package:afet_arac_takip/product/widgets/custom_text_field.dart';
 import 'package:flutter/cupertino.dart';
-import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-
-import '../../../product/widgets/custom_button.dart';
-import '../../../product/widgets/custom_text_field.dart';
-import '../model/vehicle_model.dart';
-import '../viewmodel/vehicles_viewmodel.dart';
 
 /// Add vehicle modal
 class AddVehicleModal extends StatefulWidget {

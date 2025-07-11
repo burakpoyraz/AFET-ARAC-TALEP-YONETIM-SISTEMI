@@ -1,14 +1,13 @@
+import 'package:afet_arac_takip/core/init/navigation/navigation_service.dart';
+import 'package:afet_arac_takip/product/cache/local_storage.dart';
+import 'package:afet_arac_takip/product/network/network_manager.dart';
 import 'package:flutter/material.dart';
-
-import '../../../product/cache/local_storage.dart';
-import '../../../product/network/network_manager.dart';
-import '../../../core/init/navigation/navigation_service.dart';
 
 /// Register view model
 class RegisterViewModel extends ChangeNotifier {
-  final _networkManager = NetworkManager.instance;
-  final _localStorage = LocalStorage.instance;
-  final _navigationService = NavigationService.instance;
+  final NetworkManager _networkManager = NetworkManager.instance;
+  final LocalStorage _localStorage = LocalStorage.instance;
+  final NavigationService _navigationService = NavigationService.instance;
 
   bool _isLoading = false;
   bool get isLoading => _isLoading;
@@ -34,7 +33,7 @@ class RegisterViewModel extends ChangeNotifier {
     try {
       isLoading = true;
 
-      final response = await _networkManager.dio.post(
+      final response = await _networkManager.dio.post<Map<String, dynamic>>(
         '/auth/kayitol',
         data: {
           'adSoyad': name,
@@ -45,15 +44,18 @@ class RegisterViewModel extends ChangeNotifier {
       );
 
       if (response.statusCode == 200) {
-        final token = response.data['token'];
-        final user = response.data['user'];
+        final data = response.data;
+        if (data != null) {
+          final token = data['token'] as String;
+          final user = data['user'] as Map<String, dynamic>;
 
-        await _localStorage.setToken(token);
-        await _localStorage.setUser(user.toString());
+          await _localStorage.setToken(token);
+          await _localStorage.setUser(user.toString());
 
-        await _navigationService.navigateToPageClear(path: '/vehicles');
+          await _navigationService.navigateToPageClear(path: '/vehicles');
+        }
       }
-    } catch (e) {
+    } on Exception catch (e) {
       debugPrint('Register error: $e');
     } finally {
       isLoading = false;

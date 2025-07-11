@@ -1,4 +1,4 @@
-import '../../../features/vehicles/model/vehicle_model.dart';
+import 'package:afet_arac_takip/features/vehicles/model/vehicle_model.dart';
 
 /// Request model
 class Request {

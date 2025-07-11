@@ -1,10 +1,8 @@
-import 'package:flutter/cupertino.dart';
+import 'package:afet_arac_takip/features/auth/viewmodel/login_viewmodel.dart';
+import 'package:afet_arac_takip/product/widgets/custom_button.dart';
+import 'package:afet_arac_takip/product/widgets/custom_text_field.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-
-import '../../../product/widgets/custom_button.dart';
-import '../../../product/widgets/custom_text_field.dart';
-import '../viewmodel/login_viewmodel.dart';
 
 /// Login view
 class LoginView extends StatefulWidget {
@@ -22,6 +20,7 @@ class _LoginViewState extends State<LoginView> {
   @override
   void initState() {
     super.initState();
+    debugPrint('Initializing LoginView');
     _emailController = TextEditingController();
     _passwordController = TextEditingController();
   }
@@ -35,9 +34,11 @@ class _LoginViewState extends State<LoginView> {
 
   @override
   Widget build(BuildContext context) {
+    debugPrint('Building LoginView');
     return ChangeNotifierProvider(
       create: (_) => LoginViewModel(),
       child: Scaffold(
+        backgroundColor: Colors.white,
         body: SafeArea(
           child: Padding(
             padding: const EdgeInsets.all(24),
@@ -48,6 +49,7 @@ class _LoginViewState extends State<LoginView> {
                 Text(
                   'Hoş Geldiniz',
                   style: Theme.of(context).textTheme.headlineMedium?.copyWith(
+                        color: Colors.black,
                         fontWeight: FontWeight.bold,
                       ),
                 ),
@@ -55,9 +57,7 @@ class _LoginViewState extends State<LoginView> {
                 Text(
                   'Afet Araç Takip Sistemine giriş yapın',
                   style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-                        color: Theme.of(
-                          context,
-                        ).colorScheme.onBackground.withOpacity(0.7),
+                        color: Colors.black.withValues(alpha: 0.7),
                       ),
                 ),
                 const SizedBox(height: 32),
@@ -74,14 +74,37 @@ class _LoginViewState extends State<LoginView> {
                   hintText: 'Şifrenizi girin',
                   obscureText: true,
                 ),
-                const SizedBox(height: 24),
+                const SizedBox(height: 8),
+                Consumer<LoginViewModel>(
+                  builder: (context, viewModel, _) {
+                    if (viewModel.errorMessage != null) {
+                      return Padding(
+                        padding: const EdgeInsets.only(top: 8),
+                        child: Text(
+                          viewModel.errorMessage!,
+                          style: TextStyle(
+                            color: Theme.of(context).colorScheme.error,
+                            fontSize: 14,
+                          ),
+                        ),
+                      );
+                    }
+                    return const SizedBox(height: 8);
+                  },
+                ),
+                const SizedBox(height: 16),
                 Consumer<LoginViewModel>(
                   builder: (context, viewModel, _) {
                     return CustomButton(
-                      onPressed: () => viewModel.login(
-                        email: _emailController.text,
-                        password: _passwordController.text,
-                      ),
+                      onPressed: viewModel.isLoading
+                          ? null
+                          : () {
+                              debugPrint('Login button pressed');
+                              viewModel.login(
+                                email: _emailController.text.trim(),
+                                password: _passwordController.text,
+                              );
+                            },
                       text: 'Giriş Yap',
                       isLoading: viewModel.isLoading,
                     );
@@ -89,7 +112,10 @@ class _LoginViewState extends State<LoginView> {
                 ),
                 const SizedBox(height: 16),
                 CustomButton(
-                  onPressed: () => Navigator.pushNamed(context, '/register'),
+                  onPressed: () {
+                    debugPrint('Register button pressed');
+                    Navigator.pushNamed(context, '/register');
+                  },
                   text: 'Hesap Oluştur',
                   isSecondary: true,
                 ),

@@ -1,22 +1,17 @@
+import 'package:afet_arac_takip/features/auth/view/login_view.dart';
+import 'package:afet_arac_takip/features/auth/view/register_view.dart';
+import 'package:afet_arac_takip/features/notifications/view/notifications_view.dart';
+import 'package:afet_arac_takip/features/profile/view/profile_view.dart';
+import 'package:afet_arac_takip/features/requests/view/requests_view.dart';
+import 'package:afet_arac_takip/features/tasks/view/tasks_view.dart';
+import 'package:afet_arac_takip/features/vehicles/view/vehicles_view.dart';
 import 'package:flutter/material.dart';
-
-import '../../../features/auth/view/login_view.dart';
-import '../../../features/auth/view/register_view.dart';
-import '../../../features/vehicles/view/vehicles_view.dart';
-import '../../../features/tasks/view/tasks_view.dart';
-import '../../../features/requests/view/requests_view.dart';
-import '../../../features/notifications/view/notifications_view.dart';
-import '../../../features/profile/view/profile_view.dart';
 
 /// Navigation route handler for app routes
 class NavigationRoute {
-  static NavigationRoute? _instance;
-  static NavigationRoute get instance {
-    _instance ??= NavigationRoute._init();
-    return _instance!;
-  }
-
   NavigationRoute._init();
+  static final NavigationRoute _instance = NavigationRoute._init();
+  static NavigationRoute get instance => _instance;
 
   Route<dynamic> generateRoute(RouteSettings settings) {
     switch (settings.name) {
@@ -39,7 +34,6 @@ class NavigationRoute {
     }
   }
 
-  MaterialPageRoute _navigate(Widget widget) {
-    return MaterialPageRoute(builder: (context) => widget);
-  }
+  MaterialPageRoute<dynamic> _navigate(Widget widget) =>
+      MaterialPageRoute<dynamic>(builder: (context) => widget);
 }

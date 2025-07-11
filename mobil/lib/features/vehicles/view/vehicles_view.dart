@@ -1,9 +1,11 @@
+import 'package:afet_arac_takip/features/vehicles/model/vehicle_model.dart';
+import 'package:afet_arac_takip/features/vehicles/view/add_vehicle_modal.dart';
+import 'package:afet_arac_takip/features/vehicles/view/edit_vehicle_modal.dart';
+import 'package:afet_arac_takip/features/vehicles/viewmodel/vehicles_viewmodel.dart';
+import 'package:afet_arac_takip/features/vehicles/widgets/vehicle_card.dart';
+import 'package:afet_arac_takip/product/widgets/custom_button.dart';
 import 'package:flutter/cupertino.dart';
-import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-
-import '../../../product/widgets/custom_button.dart';
-import '../viewmodel/vehicles_viewmodel.dart';
 
 /// Vehicles view
 class VehiclesView extends StatefulWidget {
@@ -15,107 +17,173 @@ class VehiclesView extends StatefulWidget {
 }
 
 class _VehiclesViewState extends State<VehiclesView> {
+  final _searchController = TextEditingController();
+
+  @override
+  void dispose() {
+    _searchController.dispose();
+    super.dispose();
+  }
+
   @override
   Widget build(BuildContext context) {
     return ChangeNotifierProvider(
       create: (_) => VehiclesViewModel()..getVehicles(),
-      child: Scaffold(
-        appBar: AppBar(
-          title: const Text('Araçlarım'),
-          actions: [
-            IconButton(
-              onPressed: () => _showAddVehicleModal(context),
-              icon: const Icon(CupertinoIcons.add),
-            ),
-          ],
+      child: CupertinoPageScaffold(
+        navigationBar: CupertinoNavigationBar(
+          middle: const Text('Araçlarım'),
+          trailing: CupertinoButton(
+            padding: EdgeInsets.zero,
+            onPressed: () => _showAddVehicleModal(context),
+            child: const Icon(CupertinoIcons.add),
+          ),
         ),
-        body: Consumer<VehiclesViewModel>(
-          builder: (context, viewModel, _) {
-            if (viewModel.isLoading) {
-              return const Center(child: CupertinoActivityIndicator());
-            }
+        child: SafeArea(
+          child: Consumer<VehiclesViewModel>(
+            builder: (context, viewModel, _) {
+              if (viewModel.isLoading) {
+                return const Center(child: CupertinoActivityIndicator());
+              }
 
-            if (viewModel.vehicles.isEmpty) {
-              return Center(
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Text(
-                      'Henüz araç eklenmemiş',
-                      style: Theme.of(context).textTheme.titleMedium,
-                    ),
-                    const SizedBox(height: 16),
-                    CustomButton(
-                      onPressed: () => _showAddVehicleModal(context),
-                      text: 'Araç Ekle',
-                      width: 200,
-                    ),
-                  ],
-                ),
-              );
-            }
+              if (viewModel.vehicles.isEmpty) {
+                return Center(
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Text(
+                        'Henüz araç eklenmemiş',
+                        style: CupertinoTheme.of(context)
+                            .textTheme
+                            .navTitleTextStyle,
+                      ),
+                      const SizedBox(height: 16),
+                      CustomButton(
+                        onPressed: () => _showAddVehicleModal(context),
+                        text: 'Araç Ekle',
+                        width: 200,
+                      ),
+                    ],
+                  ),
+                );
+              }
 
-            return ListView.builder(
-              padding: const EdgeInsets.all(16),
-              itemCount: viewModel.vehicles.length,
-              itemBuilder: (context, index) {
-                final vehicle = viewModel.vehicles[index];
-                return Card(
-                  margin: const EdgeInsets.only(bottom: 16),
-                  child: ListTile(
-                    title: Text(vehicle.plaka),
-                    subtitle: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
+              return Column(
+                children: [
+                  Padding(
+                    padding: const EdgeInsets.all(16),
+                    child: CupertinoSearchTextField(
+                      controller: _searchController,
+                      placeholder: 'Araç Ara',
+                      onChanged: (value) => viewModel.searchQuery = value,
+                    ),
+                  ),
+                  // Status filters
+                  SizedBox(
+                    height: 44,
+                    child: ListView(
+                      padding: const EdgeInsets.symmetric(horizontal: 16),
+                      scrollDirection: Axis.horizontal,
                       children: [
-                        Text(vehicle.marka),
-                        Text(vehicle.model),
-                        Text(vehicle.kapasite.toString()),
+                        _buildFilterChip(
+                          context,
+                          'Tümü (${viewModel.vehicles.length})',
+                          viewModel.vehicles.length,
+                        ),
+                        const SizedBox(width: 8),
+                        _buildFilterChip(
+                          context,
+                          'Müsait (${viewModel.availableVehicles.length})',
+                          viewModel.availableVehicles.length,
+                          color: CupertinoColors.systemGreen,
+                        ),
+                        const SizedBox(width: 8),
+                        _buildFilterChip(
+                          context,
+                          'Görevde (${viewModel.busyVehicles.length})',
+                          viewModel.busyVehicles.length,
+                          color: CupertinoColors.systemOrange,
+                        ),
+                        const SizedBox(width: 8),
+                        _buildFilterChip(
+                          context,
+                          'Bakımda (${viewModel.maintenanceVehicles.length})',
+                          viewModel.maintenanceVehicles.length,
+                          color: CupertinoColors.systemRed,
+                        ),
                       ],
                     ),
-                    trailing: Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        IconButton(
-                          onPressed: () =>
-                              _showEditVehicleModal(context, vehicle),
-                          icon: const Icon(CupertinoIcons.pencil),
+                  ),
+                  const SizedBox(height: 8),
+                  // Vehicle list
+                  Expanded(
+                    child: CustomScrollView(
+                      slivers: [
+                        CupertinoSliverRefreshControl(
+                          onRefresh: () => viewModel.getVehicles(),
                         ),
-                        IconButton(
-                          onPressed: () =>
-                              _showDeleteVehicleDialog(context, vehicle),
-                          icon: const Icon(
-                            CupertinoIcons.delete,
-                            color: CupertinoColors.destructiveRed,
+                        SliverList(
+                          delegate: SliverChildBuilderDelegate(
+                            (context, index) {
+                              final vehicle = viewModel.vehicles[index];
+                              return VehicleCard(
+                                vehicle: vehicle,
+                                onTap: () =>
+                                    _showVehicleDetails(context, vehicle),
+                                onEdit: () =>
+                                    _showEditVehicleModal(context, vehicle),
+                                onDelete: () =>
+                                    _showDeleteVehicleDialog(context, vehicle),
+                              );
+                            },
+                            childCount: viewModel.vehicles.length,
                           ),
                         ),
                       ],
                     ),
                   ),
-                );
-              },
-            );
-          },
+                ],
+              );
+            },
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildFilterChip(BuildContext context, String label, int count,
+      {Color? color}) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+      decoration: BoxDecoration(
+        color: (color ?? CupertinoColors.systemGrey).withValues(alpha: 0.1),
+        borderRadius: BorderRadius.circular(8),
+      ),
+      child: Text(
+        label,
+        style: TextStyle(
+          color: color ?? CupertinoColors.label,
+          fontWeight: FontWeight.w500,
         ),
       ),
     );
   }
 
   void _showAddVehicleModal(BuildContext context) {
-    showCupertinoModalPopup(
+    showCupertinoModalPopup<void>(
       context: context,
       builder: (context) => const AddVehicleModal(),
     );
   }
 
   void _showEditVehicleModal(BuildContext context, Vehicle vehicle) {
-    showCupertinoModalPopup(
+    showCupertinoModalPopup<void>(
       context: context,
       builder: (context) => EditVehicleModal(vehicle: vehicle),
     );
   }
 
   void _showDeleteVehicleDialog(BuildContext context, Vehicle vehicle) {
-    showCupertinoDialog(
+    showCupertinoDialog<void>(
       context: context,
       builder: (context) => CupertinoAlertDialog(
         title: const Text('Aracı Sil'),
@@ -138,5 +206,9 @@ class _VehiclesViewState extends State<VehiclesView> {
         ],
       ),
     );
+  }
+
+  void _showVehicleDetails(BuildContext context, Vehicle vehicle) {
+    // TODO: Implement vehicle details view
   }
 }

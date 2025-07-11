@@ -67,7 +67,7 @@ class CustomTextField extends StatelessWidget {
           Text(
             labelText,
             style: TextStyle(
-              color: colorScheme.onBackground,
+              color: colorScheme.onSurface,
               fontSize: 14,
               fontWeight: FontWeight.w500,
             ),
@@ -99,11 +99,12 @@ class CustomTextField extends StatelessWidget {
           decoration: BoxDecoration(
             color: colorScheme.surface,
             borderRadius: BorderRadius.circular(12),
-            border: Border.all(color: colorScheme.outline.withOpacity(0.5)),
+            border:
+                Border.all(color: colorScheme.outline.withValues(alpha: 0.5)),
           ),
-          style: TextStyle(color: colorScheme.onBackground, fontSize: 16),
+          style: TextStyle(color: colorScheme.onSurface, fontSize: 16),
           placeholderStyle: TextStyle(
-            color: colorScheme.onBackground.withOpacity(0.5),
+            color: colorScheme.onSurface.withValues(alpha: 0.5),
             fontSize: 16,
           ),
         ),

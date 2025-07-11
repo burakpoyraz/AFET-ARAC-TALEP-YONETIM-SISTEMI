@@ -1,5 +1,5 @@
+import 'package:afet_arac_takip/product/theme/color_scheme.dart';
 import 'package:flutter/material.dart';
-import 'color_scheme.dart';
 
 /// Application theme configurations
 class AppTheme {
@@ -7,14 +7,17 @@ class AppTheme {
   static ThemeData get light => ThemeData(
         useMaterial3: true,
         colorScheme: AppColorScheme.lightColorScheme,
-        fontFamily: 'SF Pro Display',
-        appBarTheme: const AppBarTheme(
+        brightness: Brightness.light,
+        scaffoldBackgroundColor: Colors.white,
+        // Use system font
+        fontFamily: '.SF Pro Display',
+        appBarTheme: AppBarTheme(
           centerTitle: true,
           backgroundColor: Colors.transparent,
           elevation: 0,
+          foregroundColor: AppColorScheme.lightColorScheme.onSurface,
         ),
-        scaffoldBackgroundColor: AppColorScheme.lightColorScheme.background,
-        cardTheme: CardTheme(
+        cardTheme: CardThemeData(
           elevation: 2,
           shape:
               RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
@@ -55,14 +58,17 @@ class AppTheme {
   static ThemeData get dark => ThemeData(
         useMaterial3: true,
         colorScheme: AppColorScheme.darkColorScheme,
-        fontFamily: 'SF Pro Display',
-        appBarTheme: const AppBarTheme(
+        brightness: Brightness.dark,
+        scaffoldBackgroundColor: Colors.black,
+        // Use system font
+        fontFamily: '.SF Pro Display',
+        appBarTheme: AppBarTheme(
           centerTitle: true,
           backgroundColor: Colors.transparent,
           elevation: 0,
+          foregroundColor: AppColorScheme.darkColorScheme.onSurface,
         ),
-        scaffoldBackgroundColor: AppColorScheme.darkColorScheme.background,
-        cardTheme: CardTheme(
+        cardTheme: CardThemeData(
           elevation: 2,
           shape:
               RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),

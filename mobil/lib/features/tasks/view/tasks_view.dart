@@ -1,11 +1,10 @@
+import 'package:afet_arac_takip/features/tasks/model/task_model.dart';
+import 'package:afet_arac_takip/features/tasks/viewmodel/tasks_viewmodel.dart';
+import 'package:afet_arac_takip/product/widgets/custom_button.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:provider/provider.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
-
-import '../../../product/widgets/custom_button.dart';
-import '../model/task_model.dart';
-import '../viewmodel/tasks_viewmodel.dart';
+import 'package:provider/provider.dart';
 
 /// Tasks view
 class TasksView extends StatefulWidget {
@@ -123,7 +122,7 @@ class _TasksViewState extends State<TasksView> {
   }
 
   void _showStartTaskDialog(BuildContext context, Task task) {
-    showCupertinoDialog(
+    showCupertinoDialog<void>(
       context: context,
       builder: (context) => CupertinoAlertDialog(
         title: const Text('Görevi Başlat'),
@@ -150,7 +149,7 @@ class _TasksViewState extends State<TasksView> {
   }
 
   void _showCompleteTaskDialog(BuildContext context, Task task) {
-    showCupertinoDialog(
+    showCupertinoDialog<void>(
       context: context,
       builder: (context) => CupertinoAlertDialog(
         title: const Text('Görevi Tamamla'),

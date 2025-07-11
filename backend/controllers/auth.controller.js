@@ -6,11 +6,11 @@ export const kayitOl = async(req, res) => {
     try {
         console.log('Registration request received:', {
             ...req.body,
-            sifre: '[HIDDEN]', // Don't log the password
+            sifre: '[HIDDEN]',
             sifreTekrar: '[HIDDEN]'
         });
 
-        const { ad, soyad, email, sifre, telefon, kurumFirmaAdi, kurumFirmaTuru } = req.body;
+        const { ad, soyad, email, sifre, telefon, kurumFirmaAdi, kurumFirmaTuru, isMobile } = req.body;
 
         // Input validation
         if (!ad || !soyad || !email || !sifre || !telefon) {
@@ -85,11 +85,11 @@ export const kayitOl = async(req, res) => {
 
         // Create token and cookie
         console.log('Creating token and cookie...');
-        tokenVeCookieOlustur(yeniKullanici._id, res);
+        const token = tokenVeCookieOlustur(yeniKullanici._id, res, isMobile);
 
         // Send response
         console.log('Sending success response...');
-        return res.status(201).json({
+        const response = {
             yeniKullanici: {
                 _id: yeniKullanici._id,
                 ad: yeniKullanici.ad,
@@ -101,8 +101,15 @@ export const kayitOl = async(req, res) => {
                 kullaniciBeyanBilgileri: yeniKullanici.kullaniciBeyanBilgileri,
                 rolAtamaTarihi: yeniKullanici.rolAtamaTarihi,
                 rolAtayanKoordinatorId: yeniKullanici.rolAtayanKoordinatorId,
-            },
-        });
+            }
+        };
+
+        // Mobil için token'ı response'a ekle
+        if (isMobile) {
+            response.token = token;
+        }
+
+        return res.status(201).json(response);
     } catch (error) {
         console.error('Registration error:', {
             name: error.name,
@@ -136,7 +143,7 @@ export const kayitOl = async(req, res) => {
 
 export const girisYap = async(req, res) => {
     try {
-        const { email, sifre } = req.body;
+        const { email, sifre, isMobile } = req.body;
 
         const kullanici = await Kullanici.findOne({ email, isDeleted: false });
 
@@ -148,9 +155,10 @@ export const girisYap = async(req, res) => {
         if (!sifreKontrol) {
             return res.status(400).json({ error: "Şifre hatalı" });
         }
-        tokenVeCookieOlustur(kullanici._id, res);
 
-        res.status(200).json({
+        const token = tokenVeCookieOlustur(kullanici._id, res, isMobile);
+
+        const response = {
             kullanici: {
                 _id: kullanici._id,
                 ad: kullanici.ad,
@@ -163,41 +171,40 @@ export const girisYap = async(req, res) => {
                 rolAtamaTarihi: kullanici.rolAtamaTarihi,
                 rolAtayanKoordinatorId: kullanici.rolAtayanKoordinatorId,
             }
+        };
 
-        });
+        // Mobil için token'ı response'a ekle
+        if (isMobile) {
+            response.token = token;
+        }
 
-
-
+        res.status(200).json(response);
     } catch (error) {
         console.error(`Kullanıcı giriş yaparken hata oluştu: ${error.message}`);
         return res.status(500).json({ error: "Sunucu hatası" });
     }
 }
 
-
 export const cikisYap = async(req, res) => {
     try {
-        res.clearCookie("jwt");
+        // Web için cookie'yi temizle
+        if (!req.body.isMobile) {
+            res.clearCookie("jwt");
+        }
         res.status(200).json({ message: "Çıkış başarılı" });
     } catch (error) {
         console.error(`Kullanıcı çıkış yaparken hata oluştu: ${error.message}`);
         return res.status(500).json({ error: "Sunucu hatası" });
     }
-
 };
-
 
 export const hesabim = async(req, res) => {
     try {
-
         const kullanici = req.kullanici;
-
 
         if (!kullanici) {
             return res.status(401).json({ error: "Kullanıcı bulunamadı" });
         }
-
-
 
         res.status(200).json({
             kullanici: {

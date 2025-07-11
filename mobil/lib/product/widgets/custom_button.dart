@@ -15,7 +15,7 @@ class CustomButton extends StatelessWidget {
   });
 
   /// Called when the button is tapped
-  final VoidCallback onPressed;
+  final VoidCallback? onPressed;
 
   /// Text to display on the button
   final String text;
@@ -35,6 +35,7 @@ class CustomButton extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final colorScheme = Theme.of(context).colorScheme;
+    final isDisabled = onPressed == null;
 
     return SizedBox(
       width: width ?? double.infinity,
@@ -44,7 +45,9 @@ class CustomButton extends StatelessWidget {
             ? Colors.transparent
             : isDestructive
                 ? colorScheme.error
-                : colorScheme.primary,
+                : isDisabled
+                    ? colorScheme.primary.withValues(alpha: 0.5)
+                    : colorScheme.primary,
         borderRadius: BorderRadius.circular(12),
         onPressed: isLoading ? null : onPressed,
         child: isLoading
@@ -53,7 +56,9 @@ class CustomButton extends StatelessWidget {
                 text,
                 style: TextStyle(
                   color: isSecondary
-                      ? colorScheme.primary
+                      ? isDisabled
+                          ? colorScheme.primary.withValues(alpha: 0.5)
+                          : colorScheme.primary
                       : isDestructive
                           ? CupertinoColors.white
                           : colorScheme.onPrimary,

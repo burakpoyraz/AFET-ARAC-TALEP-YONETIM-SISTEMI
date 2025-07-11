@@ -2,15 +2,10 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 /// Local storage manager for handling data persistence
 class LocalStorage {
-  static LocalStorage? _instance;
-  static LocalStorage get instance {
-    _instance ??= LocalStorage._init();
-    return _instance!;
-  }
+  LocalStorage._init();
+  static final LocalStorage instance = LocalStorage._init();
 
   SharedPreferences? _preferences;
-
-  LocalStorage._init();
 
   Future<void> init() async {
     _preferences = await SharedPreferences.getInstance();
