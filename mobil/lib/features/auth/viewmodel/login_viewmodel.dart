@@ -223,7 +223,7 @@ class LoginViewModel extends ChangeNotifier {
     } on DioException catch (e) {
       debugPrint(
           '[LoginViewModel] Failed to fetch institution data: ${e.message}');
-    } catch (e) {
+    } on Exception catch (e) {
       debugPrint(
           '[LoginViewModel] Unexpected error fetching institution data: $e');
     }

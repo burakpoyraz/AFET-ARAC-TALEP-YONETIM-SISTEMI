@@ -1,7 +1,7 @@
+import 'package:afet_arac_takip/features/auth/model/user_model.dart';
 import 'package:afet_arac_takip/features/panel/widgets/arac_sahibi_panel.dart';
 import 'package:afet_arac_takip/features/panel/widgets/koordinator_panel.dart';
 import 'package:afet_arac_takip/features/panel/widgets/talep_eden_panel.dart';
-import 'package:afet_arac_takip/features/auth/model/user_model.dart';
 import 'package:afet_arac_takip/product/cache/local_storage.dart';
 import 'package:afet_arac_takip/product/network/network_manager.dart';
 import 'package:dio/dio.dart';
@@ -153,7 +153,7 @@ class _PanelViewState extends State<PanelView> {
               '[PanelView] Fallback /kurumlar also failed: ${fallbackError.message}');
         }
       }
-    } catch (e) {
+    } on Exception catch (e) {
       if (kDebugMode) {
         print('[PanelView] Unexpected error loading institution data: $e');
       }

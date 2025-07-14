@@ -105,7 +105,7 @@ class _KoordinatorTasksViewState extends State<KoordinatorTasksView> {
                         crossAxisCount: 2,
                         mainAxisSpacing: 8,
                         crossAxisSpacing: 8,
-                        childAspectRatio: 2.5,
+                        childAspectRatio: 2.8,
                         children: [
                           _buildStatCard(
                               'Toplam', stats['toplam']!, Colors.blue),
@@ -216,60 +216,40 @@ class _KoordinatorTasksViewState extends State<KoordinatorTasksView> {
 
   Widget _buildStatCard(String title, int value, Color color) {
     return Container(
-      padding: const EdgeInsets.all(12),
+      padding: const EdgeInsets.all(10),
       decoration: BoxDecoration(
         color: color.withValues(alpha: 0.1),
         borderRadius: BorderRadius.circular(12),
         border: Border.all(color: color.withValues(alpha: 0.3)),
       ),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Text(
-                value.toString(),
-                style: TextStyle(
-                  fontSize: 20,
-                  fontWeight: FontWeight.bold,
-                  color: color,
-                ),
-              ),
-              Text(
-                title,
-                style: TextStyle(
-                  fontSize: 11,
-                  color: color.withValues(alpha: 0.8),
-                  fontWeight: FontWeight.w500,
-                ),
-              ),
-            ],
+          Text(
+            value.toString(),
+            style: TextStyle(
+              fontSize: 18,
+              fontWeight: FontWeight.bold,
+              color: color,
+            ),
           ),
-          Icon(
-            _getIconForStatus(title),
-            color: color.withValues(alpha: 0.7),
-            size: 24,
+          const SizedBox(height: 2),
+          Flexible(
+            child: Text(
+              title,
+              style: TextStyle(
+                fontSize: 10,
+                color: color.withValues(alpha: 0.8),
+                fontWeight: FontWeight.w500,
+              ),
+              textAlign: TextAlign.center,
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+            ),
           ),
         ],
       ),
     );
-  }
-
-  IconData _getIconForStatus(String title) {
-    switch (title) {
-      case 'Toplam':
-        return Icons.assignment;
-      case 'Beklemede':
-        return Icons.pending;
-      case 'Başladı':
-        return Icons.play_arrow;
-      case 'Tamamlandı':
-        return Icons.check_circle;
-      default:
-        return Icons.assignment;
-    }
   }
 
   Widget _buildFilterChip(String status, String label, int count) {
