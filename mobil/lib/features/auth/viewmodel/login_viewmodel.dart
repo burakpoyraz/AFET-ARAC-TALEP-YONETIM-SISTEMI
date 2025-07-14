@@ -39,9 +39,28 @@ class LoginViewModel extends ChangeNotifier {
       isLoading = true;
       debugPrint('[LoginViewModel] Testing connection...');
 
-      // Test connection before attempting login
-      final isConnected = await _networkManager.testConnection();
-      if (!isConnected) {
+      // Test connection before attempting login with explicit timeout
+      try {
+        final isConnected = await _networkManager.testConnection().timeout(
+          const Duration(seconds: 8),
+          onTimeout: () {
+            debugPrint(
+                '[LoginViewModel] Connection test timed out after 8 seconds');
+            return false;
+          },
+        );
+
+        debugPrint('[LoginViewModel] Connection test result: $isConnected');
+
+        if (!isConnected) {
+          throw DioException(
+            requestOptions: RequestOptions(),
+            type: DioExceptionType.connectionError,
+            error: 'Sunucuya bağlanılamadı',
+          );
+        }
+      } on DioException catch (e) {
+        debugPrint('[LoginViewModel] Connection test failed with error: $e');
         throw DioException(
           requestOptions: RequestOptions(),
           type: DioExceptionType.connectionError,
@@ -93,7 +112,12 @@ class LoginViewModel extends ChangeNotifier {
 
         await _localStorage.setToken(token);
         final userModel = User.fromJson(user);
-        await _localStorage.setUser(userModel);
+
+        // Kullanıcının kurum bilgisini zenginleştir
+        final enhancedUserModel =
+            await _enhanceUserWithInstitutionData(userModel);
+
+        await _localStorage.setUser(enhancedUserModel);
         debugPrint('[LoginViewModel] Token and user data saved');
 
         // Navigate based on user role
@@ -141,5 +165,71 @@ class LoginViewModel extends ChangeNotifier {
     } finally {
       isLoading = false;
     }
+  }
+
+  /// [_enhanceUserWithInstitutionData] fetches institution data and enhances user model
+  Future<User> _enhanceUserWithInstitutionData(User user) async {
+    // Eğer kullanıcının kurum ID'si yoksa, orijinal user'ı döndür
+    if (user.kurumFirmaId == null || user.kurumFirmaId!.id.isEmpty) {
+      debugPrint('[LoginViewModel] No kurum ID found, returning original user');
+      return user;
+    }
+
+    try {
+      debugPrint(
+          '[LoginViewModel] Fetching institution data for ID: ${user.kurumFirmaId!.id}');
+
+      // Kurum bilgilerini API'den çek
+      final response =
+          await _networkManager.dio.get<List<dynamic>>('/kurumlar');
+
+      if (response.statusCode == 200 && response.data != null) {
+        final kurumlar = response.data!;
+
+        // Kullanıcının kurumunu bul
+        final userKurumList = kurumlar
+            .where(
+              (kurum) => kurum['_id'] == user.kurumFirmaId!.id,
+            )
+            .toList();
+
+        if (userKurumList.isNotEmpty) {
+          final userKurum = userKurumList.first;
+          final kurumAdi = userKurum['kurumAdi'] as String?;
+
+          if (kurumAdi != null && kurumAdi.isNotEmpty) {
+            debugPrint('[LoginViewModel] Found institution name: $kurumAdi');
+
+            // Yeni KurumFirma objesi oluştur
+            final enhancedKurumFirma = KurumFirma(
+              id: user.kurumFirmaId!.id,
+              kurumAdi: kurumAdi,
+            );
+
+            // Yeni User objesi oluştur
+            return User(
+              id: user.id,
+              ad: user.ad,
+              soyad: user.soyad,
+              email: user.email,
+              telefon: user.telefon,
+              rol: user.rol,
+              kurumFirmaId: enhancedKurumFirma,
+              kullaniciBeyanBilgileri: user.kullaniciBeyanBilgileri,
+            );
+          }
+        }
+      }
+    } on DioException catch (e) {
+      debugPrint(
+          '[LoginViewModel] Failed to fetch institution data: ${e.message}');
+    } catch (e) {
+      debugPrint(
+          '[LoginViewModel] Unexpected error fetching institution data: $e');
+    }
+
+    // Hata durumunda orijinal user'ı döndür
+    debugPrint('[LoginViewModel] Returning original user due to fetch failure');
+    return user;
   }
 }

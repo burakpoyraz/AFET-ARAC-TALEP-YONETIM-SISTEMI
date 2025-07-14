@@ -10,6 +10,7 @@ class RequestCard extends StatelessWidget {
     this.onTap,
     this.onAssign,
     this.onCancel,
+    this.onEdit,
     super.key,
   });
 
@@ -24,6 +25,9 @@ class RequestCard extends StatelessWidget {
 
   /// Callback when cancel button is tapped
   final VoidCallback? onCancel;
+
+  /// Callback when edit button is tapped
+  final VoidCallback? onEdit;
 
   @override
   Widget build(BuildContext context) {
@@ -115,6 +119,24 @@ class RequestCard extends StatelessWidget {
                 const SizedBox(height: 16),
                 Row(
                   children: [
+                    if (onEdit != null) ...[
+                      Expanded(
+                        child: ElevatedButton.icon(
+                          onPressed: onEdit,
+                          icon: const Icon(Icons.edit, size: 18),
+                          label: const Text('Düzenle'),
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: Colors.blue,
+                            foregroundColor: Colors.white,
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(8),
+                            ),
+                          ),
+                        ),
+                      ),
+                      if (onAssign != null || onCancel != null)
+                        const SizedBox(width: 8),
+                    ],
                     if (onAssign != null) ...[
                       Expanded(
                         child: ElevatedButton.icon(

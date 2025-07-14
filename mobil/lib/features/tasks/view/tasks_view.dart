@@ -1,4 +1,6 @@
+import 'package:afet_arac_takip/features/tasks/view/koordinator_tasks_view.dart';
 import 'package:afet_arac_takip/features/tasks/view/my_tasks_view.dart';
+import 'package:afet_arac_takip/features/tasks/view/talep_eden_tasks_view.dart';
 import 'package:afet_arac_takip/product/cache/local_storage.dart';
 import 'package:flutter/material.dart';
 
@@ -21,57 +23,11 @@ class TasksView extends StatelessWidget {
 
     // Show different views based on user role
     if (user.isKoordinator) {
-      // TODO: Implement KoordinatorTasksView
-      return Scaffold(
-        appBar: AppBar(
-          title: const Text('Görev Yönetimi'),
-        ),
-        body: const Center(
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Icon(
-                Icons.construction,
-                size: 64,
-                color: Colors.grey,
-              ),
-              SizedBox(height: 16),
-              Text(
-                'Koordinatör Görev Yönetimi',
-                style: TextStyle(fontSize: 18),
-              ),
-              Text('Geliştirme aşamasında...'),
-            ],
-          ),
-        ),
-      );
+      return const KoordinatorTasksView();
     } else if (user.isAracSahibi) {
       return const MyTasksView();
     } else if (user.isTalepEden) {
-      // TODO: Implement TalepEdenTasksView
-      return Scaffold(
-        appBar: AppBar(
-          title: const Text('Görev Takibi'),
-        ),
-        body: const Center(
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Icon(
-                Icons.construction,
-                size: 64,
-                color: Colors.grey,
-              ),
-              SizedBox(height: 16),
-              Text(
-                'Talep Eden Görev Takibi',
-                style: TextStyle(fontSize: 18),
-              ),
-              Text('Geliştirme aşamasında...'),
-            ],
-          ),
-        ),
-      );
+      return const TalepEdenTasksView();
     } else {
       // For other roles, show a message
       return Scaffold(

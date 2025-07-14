@@ -20,7 +20,10 @@ class User {
       telefon: json['telefon'] as String?,
       rol: json['rol'] as String? ?? 'beklemede',
       kurumFirmaId: json['kurumFirmaId'] != null
-          ? KurumFirma.fromJson(json['kurumFirmaId'] as Map<String, dynamic>)
+          ? (json['kurumFirmaId'] is Map<String, dynamic>
+              ? KurumFirma.fromJson(
+                  json['kurumFirmaId'] as Map<String, dynamic>)
+              : KurumFirma(id: json['kurumFirmaId'] as String, kurumAdi: ''))
           : null,
       kullaniciBeyanBilgileri: json['kullaniciBeyanBilgileri'] != null
           ? KullaniciBeyanBilgileri.fromJson(

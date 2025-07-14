@@ -1,4 +1,5 @@
 import 'package:afet_arac_takip/features/requests/view/koordinator_requests_view.dart';
+import 'package:afet_arac_takip/features/requests/view/talep_eden_requests_view.dart';
 import 'package:afet_arac_takip/product/cache/local_storage.dart';
 import 'package:flutter/material.dart';
 
@@ -23,30 +24,7 @@ class RequestsView extends StatelessWidget {
     if (user.isKoordinator) {
       return const KoordinatorRequestsView();
     } else if (user.isTalepEden) {
-      // TODO: Implement TalepEdenRequestsView
-      return Scaffold(
-        appBar: AppBar(
-          title: const Text('Taleplerim'),
-        ),
-        body: const Center(
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Icon(
-                Icons.construction,
-                size: 64,
-                color: Colors.grey,
-              ),
-              SizedBox(height: 16),
-              Text(
-                'Talep Eden Görünümü',
-                style: TextStyle(fontSize: 18),
-              ),
-              Text('Geliştirme aşamasında...'),
-            ],
-          ),
-        ),
-      );
+      return const TalepEdenRequestsView();
     } else {
       // For arac_sahibi or other roles, show a message
       return Scaffold(

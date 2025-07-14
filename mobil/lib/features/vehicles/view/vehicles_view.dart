@@ -3,8 +3,10 @@ import 'package:afet_arac_takip/features/vehicles/view/add_vehicle_modal.dart';
 import 'package:afet_arac_takip/features/vehicles/view/edit_vehicle_modal.dart';
 import 'package:afet_arac_takip/features/vehicles/viewmodel/vehicles_viewmodel.dart';
 import 'package:afet_arac_takip/features/vehicles/widgets/vehicle_card.dart';
+import 'package:afet_arac_takip/features/vehicles/widgets/vehicle_detail_modal.dart';
 import 'package:afet_arac_takip/product/widgets/custom_button.dart';
 import 'package:flutter/cupertino.dart';
+import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
 /// Vehicles view
@@ -209,6 +211,12 @@ class _VehiclesViewState extends State<VehiclesView> {
   }
 
   void _showVehicleDetails(BuildContext context, Vehicle vehicle) {
-    // TODO: Implement vehicle details view
+    // Show vehicle details modal
+    showModalBottomSheet<void>(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (context) => VehicleDetailModal(vehicle: vehicle),
+    );
   }
 }
