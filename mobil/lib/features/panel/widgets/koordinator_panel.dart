@@ -1,9 +1,13 @@
 import 'package:afet_arac_takip/core/init/navigation/navigation_service.dart';
+import 'package:afet_arac_takip/features/requests/viewmodel/koordinator_requests_viewmodel.dart';
+import 'package:afet_arac_takip/features/tasks/viewmodel/koordinator_tasks_viewmodel.dart';
+import 'package:afet_arac_takip/features/vehicles/viewmodel/vehicles_viewmodel.dart';
 import 'package:afet_arac_takip/product/cache/local_storage.dart';
 import 'package:afet_arac_takip/product/network/network_manager.dart';
 import 'package:dio/dio.dart';
 import 'package:flutter/foundation.dart' show kDebugMode;
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 
 /// Koordinator panel widget
 class KoordinatorPanel extends StatefulWidget {
@@ -19,21 +23,22 @@ class _KoordinatorPanelState extends State<KoordinatorPanel> {
 
   Map<String, dynamic>? _stats;
   bool _isLoading = true;
+  var kullanicilar = <dynamic>[];
 
   @override
   void initState() {
     super.initState();
-    _loadStatistics();
+    _loadData();
   }
 
-  Future<void> _loadStatistics() async {
+  Future<void> _loadData() async {
     try {
       setState(() {
         _isLoading = true;
       });
 
       if (kDebugMode) {
-        print('🔄 Starting to load statistics...');
+        print('[KoordinatorPanel] Loading data...');
       }
 
       // Check if token exists
@@ -47,312 +52,282 @@ class _KoordinatorPanelState extends State<KoordinatorPanel> {
         });
         return;
       }
-      if (kDebugMode) {
-        print('✅ Token found: ${token.substring(0, 20)}...');
-      }
 
-      // Load each endpoint separately to better handle errors
-      var kullanicilar = <dynamic>[];
-      var talepler = <dynamic>[];
-      var gorevler = <dynamic>[];
-      var araclar = <dynamic>[];
-
+      // Load user data separately (only endpoint not covered by ViewModels)
       try {
         if (kDebugMode) {
-          print('📞 Calling /kullanicilar...');
+          print('[KoordinatorPanel] Loading users...');
         }
         final kullanicilarResponse =
             await _networkManager.dio.get<List<dynamic>>('/kullanicilar');
         if (kullanicilarResponse.statusCode == 200) {
           kullanicilar = kullanicilarResponse.data!;
           if (kDebugMode) {
-            print('✅ Kullanicilar loaded: ${kullanicilar.length} users');
-          }
-        } else {
-          if (kDebugMode) {
-            print(
-                '❌ Kullanicilar failed with status: ${kullanicilarResponse.statusCode}');
+            print('[KoordinatorPanel] ✅ Loaded ${kullanicilar.length} users');
           }
         }
       } on DioException catch (e) {
         if (kDebugMode) {
-          print('❌ Error loading kullanicilar: $e');
+          print('[KoordinatorPanel] ❌ Error loading users: $e');
         }
       }
 
-      try {
-        if (kDebugMode) {
-          print('📞 Calling /talepler...');
-        }
-        final taleplerResponse =
-            await _networkManager.dio.get<List<dynamic>>('/talepler');
-        if (taleplerResponse.statusCode == 200) {
-          talepler = taleplerResponse.data!;
-          if (kDebugMode) {
-            print('✅ Talepler loaded: ${talepler.length} requests');
-          }
-        } else {
-          if (kDebugMode) {
-            print(
-                '❌ Talepler failed with status: ${taleplerResponse.statusCode}');
-          }
-        }
-      } on DioException catch (e) {
-        if (kDebugMode) {
-          print('❌ Error loading talepler: $e');
-        }
-      }
+      // Load ViewModels data if not already loaded (use cache when possible)
+      if (mounted) {
+        final requestsViewModel = context.read<KoordinatorRequestsViewModel>();
+        final tasksViewModel = context.read<KoordinatorTasksViewModel>();
+        final vehiclesViewModel = context.read<VehiclesViewModel>();
 
-      try {
-        if (kDebugMode) {
-          print('📞 Calling /gorevler...');
-        }
-        final gorevlerResponse =
-            await _networkManager.dio.get<List<dynamic>>('/gorevler');
-        if (gorevlerResponse.statusCode == 200) {
-          gorevler = gorevlerResponse.data!;
-          if (kDebugMode) {
-            print('✅ Gorevler loaded: ${gorevler.length} tasks');
-          }
-        } else {
-          if (kDebugMode) {
-            print(
-                '❌ Gorevler failed with status: ${gorevlerResponse.statusCode}');
-          }
-        }
-      } on DioException catch (e) {
-        if (kDebugMode) {
-          print('❌ Error loading gorevler: $e');
-        }
-      }
+        // Only load data if ViewModels don't have cached data
+        final futures = <Future<void>>[];
 
-      try {
-        if (kDebugMode) {
-          print('📞 Calling /araclar...');
+        if (!requestsViewModel.hasData) {
+          futures.add(requestsViewModel.loadRequests());
         }
-        final araclarResponse =
-            await _networkManager.dio.get<List<dynamic>>('/araclar');
-        if (araclarResponse.statusCode == 200) {
-          araclar = araclarResponse.data!;
-          if (kDebugMode) {
-            print('✅ Araclar loaded: ${araclar.length} vehicles');
-          }
-        } else {
-          if (kDebugMode) {
-            print(
-                '❌ Araclar failed with status: ${araclarResponse.statusCode}');
-          }
+        if (!vehiclesViewModel.hasData) {
+          futures.add(vehiclesViewModel.getVehicles());
         }
-      } on DioException catch (e) {
-        if (kDebugMode) {
-          print('❌ Error loading araclar: $e');
-        }
-      }
+        // Always load tasks as it might have new data
+        futures.add(tasksViewModel.loadAllTasks());
 
-      // Debug print to see the actual data structure
-      if (kullanicilar.isNotEmpty) {
-        if (kDebugMode) {
-          print('👤 Sample user data: ${kullanicilar.first}');
+        if (futures.isNotEmpty) {
+          await Future.wait(futures);
         }
-      }
-      if (talepler.isNotEmpty) {
-        if (kDebugMode) {
-          print('📋 Sample request data: ${talepler.first}');
-        }
-      }
-      if (gorevler.isNotEmpty) {
-        if (kDebugMode) {
-          print('📝 Sample task data: ${gorevler.first}');
-        }
-      }
-      if (araclar.isNotEmpty) {
-        if (kDebugMode) {
-          print('🚗 Sample vehicle data: ${araclar.first}');
-        }
-      }
 
-      setState(() {
-        _stats = {
-          'kullanici': {
-            'toplam': kullanicilar.length,
-            'beklemede':
-                kullanicilar.where((k) => k['rol'] == 'beklemede').length,
-            'koordinator':
-                kullanicilar.where((k) => k['rol'] == 'koordinator').length,
-            'arac_sahibi':
-                kullanicilar.where((k) => k['rol'] == 'arac_sahibi').length,
-            'talep_eden':
-                kullanicilar.where((k) => k['rol'] == 'talep_eden').length,
-          },
-          'talep': {
-            'toplam': talepler.length,
-            'bekleyen': talepler.where((t) => t['durum'] == 'beklemede').length,
-            'gorevlendirildi':
-                talepler.where((t) => t['durum'] == 'gorevlendirildi').length,
-            'iptal': talepler.where((t) => t['durum'] == 'iptal edildi').length,
-            'tamamlanan':
-                talepler.where((t) => t['durum'] == 'tamamlandı').length,
-          },
-          'gorev': {
-            'toplam': gorevler.length,
-            'bekleyen':
-                gorevler.where((g) => g['gorevDurumu'] == 'beklemede').length,
-            'basladi':
-                gorevler.where((g) => g['gorevDurumu'] == 'başladı').length,
-            'tamamlanan':
-                gorevler.where((g) => g['gorevDurumu'] == 'tamamlandı').length,
-            'iptal': gorevler
-                .where((g) => g['gorevDurumu'] == 'iptal edildi')
-                .length,
-          },
-          'arac': {
-            'toplam': araclar.length,
-            'musait': araclar.where((a) => a['musaitlikDurumu'] == true).length,
-            'mesgul':
-                araclar.where((a) => a['musaitlikDurumu'] == false).length,
-          },
-        };
-        _isLoading = false;
-      });
-
-      print('📊 Final statistics:');
-      print('  - Users: ${_stats?['kullanici']['toplam']}');
-      print('  - Requests: ${_stats?['talep']['toplam']}');
-      print('  - Tasks: ${_stats?['gorev']['toplam']}');
-      print('  - Vehicles: ${_stats?['arac']['toplam']}');
-    } on DioException catch (e) {
-      print('❌ Error loading statistics: $e');
-      setState(() {
-        _isLoading = false;
-        // Set default values when there's an error
-        _stats = {
-          'kullanici': {
-            'toplam': 0,
-            'beklemede': 0,
-            'koordinator': 0,
-            'arac_sahibi': 0,
-            'talep_eden': 0,
-          },
-          'talep': {
-            'toplam': 0,
-            'bekleyen': 0,
-            'gorevlendirildi': 0,
-            'iptal': 0,
-            'tamamlanan': 0,
-          },
-          'gorev': {
-            'toplam': 0,
-            'bekleyen': 0,
-            'basladi': 0,
-            'tamamlanan': 0,
-            'iptal': 0,
-          },
-          'arac': {
-            'toplam': 0,
-            'musait': 0,
-            'mesgul': 0,
-          },
-        };
-      });
+        // Update statistics once data is loaded
+        if (mounted) {
+          _updateStatisticsFromViewModels(
+              requestsViewModel, tasksViewModel, vehiclesViewModel);
+        }
+      }
+    } catch (e) {
+      if (kDebugMode) {
+        print('[KoordinatorPanel] ❌ Error loading data: $e');
+      }
+      _setDefaultStats();
+    } finally {
+      // Ensure loading state is always set to false
+      if (mounted) {
+        setState(() {
+          _isLoading = false;
+        });
+      }
     }
+  }
+
+  void _setDefaultStats() {
+    setState(() {
+      _isLoading = false;
+      _stats = {
+        'kullanici': {
+          'toplam': 0,
+          'beklemede': 0,
+          'koordinator': 0,
+          'arac_sahibi': 0,
+          'talep_eden': 0,
+        },
+        'talep': {
+          'toplam': 0,
+          'bekleyen': 0,
+          'gorevlendirildi': 0,
+          'iptal': 0,
+          'tamamlanan': 0,
+        },
+        'gorev': {
+          'toplam': 0,
+          'bekleyen': 0,
+          'basladi': 0,
+          'tamamlanan': 0,
+          'iptal': 0,
+        },
+        'arac': {
+          'toplam': 0,
+          'musait': 0,
+          'mesgul': 0,
+        },
+      };
+    });
   }
 
   @override
   Widget build(BuildContext context) {
-    if (_isLoading) {
-      return const Center(
-        child: CircularProgressIndicator(),
-      );
-    }
+    return Consumer3<KoordinatorRequestsViewModel, KoordinatorTasksViewModel,
+        VehiclesViewModel>(
+      builder: (context, requestsViewModel, tasksViewModel, vehiclesViewModel,
+          child) {
+        // Only update statistics when loading is complete and we have data
+        if (!_isLoading &&
+            requestsViewModel.hasData &&
+            !tasksViewModel.isLoading &&
+            vehiclesViewModel.hasData) {
+          WidgetsBinding.instance.addPostFrameCallback((_) {
+            if (mounted) {
+              _updateStatisticsFromViewModels(
+                  requestsViewModel, tasksViewModel, vehiclesViewModel);
+            }
+          });
+        }
 
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(
-          'Sistem Özeti',
-          style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                fontWeight: FontWeight.bold,
-              ),
-        ),
-        const SizedBox(height: 16),
+        if (_isLoading) {
+          return const Center(
+            child: CircularProgressIndicator(),
+          );
+        }
 
-        // Statistics Cards
-        _buildStatCard(
-          context,
-          title: 'Kullanıcı Bilgileri',
-          icon: Icons.people,
-          color: Colors.blue,
-          stats: [
-            StatItem(
-                'Beklemede', (_stats?['kullanici']['beklemede'] ?? 0) as int),
-            StatItem('Toplam', (_stats?['kullanici']['toplam'] ?? 0) as int),
-            StatItem('Koordinatör',
-                (_stats?['kullanici']['koordinator'] ?? 0) as int),
-            StatItem('Araç Sahibi',
-                (_stats?['kullanici']['arac_sahibi'] ?? 0) as int),
-            StatItem(
-                'Talep Eden', (_stats?['kullanici']['talep_eden'] ?? 0) as int),
+        return Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              'Sistem Özeti',
+              style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                    fontWeight: FontWeight.bold,
+                  ),
+            ),
+            const SizedBox(height: 16),
+
+            // Statistics Cards
+            _buildStatCard(
+              context,
+              title: 'Kullanıcı Bilgileri',
+              icon: Icons.people,
+              color: Colors.blue,
+              stats: [
+                StatItem('Beklemede',
+                    (_stats?['kullanici']['beklemede'] ?? 0) as int),
+                StatItem(
+                    'Toplam', (_stats?['kullanici']['toplam'] ?? 0) as int),
+                StatItem('Koordinatör',
+                    (_stats?['kullanici']['koordinator'] ?? 0) as int),
+                StatItem('Araç Sahibi',
+                    (_stats?['kullanici']['arac_sahibi'] ?? 0) as int),
+                StatItem('Talep Eden',
+                    (_stats?['kullanici']['talep_eden'] ?? 0) as int),
+              ],
+              onTap: () =>
+                  NavigationService.instance.navigateToPage(path: '/users'),
+            ),
+
+            const SizedBox(height: 12),
+
+            _buildStatCard(
+              context,
+              title: 'Talep Durumları',
+              icon: Icons.assignment,
+              color: Colors.orange,
+              stats: [
+                StatItem('Toplam', (_stats?['talep']['toplam'] ?? 0) as int),
+                StatItem(
+                    'Bekleyen', (_stats?['talep']['bekleyen'] ?? 0) as int),
+                StatItem('Görevlendirilen',
+                    (_stats?['talep']['gorevlendirildi'] ?? 0) as int),
+                StatItem(
+                    'Tamamlanan', (_stats?['talep']['tamamlanan'] ?? 0) as int),
+                StatItem(
+                    'İptal Edilen', (_stats?['talep']['iptal'] ?? 0) as int),
+              ],
+              onTap: () =>
+                  NavigationService.instance.navigateToPage(path: '/requests'),
+            ),
+
+            const SizedBox(height: 12),
+
+            _buildStatCard(
+              context,
+              title: 'Görev Durumları',
+              icon: Icons.task_alt,
+              color: Colors.green,
+              stats: [
+                StatItem('Toplam', (_stats?['gorev']['toplam'] ?? 0) as int),
+                StatItem(
+                    'Bekleyen', (_stats?['gorev']['bekleyen'] ?? 0) as int),
+                StatItem('Başladı', (_stats?['gorev']['basladi'] ?? 0) as int),
+                StatItem(
+                    'Tamamlandı', (_stats?['gorev']['tamamlanan'] ?? 0) as int),
+                StatItem(
+                    'İptal Edilen', (_stats?['gorev']['iptal'] ?? 0) as int),
+              ],
+              onTap: () =>
+                  NavigationService.instance.navigateToPage(path: '/tasks'),
+            ),
+
+            const SizedBox(height: 12),
+
+            _buildStatCard(
+              context,
+              title: 'Araç Durumları',
+              icon: Icons.local_shipping,
+              color: Colors.purple,
+              stats: [
+                StatItem('Toplam', (_stats?['arac']['toplam'] ?? 0) as int),
+                StatItem('Müsait', (_stats?['arac']['musait'] ?? 0) as int),
+                StatItem('Meşgul', (_stats?['arac']['mesgul'] ?? 0) as int),
+              ],
+              onTap: () =>
+                  NavigationService.instance.navigateToPage(path: '/vehicles'),
+            ),
           ],
-          onTap: () =>
-              NavigationService.instance.navigateToPage(path: '/users'),
-        ),
-
-        const SizedBox(height: 12),
-
-        _buildStatCard(
-          context,
-          title: 'Talep Durumları',
-          icon: Icons.assignment,
-          color: Colors.orange,
-          stats: [
-            StatItem('Toplam', (_stats?['talep']['toplam'] ?? 0) as int),
-            StatItem('Bekleyen', (_stats?['talep']['bekleyen'] ?? 0) as int),
-            StatItem('Görevlendirilen',
-                (_stats?['talep']['gorevlendirildi'] ?? 0) as int),
-            StatItem(
-                'Tamamlanan', (_stats?['talep']['tamamlanan'] ?? 0) as int),
-            StatItem('İptal Edilen', (_stats?['talep']['iptal'] ?? 0) as int),
-          ],
-          onTap: () =>
-              NavigationService.instance.navigateToPage(path: '/requests'),
-        ),
-
-        const SizedBox(height: 12),
-
-        _buildStatCard(
-          context,
-          title: 'Görev Durumları',
-          icon: Icons.task_alt,
-          color: Colors.green,
-          stats: [
-            StatItem('Toplam', (_stats?['gorev']['toplam'] ?? 0) as int),
-            StatItem('Bekleyen', (_stats?['gorev']['bekleyen'] ?? 0) as int),
-            StatItem('Başladı', (_stats?['gorev']['basladi'] ?? 0) as int),
-            StatItem(
-                'Tamamlandı', (_stats?['gorev']['tamamlanan'] ?? 0) as int),
-            StatItem('İptal Edilen', (_stats?['gorev']['iptal'] ?? 0) as int),
-          ],
-          onTap: () =>
-              NavigationService.instance.navigateToPage(path: '/tasks'),
-        ),
-
-        const SizedBox(height: 12),
-
-        _buildStatCard(
-          context,
-          title: 'Araç Durumları',
-          icon: Icons.local_shipping,
-          color: Colors.purple,
-          stats: [
-            StatItem('Toplam', (_stats?['arac']['toplam'] ?? 0) as int),
-            StatItem('Müsait', (_stats?['arac']['musait'] ?? 0) as int),
-            StatItem('Meşgul', (_stats?['arac']['mesgul'] ?? 0) as int),
-          ],
-          onTap: () =>
-              NavigationService.instance.navigateToPage(path: '/vehicles'),
-        ),
-      ],
+        );
+      },
     );
+  }
+
+  void _updateStatisticsFromViewModels(
+    KoordinatorRequestsViewModel requestsViewModel,
+    KoordinatorTasksViewModel tasksViewModel,
+    VehiclesViewModel vehiclesViewModel,
+  ) {
+    final requests = requestsViewModel.requests;
+    final tasks = tasksViewModel.allTasks;
+    final vehicles = vehiclesViewModel.vehicles;
+
+    // Only update if data has actually changed to prevent infinite loops
+    final newStats = {
+      'kullanici': {
+        'toplam': kullanicilar.length,
+        'beklemede': kullanicilar.where((k) => k['rol'] == 'beklemede').length,
+        'koordinator':
+            kullanicilar.where((k) => k['rol'] == 'koordinator').length,
+        'arac_sahibi':
+            kullanicilar.where((k) => k['rol'] == 'arac_sahibi').length,
+        'talep_eden':
+            kullanicilar.where((k) => k['rol'] == 'talep_eden').length,
+      },
+      'talep': {
+        'toplam': requests.length,
+        'bekleyen': requests.where((t) => t.durum == 'beklemede').length,
+        'gorevlendirildi':
+            requests.where((t) => t.durum == 'gorevlendirildi').length,
+        'iptal': requests.where((t) => t.durum == 'iptal edildi').length,
+        'tamamlanan': requests.where((t) => t.durum == 'tamamlandı').length,
+      },
+      'gorev': {
+        'toplam': tasks.length,
+        'bekleyen': tasks.where((g) => g.gorevDurumu == 'beklemede').length,
+        'basladi': tasks.where((g) => g.gorevDurumu == 'başladı').length,
+        'tamamlanan': tasks.where((g) => g.gorevDurumu == 'tamamlandı').length,
+        'iptal': tasks.where((g) => g.gorevDurumu == 'iptal edildi').length,
+      },
+      'arac': {
+        'toplam': vehicles.length,
+        'musait': vehicles.where((a) => a.musaitlikDurumu == true).length,
+        'mesgul': vehicles.where((a) => a.musaitlikDurumu == false).length,
+      },
+    };
+
+    // Compare with current stats to avoid unnecessary updates
+    if (_stats == null ||
+        (_stats!['talep'] as Map?)?['toplam'] != newStats['talep']!['toplam'] ||
+        (_stats!['gorev'] as Map?)?['toplam'] != newStats['gorev']!['toplam'] ||
+        (_stats!['arac'] as Map?)?['toplam'] != newStats['arac']!['toplam']) {
+      setState(() {
+        _stats = newStats;
+      });
+
+      if (kDebugMode) {
+        print(
+            '[KoordinatorPanel] 📊 Statistics updated: ${_stats?['kullanici']['toplam']} users, ${_stats?['talep']['toplam']} requests, ${_stats?['gorev']['toplam']} tasks, ${_stats?['arac']['toplam']} vehicles');
+      }
+    }
   }
 
   Widget _buildStatCard(

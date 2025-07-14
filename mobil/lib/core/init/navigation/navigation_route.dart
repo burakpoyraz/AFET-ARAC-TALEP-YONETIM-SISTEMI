@@ -26,11 +26,11 @@ class NavigationRoute {
       case '/main':
         return _navigate(const MainLayout());
       case '/vehicles':
-        return _navigate(const MainLayout(initialIndex: 1)); // For arac_sahibi
+        return _navigate(const MainLayout(initialIndex: 3)); // For araçlar tab
       case '/tasks':
         return _navigate(const MainLayout(initialIndex: 2));
       case '/requests':
-        return _navigate(const MainLayout(initialIndex: 1)); // For koordinator
+        return _navigate(const MainLayout(initialIndex: 1)); // For talepler tab
       case '/my-requests':
         return _navigate(const MainLayout(initialIndex: 1)); // For talep_eden
       case '/task-tracking':

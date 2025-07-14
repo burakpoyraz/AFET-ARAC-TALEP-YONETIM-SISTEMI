@@ -20,13 +20,40 @@ class KoordinatorRequestsViewModel extends ChangeNotifier {
   String? _error;
   String? get error => _error;
 
-  /// Load all requests
-  Future<void> loadRequests() async {
+  /// Disposed state to prevent notifyListeners after dispose
+  bool _disposed = false;
+
+  /// Cache management
+  DateTime? _lastFetchTime;
+  static const Duration _cacheValidDuration = Duration(minutes: 1);
+  bool get _isCacheValid =>
+      _lastFetchTime != null &&
+      DateTime.now().difference(_lastFetchTime!) < _cacheValidDuration;
+  bool get hasData => _requests.isNotEmpty;
+
+  @override
+  void dispose() {
+    _disposed = true;
+    super.dispose();
+  }
+
+  /// Load all requests with smart caching
+  /// [forceRefresh] - Force API call even if cache is valid
+  Future<void> loadRequests({bool forceRefresh = false}) async {
+    // **[KoordinatorRequestsViewModel]** Use cache if valid and not forcing refresh
+    if (!forceRefresh && _isCacheValid && hasData) {
+      debugPrint(
+          '[KoordinatorRequestsViewModel] 🔄 Using cached data (${_requests.length} requests)');
+      return;
+    }
+
     try {
       _isLoading = true;
       _error = null;
-      notifyListeners();
+      if (!_disposed) notifyListeners();
 
+      debugPrint(
+          '[KoordinatorRequestsViewModel] 🌐 Fetching fresh data from API...');
       final response =
           await _networkManager.dio.get<List<dynamic>>('/talepler');
       if (response.statusCode == 200) {
@@ -34,14 +61,23 @@ class KoordinatorRequestsViewModel extends ChangeNotifier {
         _requests = data
             .map((e) => Request.fromJson(e as Map<String, dynamic>))
             .toList();
+        _lastFetchTime = DateTime
+            .now(); // **[KoordinatorRequestsViewModel]** Update cache timestamp
+        debugPrint(
+            '[KoordinatorRequestsViewModel] ✅ Loaded ${_requests.length} requests');
       }
     } on DioException catch (e) {
       _error = 'Talepler yüklenirken hata oluştu: $e';
       debugPrint('[KoordinatorRequestsViewModel] Error loading requests: $e');
     } finally {
       _isLoading = false;
-      notifyListeners();
+      if (!_disposed) notifyListeners();
     }
+  }
+
+  /// Force refresh data from API
+  Future<void> refreshRequests() async {
+    await loadRequests(forceRefresh: true);
   }
 
   /// Load available vehicles for assignment
@@ -55,7 +91,7 @@ class KoordinatorRequestsViewModel extends ChangeNotifier {
         _availableVehicles = vehiclesList
             .map((e) => Vehicle.fromJson(e as Map<String, dynamic>))
             .toList();
-        notifyListeners();
+        if (!_disposed) notifyListeners();
       }
     } on DioException catch (e) {
       debugPrint(
@@ -115,7 +151,7 @@ class KoordinatorRequestsViewModel extends ChangeNotifier {
   ) async {
     try {
       _isLoading = true;
-      notifyListeners();
+      if (!_disposed) notifyListeners();
 
       // Create tasks for each selected vehicle
       for (final vehicle in selectedVehicles) {
@@ -146,7 +182,7 @@ class KoordinatorRequestsViewModel extends ChangeNotifier {
       return false;
     } finally {
       _isLoading = false;
-      notifyListeners();
+      if (!_disposed) notifyListeners();
     }
   }
 
@@ -154,7 +190,7 @@ class KoordinatorRequestsViewModel extends ChangeNotifier {
   Future<bool> cancelRequest(String requestId) async {
     try {
       _isLoading = true;
-      notifyListeners();
+      if (!_disposed) notifyListeners();
 
       final response = await _networkManager.dio.put<Map<String, dynamic>>(
         '/talepler/$requestId',
@@ -167,7 +203,7 @@ class KoordinatorRequestsViewModel extends ChangeNotifier {
         if (index != -1) {
           _requests[index] = Request.fromJson(response.data!);
         }
-        notifyListeners();
+        if (!_disposed) notifyListeners();
         return true;
       }
       return false;
@@ -177,14 +213,14 @@ class KoordinatorRequestsViewModel extends ChangeNotifier {
       return false;
     } finally {
       _isLoading = false;
-      notifyListeners();
+      if (!_disposed) notifyListeners();
     }
   }
 
   /// Clear error message
   void clearError() {
     _error = null;
-    notifyListeners();
+    if (!_disposed) notifyListeners();
   }
 }
 

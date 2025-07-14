@@ -31,7 +31,7 @@ class Task {
       bitisZamani: json['bitisZamani'] != null
           ? DateTime.parse(json['bitisZamani'] as String)
           : null,
-      olusturulmaZamani: DateTime.parse(json['olusturulmaZamani'] as String),
+      olusturulmaZamani: DateTime.parse(json['createdAt'] as String),
       sofor: json['sofor'] != null
           ? DriverInfo.fromJson(json['sofor'] as Map<String, dynamic>)
           : null,
@@ -87,7 +87,7 @@ class DriverInfo {
     return DriverInfo(
       ad: json['ad'] as String,
       soyad: json['soyad'] as String,
-      telefon: json['telefon'] as String,
+      telefon: json['telefon']?.toString() ?? '',
     );
   }
   final String ad;
@@ -101,7 +101,7 @@ class TaskRequest {
   TaskRequest({
     required this.id,
     required this.baslik,
-    required this.aciklama,
+    this.aciklama,
     this.lokasyon,
   });
 
@@ -109,7 +109,7 @@ class TaskRequest {
     return TaskRequest(
       id: json['_id'] as String,
       baslik: json['baslik'] as String,
-      aciklama: json['aciklama'] as String,
+      aciklama: json['aciklama'] as String?,
       lokasyon: json['lokasyon'] != null
           ? TaskLocation.fromJson(json['lokasyon'] as Map<String, dynamic>)
           : null,
@@ -117,7 +117,7 @@ class TaskRequest {
   }
   final String id;
   final String baslik;
-  final String aciklama;
+  final String? aciklama;
   final TaskLocation? lokasyon;
 }
 

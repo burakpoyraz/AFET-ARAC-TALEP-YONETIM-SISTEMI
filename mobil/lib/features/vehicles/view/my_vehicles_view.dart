@@ -71,7 +71,7 @@ class _MyVehiclesViewState extends State<MyVehiclesView> {
                     ),
                     const SizedBox(height: 16),
                     CustomButton(
-                      onPressed: () => viewModel.loadMyVehicles(),
+                      onPressed: () => viewModel.refreshMyVehicles(),
                       text: 'Yeniden Dene',
                       width: 150,
                     ),
@@ -214,7 +214,7 @@ class _MyVehiclesViewState extends State<MyVehiclesView> {
                           ),
                         )
                       : RefreshIndicator(
-                          onRefresh: () => viewModel.loadMyVehicles(),
+                          onRefresh: () => viewModel.refreshMyVehicles(),
                           child: ListView.builder(
                             padding: const EdgeInsets.symmetric(horizontal: 16),
                             itemCount: filteredVehicles.length,

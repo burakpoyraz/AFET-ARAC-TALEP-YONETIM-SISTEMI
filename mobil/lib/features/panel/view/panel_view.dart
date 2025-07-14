@@ -33,12 +33,7 @@ class _PanelViewState extends State<PanelView> {
   void _debugUserData() {
     final user = LocalStorage.instance.getUser();
     if (kDebugMode) {
-      print('=== USER DEBUG INFO ===');
-      print('User: ${user?.toJson()}');
-      print('KurumFirmaId: ${user?.kurumFirmaId?.toJson()}');
-      print(
-          'KullaniciBeyanBilgileri: ${user?.kullaniciBeyanBilgileri?.toJson()}');
-      print('========================');
+      print('[PanelView] User: ${user?.ad} ${user?.soyad} (${user?.rol})');
     }
   }
 
@@ -232,8 +227,9 @@ class _PanelViewState extends State<PanelView> {
                                   color: Colors.grey.shade600,
                                 ),
                           ),
-                          if (user.kurumFirmaId != null ||
-                              user.kullaniciBeyanBilgileri != null) ...[
+                          if (!user.isKoordinator &&
+                              (user.kurumFirmaId != null ||
+                                  user.kullaniciBeyanBilgileri != null)) ...[
                             const SizedBox(width: 16),
                             Icon(
                               Icons.business_outlined,

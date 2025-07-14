@@ -1,5 +1,8 @@
 import 'package:afet_arac_takip/core/init/navigation/navigation_route.dart';
 import 'package:afet_arac_takip/core/init/navigation/navigation_service.dart';
+import 'package:afet_arac_takip/features/requests/viewmodel/koordinator_requests_viewmodel.dart';
+import 'package:afet_arac_takip/features/tasks/viewmodel/koordinator_tasks_viewmodel.dart';
+import 'package:afet_arac_takip/features/vehicles/viewmodel/vehicles_viewmodel.dart';
 import 'package:afet_arac_takip/product/cache/local_storage.dart';
 import 'package:afet_arac_takip/product/theme/app_theme.dart';
 import 'package:flutter/material.dart';
@@ -34,8 +37,12 @@ Future<void> main() async {
     runApp(
       MultiProvider(
         providers: [
-          // Add providers here
+          // Navigation service
           ChangeNotifierProvider(create: (_) => NavigationService.instance),
+          // Core ViewModels for shared data and caching
+          ChangeNotifierProvider(create: (_) => KoordinatorRequestsViewModel()),
+          ChangeNotifierProvider(create: (_) => KoordinatorTasksViewModel()),
+          ChangeNotifierProvider(create: (_) => VehiclesViewModel()),
         ],
         child: const MyApp(),
       ),

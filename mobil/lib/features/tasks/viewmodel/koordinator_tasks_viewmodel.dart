@@ -34,12 +34,18 @@ class KoordinatorTasksViewModel extends ChangeNotifier {
     }
   }
 
+  @override
+  void dispose() {
+    _disposed = true;
+    super.dispose();
+  }
+
   /// [loadAllTasks] fetches all tasks in the system for koordinator oversight
   Future<void> loadAllTasks() async {
     try {
       _isLoading = true;
       _error = null;
-      notifyListeners();
+      _safeNotifyListeners();
 
       print('[KoordinatorTasksViewModel] 🔄 Loading all tasks...');
 
@@ -52,15 +58,6 @@ class KoordinatorTasksViewModel extends ChangeNotifier {
             data.map((e) => Task.fromJson(e as Map<String, dynamic>)).toList();
 
         print('[KoordinatorTasksViewModel] ✅ Loaded ${_allTasks.length} tasks');
-        print('[KoordinatorTasksViewModel] 📊 Task status breakdown:');
-        print(
-            '  - Beklemede: ${_allTasks.where((t) => t.gorevDurumu == "beklemede").length}');
-        print(
-            '  - Başladı: ${_allTasks.where((t) => t.gorevDurumu == "başladı").length}');
-        print(
-            '  - Tamamlandı: ${_allTasks.where((t) => t.gorevDurumu == "tamamlandı").length}');
-        print(
-            '  - İptal Edildi: ${_allTasks.where((t) => t.gorevDurumu == "iptal edildi").length}');
       } else {
         throw Exception('API returned status code: ${response.statusCode}');
       }
@@ -90,7 +87,7 @@ class KoordinatorTasksViewModel extends ChangeNotifier {
 
         print(
             '[KoordinatorTasksViewModel] ✅ Loaded ${_availableVehicles.length} available vehicles');
-        notifyListeners();
+        _safeNotifyListeners();
       }
     } on DioException catch (e) {
       print(
@@ -115,7 +112,7 @@ class KoordinatorTasksViewModel extends ChangeNotifier {
             task.vehiclePlate.toLowerCase().contains(query) ||
             task.driverName.toLowerCase().contains(query) ||
             (task.gorevNotu?.toLowerCase().contains(query) ?? false) ||
-            (task.talepBilgileri?.aciklama.toLowerCase().contains(query) ??
+            (task.talepBilgileri?.aciklama?.toLowerCase().contains(query) ??
                 false) ||
             (task.aracBilgileri?.aracTuru.toLowerCase().contains(query) ??
                 false);
@@ -161,7 +158,7 @@ class KoordinatorTasksViewModel extends ChangeNotifier {
     try {
       _isUpdatingTask = true;
       _error = null;
-      notifyListeners();
+      _safeNotifyListeners();
 
       print(
           '[KoordinatorTasksViewModel] 🔄 Updating task $taskId to $newStatus...');
@@ -179,7 +176,7 @@ class KoordinatorTasksViewModel extends ChangeNotifier {
         if (index != -1) {
           _allTasks[index] = Task.fromJson(response.data!);
         }
-        notifyListeners();
+        _safeNotifyListeners();
         return true;
       } else {
         throw Exception('API returned status code: ${response.statusCode}');
@@ -187,11 +184,11 @@ class KoordinatorTasksViewModel extends ChangeNotifier {
     } on DioException catch (e) {
       _error = 'Görev durumu güncellenirken hata oluştu: $e';
       print('[KoordinatorTasksViewModel] ❌ Error updating task status: $e');
-      notifyListeners();
+      _safeNotifyListeners();
       return false;
     } finally {
       _isUpdatingTask = false;
-      notifyListeners();
+      _safeNotifyListeners();
     }
   }
 
@@ -200,7 +197,7 @@ class KoordinatorTasksViewModel extends ChangeNotifier {
     try {
       _isUpdatingTask = true;
       _error = null;
-      notifyListeners();
+      _safeNotifyListeners();
 
       print(
           '[KoordinatorTasksViewModel] 🔄 Assigning vehicle $vehicleId to task $taskId...');
@@ -222,11 +219,11 @@ class KoordinatorTasksViewModel extends ChangeNotifier {
     } on DioException catch (e) {
       _error = 'Araç atama sırasında hata oluştu: $e';
       print('[KoordinatorTasksViewModel] ❌ Error assigning vehicle: $e');
-      notifyListeners();
+      _safeNotifyListeners();
       return false;
     } finally {
       _isUpdatingTask = false;
-      notifyListeners();
+      _safeNotifyListeners();
     }
   }
 
@@ -235,7 +232,7 @@ class KoordinatorTasksViewModel extends ChangeNotifier {
     try {
       _isUpdatingTask = true;
       _error = null;
-      notifyListeners();
+      _safeNotifyListeners();
 
       print('[KoordinatorTasksViewModel] 🔄 Cancelling task $taskId...');
 
@@ -255,7 +252,7 @@ class KoordinatorTasksViewModel extends ChangeNotifier {
         if (index != -1) {
           _allTasks[index] = Task.fromJson(response.data!);
         }
-        notifyListeners();
+        _safeNotifyListeners();
         return true;
       } else {
         throw Exception('API returned status code: ${response.statusCode}');
@@ -263,18 +260,18 @@ class KoordinatorTasksViewModel extends ChangeNotifier {
     } on DioException catch (e) {
       _error = 'Görev iptal edilirken hata oluştu: $e';
       print('[KoordinatorTasksViewModel] ❌ Error cancelling task: $e');
-      notifyListeners();
+      _safeNotifyListeners();
       return false;
     } finally {
       _isUpdatingTask = false;
-      notifyListeners();
+      _safeNotifyListeners();
     }
   }
 
   /// [clearError] clears any error message
   void clearError() {
     _error = null;
-    notifyListeners();
+    _safeNotifyListeners();
   }
 
   /// [getTaskById] returns a specific task by ID
@@ -297,11 +294,5 @@ class KoordinatorTasksViewModel extends ChangeNotifier {
         .where(
             (t) => t.gorevDurumu == 'beklemede' || t.gorevDurumu == 'başladı')
         .length;
-  }
-
-  @override
-  void dispose() {
-    _disposed = true;
-    super.dispose();
   }
 }

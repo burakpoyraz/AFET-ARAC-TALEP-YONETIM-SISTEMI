@@ -130,7 +130,7 @@ class _VehiclesViewState extends State<VehiclesView> {
                     child: CustomScrollView(
                       slivers: [
                         CupertinoSliverRefreshControl(
-                          onRefresh: () => viewModel.getVehicles(),
+                          onRefresh: () => viewModel.refreshVehicles(),
                         ),
                         SliverList(
                           delegate: SliverChildBuilderDelegate(

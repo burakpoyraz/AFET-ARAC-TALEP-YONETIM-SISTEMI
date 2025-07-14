@@ -93,47 +93,23 @@ class NetworkManager {
       ),
     );
 
-    // Add logging interceptor in debug mode
+    // Add minimal logging interceptor in debug mode
     if (kDebugMode) {
-      dio.interceptors.add(LogInterceptor(
-        requestBody: true,
-        responseBody: true,
-        logPrint: (object) {
-          debugPrint('[Dio] $object', wrapWidth: 1024);
-        },
-      ));
-
-      // Add detailed request logging
+      // Only log essential information for performance
       dio.interceptors.add(
         InterceptorsWrapper(
           onRequest: (options, handler) {
-            debugPrint('\n🌐 -------- REQUEST DETAILS --------');
-            debugPrint('🌐 URL: ${options.baseUrl}${options.path}');
-            debugPrint('🌐 Method: ${options.method}');
-            debugPrint('🌐 Headers: ${options.headers}');
-            debugPrint('🌐 Data: ${options.data}');
-            debugPrint('🌐 --------------------------------\n');
+            debugPrint('🌐 [${options.method}] ${options.path}');
             return handler.next(options);
           },
           onResponse: (response, handler) {
-            debugPrint('\n✅ -------- RESPONSE DETAILS --------');
-            debugPrint('✅ Status: ${response.statusCode}');
-            debugPrint('✅ Headers: ${response.headers}');
-            debugPrint('✅ Data: ${response.data}');
-            debugPrint('✅ ---------------------------------\n');
+            debugPrint(
+                '✅ [${response.statusCode}] ${response.requestOptions.path}');
             return handler.next(response);
           },
           onError: (error, handler) {
-            debugPrint('\n❌ -------- ERROR DETAILS --------');
-            debugPrint('❌ Status: ${error.response?.statusCode}');
-            debugPrint('❌ Type: ${error.type}');
-            debugPrint('❌ Message: ${error.message}');
-            debugPrint('❌ Error Data: ${error.response?.data}');
-            debugPrint('❌ Request Path: ${error.requestOptions.path}');
-            debugPrint('❌ Request Method: ${error.requestOptions.method}');
-            debugPrint('❌ Request Headers: ${error.requestOptions.headers}');
-            debugPrint('❌ Request Data: ${error.requestOptions.data}');
-            debugPrint('❌ --------------------------------\n');
+            debugPrint(
+                '❌ [${error.response?.statusCode ?? 'NO_STATUS'}] ${error.requestOptions.path} - ${error.message}');
             return handler.next(error);
           },
         ),

@@ -16,14 +16,39 @@ class MyVehiclesViewModel extends ChangeNotifier {
   String? _error;
   String? get error => _error;
 
-  /// Load my vehicles
-  Future<void> loadMyVehicles() async {
+  /// Disposed state to prevent notifyListeners after dispose
+  bool _disposed = false;
+
+  @override
+  void dispose() {
+    _disposed = true;
+    super.dispose();
+  }
+
+  /// Cache management
+  DateTime? _lastFetchTime;
+  static const Duration _cacheValidDuration = Duration(minutes: 2);
+  bool get _isCacheValid =>
+      _lastFetchTime != null &&
+      DateTime.now().difference(_lastFetchTime!) < _cacheValidDuration;
+  bool get hasData => _vehicles.isNotEmpty;
+
+  /// Load my vehicles with smart caching
+  /// [forceRefresh] - Force API call even if cache is valid
+  Future<void> loadMyVehicles({bool forceRefresh = false}) async {
+    // **[MyVehiclesViewModel]** Use cache if valid and not forcing refresh
+    if (!forceRefresh && _isCacheValid && hasData) {
+      debugPrint(
+          '[MyVehiclesViewModel] 🔄 Using cached data (${_vehicles.length} vehicles)');
+      return;
+    }
+
     try {
       _isLoading = true;
       _error = null;
-      notifyListeners();
+      if (!_disposed) notifyListeners();
 
-      debugPrint('[MyVehiclesViewModel] Loading my vehicles...');
+      debugPrint('[MyVehiclesViewModel] 🌐 Fetching fresh data from API...');
       final response = await _networkManager.dio
           .get<Map<String, dynamic>>('/araclar/araclarim');
 
@@ -37,15 +62,23 @@ class MyVehiclesViewModel extends ChangeNotifier {
         _vehicles = vehiclesList
             .map((e) => Vehicle.fromJson(e as Map<String, dynamic>))
             .toList();
-        debugPrint('[MyVehiclesViewModel] Loaded ${_vehicles.length} vehicles');
+        _lastFetchTime =
+            DateTime.now(); // **[MyVehiclesViewModel]** Update cache timestamp
+        debugPrint(
+            '[MyVehiclesViewModel] ✅ Loaded ${_vehicles.length} vehicles (cached until ${_lastFetchTime!.add(_cacheValidDuration)})');
       }
     } on DioException catch (e) {
       _error = 'Araçlar yüklenirken hata oluştu: $e';
       debugPrint('[MyVehiclesViewModel] Error loading vehicles: $e');
     } finally {
       _isLoading = false;
-      notifyListeners();
+      if (!_disposed) notifyListeners();
     }
+  }
+
+  /// Force refresh data from API
+  Future<void> refreshMyVehicles() async {
+    await loadMyVehicles(forceRefresh: true);
   }
 
   /// Get filtered vehicles based on search and status
@@ -101,7 +134,8 @@ class MyVehiclesViewModel extends ChangeNotifier {
       final response = await _networkManager.dio
           .post<Map<String, dynamic>>('/araclar', data: vehicleData);
       if (response.statusCode == 201) {
-        await loadMyVehicles(); // Reload vehicles
+        await loadMyVehicles(
+            forceRefresh: true); // **[MyVehiclesViewModel]** Invalidate cache
         return true;
       }
       return false;
@@ -127,7 +161,8 @@ class MyVehiclesViewModel extends ChangeNotifier {
         data: vehicleData,
       );
       if (response.statusCode == 200) {
-        await loadMyVehicles(); // Reload vehicles
+        await loadMyVehicles(
+            forceRefresh: true); // **[MyVehiclesViewModel]** Invalidate cache
         return true;
       }
       return false;

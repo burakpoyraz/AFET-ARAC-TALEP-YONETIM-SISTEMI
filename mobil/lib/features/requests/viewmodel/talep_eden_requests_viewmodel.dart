@@ -20,14 +20,30 @@ class TalepEdenRequestsViewModel extends ChangeNotifier {
   String? _error;
   String? get error => _error;
 
-  /// [loadMyRequests] fetches all requests created by the current user
-  Future<void> loadMyRequests() async {
+  /// Cache management
+  DateTime? _lastFetchTime;
+  static const Duration _cacheValidDuration = Duration(minutes: 2);
+  bool get _isCacheValid =>
+      _lastFetchTime != null &&
+      DateTime.now().difference(_lastFetchTime!) < _cacheValidDuration;
+  bool get hasData => _myRequests.isNotEmpty;
+
+  /// [loadMyRequests] fetches all requests created by the current user with smart caching
+  /// [forceRefresh] - Force API call even if cache is valid
+  Future<void> loadMyRequests({bool forceRefresh = false}) async {
+    // **[TalepEdenRequestsViewModel]** Use cache if valid and not forcing refresh
+    if (!forceRefresh && _isCacheValid && hasData) {
+      print(
+          '[TalepEdenRequestsViewModel] 🔄 Using cached data (${_myRequests.length} requests)');
+      return;
+    }
+
     try {
       _isLoading = true;
       _error = null;
       notifyListeners();
 
-      print('[TalepEdenRequestsViewModel] 🔄 Loading user requests...');
+      print('[TalepEdenRequestsViewModel] 🌐 Fetching fresh data from API...');
 
       final response =
           await _networkManager.dio.get<List<dynamic>>('/talepler/taleplerim');
@@ -37,9 +53,11 @@ class TalepEdenRequestsViewModel extends ChangeNotifier {
         _myRequests = data
             .map((e) => Request.fromJson(e as Map<String, dynamic>))
             .toList();
+        _lastFetchTime = DateTime
+            .now(); // **[TalepEdenRequestsViewModel]** Update cache timestamp
 
         print(
-            '[TalepEdenRequestsViewModel] ✅ Loaded ${_myRequests.length} requests');
+            '[TalepEdenRequestsViewModel] ✅ Loaded ${_myRequests.length} requests (cached until ${_lastFetchTime!.add(_cacheValidDuration)})');
         print('[TalepEdenRequestsViewModel] 📊 Request status breakdown:');
         print(
             '  - Beklemede: ${_myRequests.where((r) => r.durum == "beklemede").length}');
@@ -59,6 +77,11 @@ class TalepEdenRequestsViewModel extends ChangeNotifier {
       _isLoading = false;
       notifyListeners();
     }
+  }
+
+  /// Force refresh data from API
+  Future<void> refreshMyRequests() async {
+    await loadMyRequests(forceRefresh: true);
   }
 
   /// [createRequest] creates a new request with the provided data

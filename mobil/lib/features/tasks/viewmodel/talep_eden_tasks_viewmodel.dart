@@ -74,7 +74,7 @@ class TalepEdenTasksViewModel extends ChangeNotifier {
             task.vehiclePlate.toLowerCase().contains(query) ||
             task.driverName.toLowerCase().contains(query) ||
             (task.gorevNotu?.toLowerCase().contains(query) ?? false) ||
-            (task.talepBilgileri?.aciklama.toLowerCase().contains(query) ??
+            (task.talepBilgileri?.aciklama?.toLowerCase().contains(query) ??
                 false) ||
             (task.aracBilgileri?.aracTuru.toLowerCase().contains(query) ??
                 false);

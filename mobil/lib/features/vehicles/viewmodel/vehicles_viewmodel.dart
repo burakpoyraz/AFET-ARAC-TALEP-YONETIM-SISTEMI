@@ -53,6 +53,14 @@ class VehiclesViewModel extends ChangeNotifier {
   /// Disposed state to prevent notifyListeners after dispose
   bool _disposed = false;
 
+  /// Cache management
+  DateTime? _lastFetchTime;
+  static const Duration _cacheValidDuration = Duration(minutes: 2);
+  bool get _isCacheValid =>
+      _lastFetchTime != null &&
+      DateTime.now().difference(_lastFetchTime!) < _cacheValidDuration;
+  bool get hasData => _vehicles.isNotEmpty;
+
   /// Clear error
   void clearError() {
     _error = null;
@@ -65,21 +73,26 @@ class VehiclesViewModel extends ChangeNotifier {
     notifyListeners();
   }
 
-  /// Get vehicles
-  Future<void> getVehicles() async {
+  /// Get vehicles with smart caching
+  /// [forceRefresh] - Force API call even if cache is valid
+  Future<void> getVehicles({bool forceRefresh = false}) async {
+    // **[VehiclesViewModel]** Use cache if valid and not forcing refresh
+    if (!forceRefresh && _isCacheValid && hasData) {
+      debugPrint(
+          '[VehiclesViewModel] 🔄 Using cached data (${_vehicles.length} vehicles)');
+      return;
+    }
+
     if (_isLoading) return;
 
     try {
       _isLoading = true;
-      notifyListeners();
+      if (!_disposed) notifyListeners();
 
-      debugPrint('[VehiclesViewModel] Loading vehicles...');
+      debugPrint('[VehiclesViewModel] 🌐 Fetching vehicles from API...');
       // **[VehiclesViewModel]** Use coordinator endpoint for all vehicles
       final response =
           await _networkManager.dio.get<Map<String, dynamic>>('/araclar');
-
-      debugPrint('[VehiclesViewModel] Response status: ${response.statusCode}');
-      debugPrint('[VehiclesViewModel] Response data: ${response.data}');
 
       if (response.statusCode == 200) {
         final data = response.data!;
@@ -87,8 +100,10 @@ class VehiclesViewModel extends ChangeNotifier {
         _vehicles = vehiclesList
             .map((e) => Vehicle.fromJson(e as Map<String, dynamic>))
             .toList();
-        debugPrint('[VehiclesViewModel] Loaded ${_vehicles.length} vehicles');
-        notifyListeners();
+        _lastFetchTime =
+            DateTime.now(); // **[VehiclesViewModel]** Update cache timestamp
+        debugPrint('[VehiclesViewModel] ✅ Loaded ${_vehicles.length} vehicles');
+        if (!_disposed) notifyListeners();
       } else {
         debugPrint('[VehiclesViewModel] Bad response: ${response.statusCode}');
         _setError(
@@ -106,6 +121,11 @@ class VehiclesViewModel extends ChangeNotifier {
     }
   }
 
+  /// Force refresh data from API
+  Future<void> refreshVehicles() async {
+    await getVehicles(forceRefresh: true);
+  }
+
   /// Add vehicle
   Future<bool> addVehicle(Vehicle vehicle) async {
     if (_isAdding) return false;
@@ -120,7 +140,8 @@ class VehiclesViewModel extends ChangeNotifier {
       );
 
       if (response.statusCode == 200) {
-        await getVehicles();
+        await getVehicles(
+            forceRefresh: true); // **[VehiclesViewModel]** Invalidate cache
         return true;
       } else {
         _setError('Araç eklenirken bir hata oluştu');
@@ -150,7 +171,8 @@ class VehiclesViewModel extends ChangeNotifier {
       );
 
       if (response.statusCode == 200) {
-        await getVehicles();
+        await getVehicles(
+            forceRefresh: true); // **[VehiclesViewModel]** Invalidate cache
         return true;
       } else {
         _setError('Araç güncellenirken bir hata oluştu');
@@ -178,7 +200,8 @@ class VehiclesViewModel extends ChangeNotifier {
           .delete<Map<String, dynamic>>('/arac/$plaka');
 
       if (response.statusCode == 200) {
-        await getVehicles();
+        await getVehicles(
+            forceRefresh: true); // **[VehiclesViewModel]** Invalidate cache
         return true;
       } else {
         _setError('Araç silinirken bir hata oluştu');
