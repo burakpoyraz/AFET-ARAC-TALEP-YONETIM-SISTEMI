@@ -143,7 +143,7 @@ class RequestDetailModal extends StatelessWidget {
                     context,
                     'Oluşturulma Tarihi',
                     Icons.access_time,
-                    DateFormat('dd MMMM yyyy, HH:mm', 'tr_TR')
+                    DateFormat('dd.MM.yyyy HH:mm')
                         .format(request.olusturulmaZamani),
                   ),
 

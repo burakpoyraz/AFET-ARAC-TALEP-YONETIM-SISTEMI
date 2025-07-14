@@ -4,6 +4,7 @@ import 'package:afet_arac_takip/features/vehicles/view/edit_vehicle_modal.dart';
 import 'package:afet_arac_takip/features/vehicles/viewmodel/vehicles_viewmodel.dart';
 import 'package:afet_arac_takip/features/vehicles/widgets/vehicle_card.dart';
 import 'package:afet_arac_takip/features/vehicles/widgets/vehicle_detail_modal.dart';
+import 'package:afet_arac_takip/product/cache/local_storage.dart';
 import 'package:afet_arac_takip/product/widgets/custom_button.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
@@ -29,16 +30,22 @@ class _VehiclesViewState extends State<VehiclesView> {
 
   @override
   Widget build(BuildContext context) {
+    // **[VehiclesView]** Get current user role for permission check
+    final currentUser = LocalStorage.instance.getUser();
+    final isKoordinator = currentUser?.isKoordinator ?? false;
+
     return ChangeNotifierProvider(
       create: (_) => VehiclesViewModel()..getVehicles(),
       child: CupertinoPageScaffold(
         navigationBar: CupertinoNavigationBar(
           middle: const Text('Araçlarım'),
-          trailing: CupertinoButton(
-            padding: EdgeInsets.zero,
-            onPressed: () => _showAddVehicleModal(context),
-            child: const Icon(CupertinoIcons.add),
-          ),
+          trailing: !isKoordinator
+              ? CupertinoButton(
+                  padding: EdgeInsets.zero,
+                  onPressed: () => _showAddVehicleModal(context),
+                  child: const Icon(CupertinoIcons.add),
+                )
+              : null,
         ),
         child: SafeArea(
           child: Consumer<VehiclesViewModel>(
@@ -59,11 +66,13 @@ class _VehiclesViewState extends State<VehiclesView> {
                             .navTitleTextStyle,
                       ),
                       const SizedBox(height: 16),
-                      CustomButton(
-                        onPressed: () => _showAddVehicleModal(context),
-                        text: 'Araç Ekle',
-                        width: 200,
-                      ),
+                      // **[VehiclesView]** Hide add button for coordinators in empty state
+                      if (!isKoordinator)
+                        CustomButton(
+                          onPressed: () => _showAddVehicleModal(context),
+                          text: 'Araç Ekle',
+                          width: 200,
+                        ),
                     ],
                   ),
                 );

@@ -2,6 +2,7 @@ import 'package:afet_arac_takip/features/vehicles/model/vehicle_model.dart';
 import 'package:afet_arac_takip/features/vehicles/viewmodel/my_vehicles_viewmodel.dart';
 import 'package:afet_arac_takip/features/vehicles/widgets/add_edit_vehicle_modal.dart';
 import 'package:afet_arac_takip/features/vehicles/widgets/vehicle_card.dart';
+import 'package:afet_arac_takip/product/cache/local_storage.dart';
 import 'package:afet_arac_takip/product/widgets/custom_button.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
@@ -27,6 +28,10 @@ class _MyVehiclesViewState extends State<MyVehiclesView> {
 
   @override
   Widget build(BuildContext context) {
+    // **[MyVehiclesView]** Get current user role for permission check
+    final currentUser = LocalStorage.instance.getUser();
+    final isKoordinator = currentUser?.isKoordinator ?? false;
+
     return ChangeNotifierProvider(
       create: (_) => MyVehiclesViewModel()..loadMyVehicles(),
       child: Scaffold(
@@ -34,10 +39,12 @@ class _MyVehiclesViewState extends State<MyVehiclesView> {
           title: const Text('Araçlarım'),
           centerTitle: false,
           actions: [
-            IconButton(
-              icon: const Icon(Icons.add),
-              onPressed: () => _showAddVehicleModal(context),
-            ),
+            // **[MyVehiclesView]** Hide add button for coordinators
+            if (!isKoordinator)
+              IconButton(
+                icon: const Icon(Icons.add),
+                onPressed: () => _showAddVehicleModal(context),
+              ),
           ],
         ),
         body: Consumer<MyVehiclesViewModel>(
@@ -232,10 +239,13 @@ class _MyVehiclesViewState extends State<MyVehiclesView> {
             );
           },
         ),
-        floatingActionButton: FloatingActionButton(
-          onPressed: () => _showAddVehicleModal(context),
-          child: const Icon(Icons.add),
-        ),
+        // **[MyVehiclesView]** Hide floating add button for coordinators
+        floatingActionButton: !isKoordinator
+            ? FloatingActionButton(
+                onPressed: () => _showAddVehicleModal(context),
+                child: const Icon(Icons.add),
+              )
+            : null,
       ),
     );
   }

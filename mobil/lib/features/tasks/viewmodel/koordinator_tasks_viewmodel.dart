@@ -24,6 +24,16 @@ class KoordinatorTasksViewModel extends ChangeNotifier {
   String? _error;
   String? get error => _error;
 
+  /// Disposed state to prevent notifyListeners after dispose
+  bool _disposed = false;
+
+  /// Safe notify listeners that checks disposed state
+  void _safeNotifyListeners() {
+    if (!_disposed) {
+      notifyListeners();
+    }
+  }
+
   /// [loadAllTasks] fetches all tasks in the system for koordinator oversight
   Future<void> loadAllTasks() async {
     try {
@@ -59,7 +69,7 @@ class KoordinatorTasksViewModel extends ChangeNotifier {
       print('[KoordinatorTasksViewModel] ❌ Error loading tasks: $e');
     } finally {
       _isLoading = false;
-      notifyListeners();
+      _safeNotifyListeners();
     }
   }
 
@@ -287,5 +297,11 @@ class KoordinatorTasksViewModel extends ChangeNotifier {
         .where(
             (t) => t.gorevDurumu == 'beklemede' || t.gorevDurumu == 'başladı')
         .length;
+  }
+
+  @override
+  void dispose() {
+    _disposed = true;
+    super.dispose();
   }
 }

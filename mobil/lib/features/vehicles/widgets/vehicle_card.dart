@@ -1,4 +1,5 @@
 import 'package:afet_arac_takip/features/vehicles/model/vehicle_model.dart';
+import 'package:afet_arac_takip/product/cache/local_storage.dart';
 import 'package:flutter/cupertino.dart';
 
 /// A card widget to display vehicle information
@@ -30,6 +31,10 @@ class VehicleCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    // **[VehicleCard]** Get current user role for permission check
+    final currentUser = LocalStorage.instance.getUser();
+    final isKoordinator = currentUser?.isKoordinator ?? false;
+
     return GestureDetector(
       onTap: onTap,
       child: Container(
@@ -188,58 +193,63 @@ class VehicleCard extends StatelessWidget {
                     ),
                   ),
                 ),
-                child: Row(
-                  children: [
-                    if (onEdit != null)
-                      Expanded(
-                        child: CupertinoButton(
-                          padding: const EdgeInsets.symmetric(vertical: 12),
-                          onPressed: onEdit,
-                          child: const Row(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: [
-                              Icon(
-                                CupertinoIcons.pencil,
-                                size: 16,
-                              ),
-                              SizedBox(width: 4),
-                              Text('Düzenle'),
-                            ],
-                          ),
-                        ),
-                      ),
-                    if (onEdit != null && onDelete != null)
-                      Container(
-                        width: 0.5,
-                        height: 44,
-                        color: CupertinoColors.separator,
-                      ),
-                    if (onDelete != null)
-                      Expanded(
-                        child: CupertinoButton(
-                          padding: const EdgeInsets.symmetric(vertical: 12),
-                          onPressed: onDelete,
-                          child: const Row(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: [
-                              Icon(
-                                CupertinoIcons.delete,
-                                size: 16,
-                                color: CupertinoColors.destructiveRed,
-                              ),
-                              SizedBox(width: 4),
-                              Text(
-                                'Sil',
-                                style: TextStyle(
-                                  color: CupertinoColors.destructiveRed,
+                // **[VehicleCard]** Hide edit/delete buttons for coordinators
+                child: !isKoordinator && (onEdit != null || onDelete != null)
+                    ? Row(
+                        children: [
+                          if (onEdit != null)
+                            Expanded(
+                              child: CupertinoButton(
+                                padding:
+                                    const EdgeInsets.symmetric(vertical: 12),
+                                onPressed: onEdit,
+                                child: const Row(
+                                  mainAxisAlignment: MainAxisAlignment.center,
+                                  children: [
+                                    Icon(
+                                      CupertinoIcons.pencil,
+                                      size: 16,
+                                    ),
+                                    SizedBox(width: 4),
+                                    Text('Düzenle'),
+                                  ],
                                 ),
                               ),
-                            ],
-                          ),
-                        ),
-                      ),
-                  ],
-                ),
+                            ),
+                          if (onEdit != null && onDelete != null)
+                            Container(
+                              width: 0.5,
+                              height: 44,
+                              color: CupertinoColors.separator,
+                            ),
+                          if (onDelete != null)
+                            Expanded(
+                              child: CupertinoButton(
+                                padding:
+                                    const EdgeInsets.symmetric(vertical: 12),
+                                onPressed: onDelete,
+                                child: const Row(
+                                  mainAxisAlignment: MainAxisAlignment.center,
+                                  children: [
+                                    Icon(
+                                      CupertinoIcons.delete,
+                                      size: 16,
+                                      color: CupertinoColors.destructiveRed,
+                                    ),
+                                    SizedBox(width: 4),
+                                    Text(
+                                      'Sil',
+                                      style: TextStyle(
+                                        color: CupertinoColors.destructiveRed,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            ),
+                        ],
+                      )
+                    : const SizedBox(),
               ),
           ],
         ),

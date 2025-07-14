@@ -1,46 +1,10 @@
-import 'dart:async';
-
 import 'package:afet_arac_takip/features/vehicles/model/vehicle_model.dart';
-import 'package:afet_arac_takip/features/vehicles/service/vehicle_location_service.dart';
 import 'package:afet_arac_takip/product/network/network_manager.dart';
 import 'package:flutter/material.dart';
 
 /// Vehicles view model
 class VehiclesViewModel extends ChangeNotifier {
-  VehiclesViewModel() {
-    _initLocationUpdates();
-  }
   final NetworkManager _networkManager = NetworkManager.instance;
-  final VehicleLocationService _locationService =
-      VehicleLocationService.instance;
-
-  StreamSubscription<Map<String, Location>>? _locationSubscription;
-
-  void _initLocationUpdates() {
-    _locationSubscription = _locationService.locationStream.listen((locations) {
-      var updated = false;
-      for (final vehicle in _vehicles) {
-        if (locations.containsKey(vehicle.plaka)) {
-          final index = _vehicles.indexOf(vehicle);
-          _vehicles[index] = Vehicle(
-            plaka: vehicle.plaka,
-            aracTuru: vehicle.aracTuru,
-            kullanimAmaci: vehicle.kullanimAmaci,
-            kapasite: vehicle.kapasite,
-            aracDurumu: vehicle.aracDurumu,
-            musaitlikDurumu: vehicle.musaitlikDurumu,
-            konum: locations[vehicle.plaka],
-            marka: vehicle.marka,
-            model: vehicle.model,
-          );
-          updated = true;
-        }
-      }
-      if (updated) notifyListeners();
-    });
-
-    _locationService.startLocationUpdates();
-  }
 
   List<Vehicle> _vehicles = [];
   List<Vehicle> get vehicles => _filteredVehicles;
@@ -86,6 +50,9 @@ class VehiclesViewModel extends ChangeNotifier {
   String? _error;
   String? get error => _error;
 
+  /// Disposed state to prevent notifyListeners after dispose
+  bool _disposed = false;
+
   /// Clear error
   void clearError() {
     _error = null;
@@ -106,24 +73,36 @@ class VehiclesViewModel extends ChangeNotifier {
       _isLoading = true;
       notifyListeners();
 
-      final response = await _networkManager.dio
-          .get<Map<String, dynamic>>('/arac/araclarim');
+      debugPrint('[VehiclesViewModel] Loading vehicles...');
+      // **[VehiclesViewModel]** Use coordinator endpoint for all vehicles
+      final response =
+          await _networkManager.dio.get<Map<String, dynamic>>('/araclar');
+
+      debugPrint('[VehiclesViewModel] Response status: ${response.statusCode}');
+      debugPrint('[VehiclesViewModel] Response data: ${response.data}');
 
       if (response.statusCode == 200) {
-        final data = response.data! as List<dynamic>;
-        _vehicles = data
+        final data = response.data!;
+        final vehiclesList = data['araclar'] as List<dynamic>;
+        _vehicles = vehiclesList
             .map((e) => Vehicle.fromJson(e as Map<String, dynamic>))
             .toList();
+        debugPrint('[VehiclesViewModel] Loaded ${_vehicles.length} vehicles');
         notifyListeners();
       } else {
-        _setError('Araçlar yüklenirken bir hata oluştu');
+        debugPrint('[VehiclesViewModel] Bad response: ${response.statusCode}');
+        _setError(
+            'Araçlar yüklenirken bir hata oluştu (${response.statusCode})');
       }
     } on Exception catch (e) {
       debugPrint('[VehiclesViewModel] Get vehicles error: $e');
-      _setError('Araçlar yüklenirken bir hata oluştu');
+      _setError('Araçlar yüklenirken bir hata oluştu: $e');
     } finally {
       _isLoading = false;
-      notifyListeners();
+      // **[VehiclesViewModel]** Check if disposed before notifying listeners
+      if (!_disposed) {
+        notifyListeners();
+      }
     }
   }
 
@@ -235,8 +214,7 @@ class VehiclesViewModel extends ChangeNotifier {
 
   @override
   void dispose() {
-    _locationSubscription?.cancel();
-    _locationService.stopLocationUpdates();
+    _disposed = true;
     super.dispose();
   }
 }

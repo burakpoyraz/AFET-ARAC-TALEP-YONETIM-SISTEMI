@@ -23,14 +23,21 @@ class MyVehiclesViewModel extends ChangeNotifier {
       _error = null;
       notifyListeners();
 
+      debugPrint('[MyVehiclesViewModel] Loading my vehicles...');
       final response = await _networkManager.dio
           .get<Map<String, dynamic>>('/araclar/araclarim');
+
+      debugPrint(
+          '[MyVehiclesViewModel] Response status: ${response.statusCode}');
+      debugPrint('[MyVehiclesViewModel] Response data: ${response.data}');
+
       if (response.statusCode == 200) {
         final data = response.data!;
         final vehiclesList = data['araclar'] as List<dynamic>;
         _vehicles = vehiclesList
             .map((e) => Vehicle.fromJson(e as Map<String, dynamic>))
             .toList();
+        debugPrint('[MyVehiclesViewModel] Loaded ${_vehicles.length} vehicles');
       }
     } on DioException catch (e) {
       _error = 'Araçlar yüklenirken hata oluştu: $e';
