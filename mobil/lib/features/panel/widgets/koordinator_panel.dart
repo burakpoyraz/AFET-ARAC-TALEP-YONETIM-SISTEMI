@@ -23,7 +23,7 @@ class _KoordinatorPanelState extends State<KoordinatorPanel> {
 
   Map<String, dynamic>? _stats;
   bool _isLoading = true;
-  var kullanicilar = <dynamic>[];
+  List<dynamic> kullanicilar = <dynamic>[];
 
   @override
   void initState() {
@@ -100,7 +100,7 @@ class _KoordinatorPanelState extends State<KoordinatorPanel> {
               requestsViewModel, tasksViewModel, vehiclesViewModel);
         }
       }
-    } catch (e) {
+    } on DioException catch (e) {
       if (kDebugMode) {
         print('[KoordinatorPanel] ❌ Error loading data: $e');
       }
