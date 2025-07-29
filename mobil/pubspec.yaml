@@ -1,0 +1,32 @@
+name: afet_arac_takip
+version: 1.0.0+1
+publish_to: none
+environment:
+  sdk: ">=3.2.3 <4.0.0"
+description: Afet Araç Talep Yönetim Sistemi Mobil Uygulaması
+dependencies:
+  cached_network_image: ^3.3.1
+  cupertino_icons: ^1.0.2
+  dio: ^5.4.0
+  flutter:
+    sdk: flutter
+  flutter_svg: ^2.0.9
+  geocoding: ^2.1.1
+  geolocator: ^10.1.0
+  google_maps_flutter: ^2.5.3
+  intl: ^0.19.0
+  package_info_plus: ^5.0.1
+  provider: ^6.1.1
+  shared_preferences: ^2.2.2
+  shimmer: ^3.0.0
+  url_launcher: ^6.2.3
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  pubspec_dependency_sorter: ^1.0.5
+  very_good_analysis: ^9.0.0
+flutter:
+  uses-material-design: true
+  assets:
+    - assets/images/
+    - assets/icons/
