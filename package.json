@@ -23,6 +23,7 @@
     "nodemailer": "^7.0.3",
     "pdfkit": "^0.17.1",
     "qrcode": "^1.5.4",
+    "twilio": "^5.7.3",
     "xlsx": "^0.18.5"
   },
   "devDependencies": {
